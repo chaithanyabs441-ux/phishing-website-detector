@@ -60,12 +60,52 @@ phishing-website-detector/
 
 ```mermaid
 flowchart TD
-    User["User submits URL and optional HTML"] --> App["FastAPI web app"]
-    App --> Model["Local machine-learning model"]
-    App -. "Optional lookup" .-> Google["Google Safe Browsing"]
-    Model --> Result["Risk result and evidence"]
-    Google -. "If available" .-> Result
-    Result --> User
+    Browser["Browser"] --> Form["index.html scan form"]
+    Form --> API["FastAPI: POST /scan"]
+    API --> Normalize["Normalize URL<br/>add https:// if missing"]
+    Normalize --> Mode{"model_choice"}
+
+    subgraph URL_ONLY["URL-only model"]
+        URLTF["URL TF-IDF<br/>character n-grams"]
+        SVMTFIDF["URL LinearSVC"]
+        URLTF --> SVMTFIDF
+    end
+
+    subgraph URL_ENGINEERED["URL + engineered features"]
+        CombinedTF["Combined-model URL TF-IDF"]
+        URLFeatures["URL engineered<br/>feature extraction"]
+        URLScale["URL feature scaler"]
+        JoinURL["Combine TF-IDF<br/>and scaled URL features"]
+        SVMCombined["URL + engineered LinearSVC"]
+        CombinedTF --> JoinURL
+        URLFeatures --> URLScale --> JoinURL --> SVMCombined
+    end
+
+    subgraph URL_HTML["URL + HTML model"]
+        URLHTMLTF["URL+HTML TF-IDF<br/>character n-grams"]
+        HTMLParse["HTML structural<br/>feature extraction"]
+        HTMLScale["HTML feature scaler"]
+        JoinHTML["Combine URL TF-IDF,<br/>URL and HTML features"]
+        SVMHTML["URL + HTML LinearSVC"]
+        URLHTMLTF --> JoinHTML
+        HTMLParse --> HTMLScale --> JoinHTML --> SVMHTML
+    end
+
+    Mode -->|"url_tfidf (default)"| URLTF
+    Mode -->|"url_engineered"| CombinedTF
+    Mode -->|"url_engineered"| URLFeatures
+    Mode -->|"url_html (HTML required)"| URLHTMLTF
+    Mode -->|"url_html (HTML required)"| HTMLParse
+    Mode -->|"url_html"| URLFeatures
+    URLScale --> JoinHTML
+
+    SVMTFIDF --> Threshold["Model-specific decision threshold"]
+    SVMCombined --> Threshold
+    SVMHTML --> Threshold
+    Threshold --> Reputation["Optional Google Safe Browsing lookup"]
+    Reputation --> Result["Prediction, score,<br/>evidence and risk signal"]
+    Result --> Template["Jinja2 result rendering"]
+    Template --> Browser
 ```
 
 ### Inference flow

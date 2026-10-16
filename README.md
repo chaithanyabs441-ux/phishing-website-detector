@@ -60,46 +60,12 @@ phishing-website-detector/
 
 ```mermaid
 flowchart TD
-    Browser["Browser"]
-    Form["index.html scan form"]
-    API["FastAPI: POST /scan"]
-    Normalize["Normalize URL<br/>add https:// when scheme is absent"]
-    Mode{"model_choice"}
-
-    URLTF["URL TF-IDF vectorizer<br/>character n-grams"]
-    CombinedTF["Combined-model URL TF-IDF vectorizer"]
-    URLHTMLTF["URL+HTML TF-IDF vectorizer<br/>character n-grams"]
-    URLFeatures["URL engineered feature extraction"]
-    URLScale["URL feature scaler"]
-    HTMLParse["HTML structural feature extraction"]
-    HTMLScale["HTML feature scaler"]
-    JoinURL["Combine combined-model TF-IDF + scaled URL features"]
-    JoinHTML["Combine URL+HTML TF-IDF + scaled URL features + scaled HTML features"]
-
-    SVMTFIDF["URL LinearSVC"]
-    SVMCombined["URL + engineered LinearSVC"]
-    SVMHTML["URL + HTML LinearSVC"]
-
-    Reputation["Optional Google Safe Browsing lookup"]
-    Threshold["Model-specific decision threshold"]
-    Result["Prediction + decision score + evidence + risk signal"]
-    Template["Jinja2 result rendering"]
-
-    Browser --> Form --> API --> Normalize --> Mode
-    Mode -->|"url_tfidf (default)"| URLTF --> SVMTFIDF
-    Mode -->|"url_engineered"| CombinedTF
-    Mode -->|"url_engineered"| URLFeatures --> URLScale --> JoinURL
-    CombinedTF --> JoinURL --> SVMCombined
-    Mode -->|"url_html (requires supplied HTML)"| URLHTMLTF
-    Mode -->|"url_html (requires supplied HTML)"| HTMLParse --> HTMLScale --> JoinHTML
-    Mode -->|"url_html"| URLFeatures
-    URLHTMLTF --> JoinHTML
-    URLFeatures --> URLScale --> JoinHTML
-    JoinHTML --> SVMHTML
-    SVMTFIDF --> Threshold
-    SVMCombined --> Threshold
-    SVMHTML --> Threshold
-    Threshold --> Reputation --> Result --> Template --> Browser
+    User["User submits URL and optional HTML"] --> App["FastAPI web app"]
+    App --> Model["Local machine-learning model"]
+    App -. "Optional lookup" .-> Google["Google Safe Browsing"]
+    Model --> Result["Risk result and evidence"]
+    Google -. "If available" .-> Result
+    Result --> User
 ```
 
 ### Inference flow

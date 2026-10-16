@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1160" viewBox="0 0 1000 1160" role="img" aria-labelledby="title desc">
+  <title id="title">Online phishing scan flow</title>
+  <desc id="desc">A submitted URL and optional HTML are normalized, analyzed by one of three model paths, checked against a threshold and optionally Google Safe Browsing, then displayed as a verdict.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#858582"/></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#e6e5df;text-anchor:middle}
+      .main{fill:#454542;stroke:#aaa9a2;stroke-width:1.2}
+      .model{fill:#41388f;stroke:#aaa3ff;stroke-width:1.2}
+      .benign{fill:#245d0b;stroke:#91c64b;stroke-width:1.2}
+      .review{fill:#704000;stroke:#efa500;stroke-width:1.2}
+      .phish{fill:#842020;stroke:#ef7777;stroke-width:1.2}
+      .line{fill:none;stroke:#858582;stroke-width:2.5;marker-end:url(#arrow)}
+      .join{fill:none;stroke:#555550;stroke-width:2.5}
+      .title{font-size:24px;font-weight:700}
+      .sub{font-size:19px;fill:#bdbcb5}
+      .outtitle{font-size:22px;font-weight:700}
+      .outsub{font-size:18px;fill:#d0d0c8}
+    </style>
+  </defs>
+  <rect width="1000" height="1160" fill="#151515"/>
+
+  <!-- Connectors are behind the boxes. -->
+  <path class="line" d="M500 104V142"/>
+  <path class="line" d="M500 234V274"/>
+  <path class="join" d="M500 364V400H155M500 400H845"/>
+  <path class="line" d="M155 400V439"/>
+  <path class="line" d="M500 400V439"/>
+  <path class="line" d="M845 400V439"/>
+  <path class="join" d="M155 550V590H500M500 550V590M845 550V590H500"/>
+  <path class="line" d="M500 590V625"/>
+  <path class="line" d="M500 715V754"/>
+  <path class="join" d="M500 844V875H155M500 875H845"/>
+  <path class="line" d="M155 875V909"/>
+  <path class="line" d="M500 875V909"/>
+  <path class="line" d="M845 875V909"/>
+  <path class="join" d="M155 998V1030H500M500 998V1030M845 998V1030H500"/>
+  <path class="line" d="M500 1030V1050"/>
+
+  <rect class="main" x="310" y="30" width="380" height="74" rx="16"/>
+  <text class="title" x="500" y="76">User submits URL (+ HTML)</text>
+
+  <rect class="main" x="310" y="144" width="380" height="90" rx="16"/>
+  <text class="title" x="500" y="181">Normalize URL</text>
+  <text class="sub" x="500" y="211">Add https:// if missing</text>
+
+  <rect class="main" x="260" y="274" width="480" height="90" rx="16"/>
+  <text class="title" x="500" y="311">Choose model path</text>
+  <text class="sub" x="500" y="341">HTML pasted? Or explicit choice</text>
+
+  <rect class="model" x="25" y="439" width="260" height="111" rx="16"/>
+  <text class="title" x="155" y="480">URL only (default)</text>
+  <text class="sub" x="155" y="510">Character TF-IDF</text>
+  <text class="sub" x="155" y="535">then SVM</text>
+
+  <rect class="model" x="370" y="439" width="260" height="111" rx="16"/>
+  <text class="title" x="500" y="480">URL + engineered</text>
+  <text class="sub" x="500" y="510">TF-IDF + URL stats</text>
+  <text class="sub" x="500" y="535">then SVM</text>
+
+  <rect class="model" x="715" y="439" width="260" height="111" rx="16"/>
+  <text class="title" x="845" y="480">URL + HTML</text>
+  <text class="sub" x="845" y="510">Adds forms, links</text>
+  <text class="sub" x="845" y="535">then SVM</text>
+
+  <rect class="main" x="310" y="625" width="380" height="90" rx="16"/>
+  <text class="title" x="500" y="662">Decision score</text>
+  <text class="sub" x="500" y="692">Compare to model threshold</text>
+
+  <rect class="main" x="260" y="754" width="480" height="90" rx="16"/>
+  <text class="title" x="500" y="791">Google Safe Browsing</text>
+  <text class="sub" x="500" y="821">Optional; a threat match = phishing</text>
+
+  <rect class="benign" x="25" y="909" width="260" height="89" rx="16"/>
+  <text class="outtitle" x="155" y="945">Likely benign</text>
+  <text class="outsub" x="155" y="975">Score below 0</text>
+  <rect class="review" x="370" y="909" width="260" height="89" rx="16"/>
+  <text class="outtitle" x="500" y="945">Review required</text>
+  <text class="outsub" x="500" y="975">Uncertain middle zone</text>
+  <rect class="phish" x="715" y="909" width="260" height="89" rx="16"/>
+  <text class="outtitle" x="845" y="945">Phishing</text>
+  <text class="outsub" x="845" y="975">At or above threshold</text>
+
+  <rect class="main" x="310" y="1050" width="380" height="82" rx="16"/>
+  <text class="title" x="500" y="1085">Result page</text>
+  <text class="sub" x="500" y="1114">Verdict, score, evidence, risk</text>
+</svg>

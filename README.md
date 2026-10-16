@@ -58,55 +58,13 @@ phishing-website-detector/
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    Browser["Browser"] --> Form["index.html scan form"]
-    Form --> API["FastAPI: POST /scan"]
-    API --> Normalize["Normalize URL<br/>add https:// if missing"]
-    Normalize --> Mode{"model_choice"}
+### Online scan flow
 
-    subgraph URL_ONLY["URL-only model"]
-        URLTF["URL TF-IDF<br/>character n-grams"]
-        SVMTFIDF["URL LinearSVC"]
-        URLTF --> SVMTFIDF
-    end
+<img src="docs/architecture-online.svg" alt="Online scan flow from URL submission through model selection, threat lookup, verdict, and result page" width="780">
 
-    subgraph URL_ENGINEERED["URL + engineered features"]
-        CombinedTF["Combined-model URL TF-IDF"]
-        URLFeatures["URL engineered<br/>feature extraction"]
-        URLScale["URL feature scaler"]
-        JoinURL["Combine TF-IDF<br/>and scaled URL features"]
-        SVMCombined["URL + engineered LinearSVC"]
-        CombinedTF --> JoinURL
-        URLFeatures --> URLScale --> JoinURL --> SVMCombined
-    end
+### Model training and app flow
 
-    subgraph URL_HTML["URL + HTML model"]
-        URLHTMLTF["URL+HTML TF-IDF<br/>character n-grams"]
-        HTMLParse["HTML structural<br/>feature extraction"]
-        HTMLScale["HTML feature scaler"]
-        JoinHTML["Combine URL TF-IDF,<br/>URL and HTML features"]
-        SVMHTML["URL + HTML LinearSVC"]
-        URLHTMLTF --> JoinHTML
-        HTMLParse --> HTMLScale --> JoinHTML --> SVMHTML
-    end
-
-    Mode -->|"url_tfidf (default)"| URLTF
-    Mode -->|"url_engineered"| CombinedTF
-    Mode -->|"url_engineered"| URLFeatures
-    Mode -->|"url_html (HTML required)"| URLHTMLTF
-    Mode -->|"url_html (HTML required)"| HTMLParse
-    Mode -->|"url_html"| URLFeatures
-    URLScale --> JoinHTML
-
-    SVMTFIDF --> Threshold["Model-specific decision threshold"]
-    SVMCombined --> Threshold
-    SVMHTML --> Threshold
-    Threshold --> Reputation["Optional Google Safe Browsing lookup"]
-    Reputation --> Result["Prediction, score,<br/>evidence and risk signal"]
-    Result --> Template["Jinja2 result rendering"]
-    Template --> Browser
-```
+<img src="docs/architecture-training.svg" alt="Offline model training and evaluation produce saved artifacts used by the online web app" width="900">
 
 ### Inference flow
 

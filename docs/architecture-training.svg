@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="680" viewBox="0 0 1120 680" role="img" aria-labelledby="title desc">
+  <title id="title">Offline training and online application flow</title>
+  <desc id="desc">Offline datasets are transformed into features, used to train three SVM models, and evaluated to choose thresholds. Saved artifacts are loaded by the web app for online scans and verdicts.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#858582"/></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#e6e5df;text-anchor:middle}
+      .box{fill:#454542;stroke:#aaa9a2;stroke-width:1.2}
+      .model{fill:#41388f;stroke:#aaa3ff;stroke-width:1.2}
+      .line{fill:none;stroke:#858582;stroke-width:2.5;marker-end:url(#arrow)}
+      .frame{fill:none;stroke:#444440;stroke-width:1.5;stroke-dasharray:9 8}
+      .heading{font-size:24px;font-weight:700;text-anchor:start}
+      .title{font-size:22px;font-weight:700}
+      .sub{font-size:18px;fill:#bdbcb5}
+    </style>
+  </defs>
+  <rect width="1120" height="680" fill="#151515"/>
+
+  <rect class="frame" x="24" y="22" width="1072" height="218" rx="28"/>
+  <text class="heading" x="55" y="62">Offline: build the models (src/)</text>
+
+  <path class="line" d="M276 143H319"/>
+  <path class="line" d="M528 143H571"/>
+  <path class="line" d="M780 143H823"/>
+  <path class="line" d="M560 198V285"/>
+
+  <rect class="box" x="62" y="93" width="214" height="100" rx="16"/>
+  <text class="title" x="169" y="132">Datasets</text>
+  <text class="sub" x="169" y="164">URLs + page HTML</text>
+  <rect class="box" x="314" y="93" width="214" height="100" rx="16"/>
+  <text class="title" x="421" y="132">Features</text>
+  <text class="sub" x="421" y="164">URL + HTML</text>
+  <rect class="box" x="566" y="93" width="214" height="100" rx="16"/>
+  <text class="title" x="673" y="132">Train</text>
+  <text class="sub" x="673" y="164">3 SVM models</text>
+  <rect class="box" x="818" y="93" width="214" height="100" rx="16"/>
+  <text class="title" x="925" y="132">Evaluate</text>
+  <text class="sub" x="925" y="164">Pick thresholds</text>
+
+  <rect class="model" x="360" y="285" width="400" height="100" rx="16"/>
+  <text class="title" x="560" y="324">Saved artifacts (models/)</text>
+  <text class="sub" x="560" y="356">Vectorizers, scalers, SVMs</text>
+  <path class="line" d="M560 385V444"/>
+
+  <rect class="frame" x="24" y="444" width="1072" height="214" rx="28"/>
+  <text class="heading" x="55" y="484">Online: web app (webapp/app.py)</text>
+
+  <path class="line" d="M276 572H319"/>
+  <path class="line" d="M528 572H571"/>
+  <path class="line" d="M780 572H823"/>
+
+  <rect class="box" x="62" y="522" width="214" height="100" rx="16"/>
+  <text class="title" x="169" y="561">Scan form</text>
+  <text class="sub" x="169" y="593">URL, optional HTML</text>
+  <rect class="box" x="314" y="522" width="214" height="100" rx="16"/>
+  <text class="title" x="421" y="561">Run model</text>
+  <text class="sub" x="421" y="593">Load artifacts</text>
+  <rect class="box" x="566" y="522" width="214" height="100" rx="16"/>
+  <text class="title" x="673" y="561">Verdict</text>
+  <text class="sub" x="673" y="593">Threshold, GSB</text>
+  <rect class="box" x="818" y="522" width="214" height="100" rx="16"/>
+  <text class="title" x="925" y="561">Result page</text>
+  <text class="sub" x="925" y="593">Evidence, risk</text>
+</svg>

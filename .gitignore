@@ -1,0 +1,31 @@
+# Secrets and local environment
+.env
+.venv/
+venv/
+
+# Local data, outputs, and handoff notes
+data/
+logs/
+handoff/
+results/
+*.log
+
+# Machine-specific/generated project files
+parquet_locations.txt
+project_structure.txt
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Only keep model artifacts loaded by webapp/app.py.
+# These are required for the app to run without retraining.
+models/*
+!models/url_tfidf.joblib
+!models/url_linear_svm.joblib
+!models/combined_tfidf.joblib
+!models/combined_linear_svm.joblib
+!models/url_engineered_scaler.joblib
+!models/url_html_tfidf.joblib
+!models/url_html_linear_svm.joblib
+!models/html_scaler.joblib
+!models/html_feature_columns.joblib

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="PHISH//X - Explainable phishing website detection"
+    >
+
+    <title>PHISH//X — Phishing Intelligence</title>
+
+
+    <!-- Google Fonts -->
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <!-- PHISH//X CSS -->
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<!-- ========================================================
+     BACKGROUND
+     ======================================================== -->
+
+<div class="background-grid"></div>
+
+
+<!-- ========================================================
+     TOP NAVIGATION
+     ======================================================== -->
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <div class="brand-mark">
+            //
+        </div>
+
+
+        <div>
+
+            <div class="brand-name">
+                PHISH<span>//</span>X
+            </div>
+
+
+            <div class="brand-subtitle">
+                EXPLAINABLE PHISHING INTELLIGENCE
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="status">
+
+        <span class="status-dot"></span>
+
+        DETECTION ENGINE ONLINE
+
+    </div>
+
+</header>
+
+
+<!-- ========================================================
+     MAIN CONTENT
+     ======================================================== -->
+
+<main class="container">
+
+
+    <!-- ====================================================
+         HERO
+         ==================================================== -->
+
+    <section class="hero">
+
+        <div class="hero-tag">
+            ML-POWERED WEB SECURITY
+        </div>
+
+
+        <h1>
+
+            Is this website
+
+            <span>
+                trying to fool you?
+            </span>
+
+        </h1>
+
+
+        <p>
+
+            Analyze suspicious websites using machine learning
+            and discover the signals hiding behind the prediction.
+
+        </p>
+
+    </section>
+
+
+    <!-- ====================================================
+         SCANNER
+         ==================================================== -->
+
+    <section class="scanner-card">
+
+
+        <form
+            action="/scan"
+            method="post"
+        >
+
+
+            <!-- URL -->
+
+            <label for="url">
+                WEBSITE URL
+            </label>
+
+
+            <div class="url-input">
+
+
+                <span class="input-icon">
+                    ⌁
+                </span>
+
+
+                <input
+                    id="url"
+                    type="text"
+                    name="url"
+                    placeholder="https://example.com/login"
+                    autocomplete="off"
+                    required
+                >
+
+
+                <button
+                    type="submit"
+                >
+
+                    SCAN
+
+                    <span>
+                        →
+                    </span>
+
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 HTML ANALYSIS
+                 ================================================= -->
+
+            <div class="html-section">
+
+
+                <div class="html-heading">
+
+
+                    <div>
+
+                        <strong>
+                            DEEP HTML ANALYSIS
+                        </strong>
+
+
+                        <small>
+                            OPTIONAL
+                        </small>
+
+                    </div>
+
+
+                    <span>
+                        EXPERIMENT 3
+                    </span>
+
+                </div>
+
+
+                <textarea
+                    id="html"
+                    name="html"
+                    placeholder="Optional: paste the page HTML here for URL + HTML analysis..."
+                ></textarea>
+
+
+                <p class="hint">
+
+                    Leave this empty for lightweight URL analysis.
+                    Paste page HTML to activate the deeper
+                    URL + HTML detector.
+
+                </p>
+
+            </div>
+
+
+        </form>
+
+    </section>
+
+
+    <!-- ====================================================
+         ERROR
+         ==================================================== -->
+
+    {% if result and result.error %}
+
+
+    <div class="error-box">
+
+
+        <strong>
+            SCAN ERROR
+        </strong>
+
+
+        <div>
+            {{ result.error }}
+        </div>
+
+
+    </div>
+
+
+    {% endif %}
+
+
+    <!-- ====================================================
+         RESULTS
+         ==================================================== -->
+
+    {% if result and result.prediction %}
+
+
+    <section class="result-section">
+
+
+        <!-- =================================================
+             RESULT HEADER
+             ================================================= -->
+
+        <div class="result-header">
+
+
+            <div class="result-information">
+
+
+                <div class="result-label">
+                    ANALYSIS COMPLETE
+                </div>
+
+
+                <h2>
+
+                    {{ result.prediction }}
+
+                </h2>
+
+
+                <div class="scanned-url">
+
+                    {{ result.url }}
+
+                </div>
+
+
+            </div>
+
+
+            <!-- RISK SCORE -->
+
+            <div
+                class="risk-ring {{ result.risk_class }}"
+            >
+
+
+                <div class="risk-number">
+
+                    {{ result.risk_score }}
+
+                </div>
+
+
+                <div class="risk-label">
+
+                    RISK
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             MODEL INFORMATION
+             ================================================= -->
+
+        <div class="model-line">
+
+
+            <span>
+                MODEL
+            </span>
+
+
+            {{ result.model_used }}
+
+
+            <span class="model-score">
+
+                decision score:
+                {{ result.decision_score }}
+
+            </span>
+
+
+        </div>
+
+
+        <!-- =================================================
+             EVIDENCE
+             ================================================= -->
+
+        <div class="section-title">
+
+            <span>
+                01
+            </span>
+
+            WHY WAS THIS FLAGGED?
+
+        </div>
+
+
+        <div class="evidence-grid">
+
+
+            {% for item in result.evidence %}
+
+
+            <div
+                class="evidence-card {{ item.severity }}"
+            >
+
+
+                <div class="evidence-top">
+
+
+                    <span class="evidence-icon">
+
+
+                        {% if item.severity == "high" %}
+
+                            !
+
+                        {% elif item.severity == "medium" %}
+
+                            /
+
+                        {% else %}
+
+                            +
+
+                        {% endif %}
+
+
+                    </span>
+
+
+                    <span class="severity">
+
+                        {{ item.severity }}
+
+                    </span>
+
+
+                </div>
+
+
+                <h3>
+
+                    {{ item.title }}
+
+                </h3>
+
+
+                <p>
+
+                    {{ item.description }}
+
+                </p>
+
+
+            </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
+        <!-- =================================================
+             PHISHING DNA
+             ================================================= -->
+
+        <div class="section-title">
+
+            <span>
+                02
+            </span>
+
+            PHISHING DNA
+
+        </div>
+
+
+        <div class="feature-grid">
+
+
+            {% for name, value in result.feature_summary.items() %}
+
+
+            <div class="feature-card">
+
+
+                <div class="feature-value">
+
+                    {{ value }}
+
+                </div>
+
+
+                <div class="feature-name">
+
+                    {{ name }}
+
+                </div>
+
+
+            </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
+        <!-- =================================================
+             MODEL INTERPRETATION
+             ================================================= -->
+
+        <div class="section-title">
+
+            <span>
+                03
+            </span>
+
+            DETECTION SIGNAL
+
+        </div>
+
+
+        <div class="signal-panel">
+
+
+            <div class="signal-icon">
+
+
+                {% if result.prediction == "PHISHING" %}
+
+                    !
+
+                {% else %}
+
+                    ✓
+
+                {% endif %}
+
+
+            </div>
+
+
+            <div class="signal-content">
+
+
+                {% if result.prediction == "PHISHING" %}
+
+
+                <h3>
+                    Suspicious pattern detected
+                </h3>
+
+
+                <p>
+
+                    The trained classifier produced a positive
+                    phishing decision for this website.
+
+                    The evidence above shows the observable
+                    URL and page characteristics extracted
+                    during analysis.
+
+                </p>
+
+
+                {% else %}
+
+
+                <h3>
+                    No phishing decision
+                </h3>
+
+
+                <p>
+
+                    The trained classifier produced a negative
+                    phishing decision for this website.
+
+                    This does not guarantee that a website is
+                    completely safe.
+
+                </p>
+
+
+                {% endif %}
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             SECURITY DISCLAIMER
+             ================================================= -->
+
+        <div class="disclaimer">
+
+
+            <strong>
+                MODEL OUTPUT
+            </strong>
+
+
+            <span>
+
+                This result is produced by a machine-learning
+                model and should be treated as a security signal,
+                not absolute proof.
+
+            </span>
+
+
+        </div>
+
+
+    </section>
+
+
+    {% endif %}
+
+
+    <!-- ====================================================
+         HOW IT WORKS
+         ==================================================== -->
+
+    {% if not result or not result.prediction %}
+
+
+    <section class="how-section">
+
+
+        <div class="section-title">
+
+            <span>
+                SYSTEM
+            </span>
+
+            HOW PHISH//X WORKS
+
+        </div>
+
+
+        <div class="pipeline">
+
+
+            <!-- STEP 1 -->
+
+            <div class="pipeline-card">
+
+
+                <div class="pipeline-number">
+                    01
+                </div>
+
+
+                <div class="pipeline-icon">
+                    URL
+                </div>
+
+
+                <h3>
+                    URL Analysis
+                </h3>
+
+
+                <p>
+
+                    Extracts URL structure,
+                    suspicious keywords,
+                    domains and other
+                    measurable characteristics.
+
+                </p>
+
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <!-- STEP 2 -->
+
+            <div class="pipeline-card">
+
+
+                <div class="pipeline-number">
+                    02
+                </div>
+
+
+                <div class="pipeline-icon">
+                    ML
+                </div>
+
+
+                <h3>
+                    ML Detection
+                </h3>
+
+
+                <p>
+
+                    A trained linear machine-learning
+                    classifier analyzes the extracted
+                    signals.
+
+                </p>
+
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <!-- STEP 3 -->
+
+            <div class="pipeline-card">
+
+
+                <div class="pipeline-number">
+                    03
+                </div>
+
+
+                <div class="pipeline-icon">
+                    DNA
+                </div>
+
+
+                <h3>
+                    Evidence
+                </h3>
+
+
+                <p>
+
+                    Observable characteristics are
+                    converted into an interpretable
+                    phishing profile.
+
+                </p>
+
+
+            </div>
+
+
+            <div class="pipeline-arrow">
+                →
+            </div>
+
+
+            <!-- STEP 4 -->
+
+            <div class="pipeline-card">
+
+
+                <div class="pipeline-number">
+                    04
+                </div>
+
+
+                <div class="pipeline-icon">
+                    !
+                </div>
+
+
+                <h3>
+                    Risk Signal
+                </h3>
+
+
+                <p>
+
+                    The final result combines the
+                    model decision with the extracted
+                    evidence.
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+    {% endif %}
+
+
+    <!-- ====================================================
+         FOOTER
+         ==================================================== -->
+
+    <footer>
+
+
+        <div>
+
+            <span>
+                PHISH//X
+            </span>
+
+        </div>
+
+
+        <div>
+
+            EXPLAINABLE
+            &nbsp;•&nbsp;
+            TEMPORALLY ROBUST
+            &nbsp;•&nbsp;
+            ML SECURITY
+
+        </div>
+
+
+    </footer>
+
+
+</main>
+
+
+<!-- ========================================================
+     JAVASCRIPT
+     ======================================================== -->
+
+<script
+    src="/static/app.js"
+></script>
+
+
+</body>
+
+</html>

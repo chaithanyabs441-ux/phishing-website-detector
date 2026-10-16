@@ -1,0 +1,1822 @@
+/* ============================================================
+   PHISH//X
+   Main stylesheet
+   ============================================================ */
+
+:root {
+
+    --bg: #07090d;
+    --panel: #0d1118;
+    --panel-2: #111720;
+
+    --border: #202832;
+
+    --text: #edf2f7;
+    --muted: #7e8b9a;
+
+    --accent: #62f6c8;
+    --accent-dark: #173e36;
+
+    --danger: #ff5364;
+    --warning: #ffbd59;
+    --safe: #62f6c8;
+
+}
+
+
+/* ============================================================
+   RESET
+   ============================================================ */
+
+* {
+
+    box-sizing: border-box;
+
+}
+
+
+html {
+
+    scroll-behavior: smooth;
+
+}
+
+
+body {
+
+    margin: 0;
+
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 50% -10%,
+            #14221f 0,
+            transparent 40%
+        ),
+        var(--bg);
+
+    color: var(--text);
+
+    font-family:
+        "Space Grotesk",
+        Arial,
+        sans-serif;
+
+}
+
+
+/* ============================================================
+   BACKGROUND GRID
+   ============================================================ */
+
+.background-grid {
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: 0.16;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,0.035) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.035) 1px,
+            transparent 1px
+        );
+
+    background-size: 40px 40px;
+
+    z-index: 0;
+
+}
+
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+
+.topbar {
+
+    height: 78px;
+
+    padding:
+        0 5vw;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    border-bottom:
+        1px solid var(--border);
+
+    background:
+        rgba(7,9,13,0.88);
+
+    backdrop-filter:
+        blur(12px);
+
+    position: relative;
+
+    z-index: 5;
+
+}
+
+
+.brand {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+}
+
+
+.brand-mark {
+
+    width: 38px;
+
+    height: 38px;
+
+    display: grid;
+
+    place-items: center;
+
+    border:
+        1px solid var(--accent);
+
+    color: var(--accent);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-weight: 700;
+
+    box-shadow:
+        0 0 18px
+        rgba(98,246,200,0.15);
+
+}
+
+
+.brand-name {
+
+    font-weight: 700;
+
+    letter-spacing: 2px;
+
+    font-size: 18px;
+
+}
+
+
+.brand-name span {
+
+    color: var(--accent);
+
+}
+
+
+.brand-subtitle {
+
+    color: var(--muted);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 8px;
+
+    letter-spacing: 1.5px;
+
+    margin-top: 3px;
+
+}
+
+
+.status {
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 10px;
+
+    color: var(--muted);
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+
+.status-dot {
+
+    width: 7px;
+
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--accent);
+
+    box-shadow:
+        0 0 10px var(--accent);
+
+}
+
+
+/* ============================================================
+   MAIN CONTAINER
+   ============================================================ */
+
+.container {
+
+    width: min(
+        1050px,
+        90%
+    );
+
+    margin:
+        0 auto;
+
+    position: relative;
+
+    z-index: 2;
+
+}
+
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.hero {
+
+    padding:
+        85px 0 45px;
+
+    max-width: 780px;
+
+}
+
+
+.hero-tag {
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    color: var(--accent);
+
+    font-size: 11px;
+
+    letter-spacing: 2px;
+
+    margin-bottom: 20px;
+
+}
+
+
+.hero h1 {
+
+    font-size:
+        clamp(
+            42px,
+            7vw,
+            78px
+        );
+
+    line-height: 0.98;
+
+    margin: 0;
+
+    letter-spacing: -3px;
+
+}
+
+
+.hero h1 span {
+
+    display: block;
+
+    color: var(--muted);
+
+}
+
+
+.hero p {
+
+    margin-top: 27px;
+
+    color: var(--muted);
+
+    font-size: 16px;
+
+    line-height: 1.7;
+
+    max-width: 650px;
+
+}
+
+
+/* ============================================================
+   SCANNER CARD
+   ============================================================ */
+
+.scanner-card {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(17,23,32,0.95),
+            rgba(9,12,17,0.95)
+        );
+
+    border:
+        1px solid var(--border);
+
+    padding: 28px;
+
+    box-shadow:
+        0 25px 80px
+        rgba(0,0,0,0.35);
+
+}
+
+
+.scanner-card label {
+
+    display: block;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+    color: var(--muted);
+
+    margin-bottom: 10px;
+
+}
+
+
+/* ============================================================
+   URL INPUT
+   ============================================================ */
+
+.url-input {
+
+    display: flex;
+
+    align-items: center;
+
+    border:
+        1px solid #303945;
+
+    background: #080b10;
+
+    height: 62px;
+
+}
+
+
+.input-icon {
+
+    color: var(--accent);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 22px;
+
+    padding-left: 18px;
+
+}
+
+
+.url-input input {
+
+    flex: 1;
+
+    height: 100%;
+
+    min-width: 0;
+
+    background: transparent;
+
+    border: 0;
+
+    outline: 0;
+
+    color: var(--text);
+
+    padding:
+        0 16px;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 14px;
+
+}
+
+
+.url-input input::placeholder {
+
+    color: #46515e;
+
+}
+
+
+.url-input button {
+
+    height: 100%;
+
+    border: 0;
+
+    background: var(--accent);
+
+    color: #06100d;
+
+    padding:
+        0 25px;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    letter-spacing: 1px;
+
+    transition:
+        filter 0.2s ease;
+
+}
+
+
+.url-input button:hover {
+
+    filter:
+        brightness(1.08);
+
+}
+
+
+.url-input button:disabled {
+
+    cursor: wait;
+
+    opacity: 0.75;
+
+}
+
+
+/* ============================================================
+   HTML SECTION
+   ============================================================ */
+
+.html-section {
+
+    margin-top: 25px;
+
+}
+
+
+.html-heading {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 10px;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+
+}
+
+
+.html-heading small {
+
+    color: var(--muted);
+
+    margin-left: 7px;
+
+}
+
+
+.html-heading > span {
+
+    color: var(--accent);
+
+}
+
+
+.html-section textarea {
+
+    width: 100%;
+
+    min-height: 130px;
+
+    resize: vertical;
+
+    background: #080b10;
+
+    border:
+        1px solid #303945;
+
+    color: #a9b4c1;
+
+    outline: none;
+
+    padding: 14px;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 11px;
+
+}
+
+
+.html-section textarea:focus {
+
+    border-color:
+        rgba(98,246,200,0.55);
+
+    box-shadow:
+        0 0 0 2px
+        rgba(98,246,200,0.06);
+
+}
+
+
+.hint {
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+}
+
+
+.html-counter {
+
+    text-align: right;
+
+    margin-top: 5px;
+
+    color: #4c5866;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 8px;
+
+}
+
+
+.html-counter.active {
+
+    color: var(--accent);
+
+}
+
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.error-box {
+
+    margin-top: 20px;
+
+    padding: 16px;
+
+    border:
+        1px solid var(--danger);
+
+    color: var(--danger);
+
+    background:
+        rgba(255,83,100,0.06);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 12px;
+
+}
+
+
+.error-box strong {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+}
+
+
+/* ============================================================
+   RESULT SECTION
+   ============================================================ */
+
+.result-section {
+
+    margin-top: 35px;
+
+    border:
+        1px solid var(--border);
+
+    background:
+        rgba(13,17,24,0.96);
+
+    padding: 32px;
+
+}
+
+
+.result-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 30px;
+
+}
+
+
+.result-information {
+
+    min-width: 0;
+
+}
+
+
+.result-label {
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    color: var(--accent);
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+}
+
+
+.result-header h2 {
+
+    margin:
+        9px 0;
+
+    font-size: 32px;
+
+    letter-spacing: -1px;
+
+}
+
+
+.scanned-url {
+
+    color: var(--muted);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 11px;
+
+    word-break: break-all;
+
+    max-width: 700px;
+
+    display: inline-block;
+
+}
+
+
+.copy-url-button {
+
+    margin-left: 10px;
+
+    padding:
+        4px 7px;
+
+    background: transparent;
+
+    border:
+        1px solid var(--border);
+
+    color: var(--muted);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 8px;
+
+    cursor: pointer;
+
+}
+
+
+.copy-url-button:hover {
+
+    border-color:
+        var(--accent);
+
+    color:
+        var(--accent);
+
+}
+
+
+/* ============================================================
+   RISK RING
+   ============================================================ */
+
+.risk-ring {
+
+    width: 120px;
+
+    height: 120px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 1px solid;
+
+}
+
+
+.risk-number {
+
+    font-size: 30px;
+
+    font-weight: 700;
+
+}
+
+
+.risk-label {
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 8px;
+
+    letter-spacing: 2px;
+
+}
+
+
+.risk-ring.danger {
+
+    color: var(--danger);
+
+    border-color: var(--danger);
+
+    box-shadow:
+        0 0 35px
+        rgba(255,83,100,0.15);
+
+}
+
+
+.risk-ring.warning {
+
+    color: var(--warning);
+
+    border-color: var(--warning);
+
+}
+
+
+.risk-ring.safe {
+
+    color: var(--safe);
+
+    border-color: var(--safe);
+
+    box-shadow:
+        0 0 35px
+        rgba(98,246,200,0.12);
+
+}
+
+
+/* ============================================================
+   MODEL INFORMATION
+   ============================================================ */
+
+.model-line {
+
+    margin-top: 25px;
+
+    padding:
+        12px 15px;
+
+    background:
+        #090d12;
+
+    border:
+        1px solid var(--border);
+
+    color: var(--muted);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 10px;
+
+}
+
+
+.model-line > span:first-child {
+
+    color: var(--accent);
+
+    margin-right: 10px;
+
+}
+
+
+.model-score {
+
+    float: right;
+
+}
+
+
+/* ============================================================
+   SECTION TITLES
+   ============================================================ */
+
+.section-title {
+
+    margin-top: 38px;
+
+    margin-bottom: 15px;
+
+    color: var(--text);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+}
+
+
+.section-title span {
+
+    color: var(--accent);
+
+    margin-right: 8px;
+
+}
+
+
+/* ============================================================
+   EVIDENCE GRID
+   ============================================================ */
+
+.evidence-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(220px, 1fr)
+        );
+
+    gap: 12px;
+
+}
+
+
+.evidence-card {
+
+    background:
+        var(--panel-2);
+
+    border:
+        1px solid var(--border);
+
+    padding: 18px;
+
+    border-left:
+        3px solid var(--muted);
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+
+}
+
+
+.evidence-card:hover {
+
+    transform:
+        translateY(-2px);
+
+}
+
+
+.evidence-card.high {
+
+    border-left-color:
+        var(--danger);
+
+}
+
+
+.evidence-card.medium {
+
+    border-left-color:
+        var(--warning);
+
+}
+
+
+.evidence-card.low {
+
+    border-left-color:
+        var(--accent);
+
+}
+
+
+.evidence-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+}
+
+
+.evidence-icon {
+
+    width: 24px;
+
+    height: 24px;
+
+    display: grid;
+
+    place-items: center;
+
+    border: 1px solid;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+}
+
+
+.high .evidence-icon {
+
+    color: var(--danger);
+
+}
+
+
+.medium .evidence-icon {
+
+    color: var(--warning);
+
+}
+
+
+.low .evidence-icon {
+
+    color: var(--accent);
+
+}
+
+
+.severity {
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 8px;
+
+    text-transform: uppercase;
+
+    color: var(--muted);
+
+}
+
+
+.evidence-card h3 {
+
+    margin:
+        16px 0 7px;
+
+    font-size: 15px;
+
+}
+
+
+.evidence-card p {
+
+    margin: 0;
+
+    color: var(--muted);
+
+    font-size: 12px;
+
+    line-height: 1.6;
+
+}
+
+
+/* ============================================================
+   PHISHING DNA / FEATURES
+   ============================================================ */
+
+.feature-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(130px, 1fr)
+        );
+
+    gap: 10px;
+
+}
+
+
+.feature-card {
+
+    padding: 18px;
+
+    background:
+        #090d12;
+
+    border:
+        1px solid var(--border);
+
+    transition:
+        border-color 0.2s ease;
+
+}
+
+
+.feature-card:hover {
+
+    border-color:
+        rgba(98,246,200,0.35);
+
+}
+
+
+.feature-value {
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 22px;
+
+    color: var(--accent);
+
+    font-weight: 600;
+
+}
+
+
+.feature-name {
+
+    margin-top: 6px;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+}
+
+
+/* ============================================================
+   DETECTION SIGNAL
+   ============================================================ */
+
+.signal-panel {
+
+    display: flex;
+
+    gap: 18px;
+
+    padding: 22px;
+
+    background:
+        #090d12;
+
+    border:
+        1px solid var(--border);
+
+}
+
+
+.signal-icon {
+
+    width: 45px;
+
+    height: 45px;
+
+    flex-shrink: 0;
+
+    display: grid;
+
+    place-items: center;
+
+    border:
+        1px solid var(--accent);
+
+    color:
+        var(--accent);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 18px;
+
+}
+
+
+.signal-content h3 {
+
+    margin:
+        0 0 7px;
+
+    font-size: 15px;
+
+}
+
+
+.signal-content p {
+
+    margin: 0;
+
+    color: var(--muted);
+
+    font-size: 12px;
+
+    line-height: 1.7;
+
+}
+
+
+/* ============================================================
+   DISCLAIMER
+   ============================================================ */
+
+.disclaimer {
+
+    margin-top: 25px;
+
+    padding: 15px;
+
+    display: flex;
+
+    gap: 15px;
+
+    border:
+        1px solid var(--border);
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.6;
+
+}
+
+
+.disclaimer strong {
+
+    color: var(--accent);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    white-space: nowrap;
+
+}
+
+
+/* ============================================================
+   HOW PHISH//X WORKS
+   ============================================================ */
+
+.how-section {
+
+    margin-top: 55px;
+
+}
+
+
+.pipeline {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr auto
+        1fr auto
+        1fr auto
+        1fr;
+
+    align-items: stretch;
+
+    gap: 12px;
+
+}
+
+
+.pipeline-card {
+
+    position: relative;
+
+    padding: 22px;
+
+    background:
+        rgba(13,17,24,0.85);
+
+    border:
+        1px solid var(--border);
+
+    min-height: 220px;
+
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease;
+
+}
+
+
+.pipeline-card:hover {
+
+    border-color:
+        rgba(98,246,200,0.45);
+
+    transform:
+        translateY(-3px);
+
+}
+
+
+.pipeline-number {
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    color:
+        var(--accent);
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+
+}
+
+
+.pipeline-icon {
+
+    margin-top: 28px;
+
+    width: 45px;
+
+    height: 45px;
+
+    display: grid;
+
+    place-items: center;
+
+    border:
+        1px solid var(--accent);
+
+    color:
+        var(--accent);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 11px;
+
+}
+
+
+.pipeline-card h3 {
+
+    margin:
+        18px 0 8px;
+
+    font-size: 16px;
+
+}
+
+
+.pipeline-card p {
+
+    margin: 0;
+
+    color:
+        var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.7;
+
+}
+
+
+.pipeline-arrow {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color:
+        #3b4754;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 20px;
+
+}
+
+
+/* ============================================================
+   JAVASCRIPT INTERACTION
+   ============================================================ */
+
+.scan-status {
+
+    margin-top: 15px;
+
+    padding: 12px 15px;
+
+    background: #06090d;
+
+    border:
+        1px solid var(--border);
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 9px;
+
+    color: var(--muted);
+
+    animation:
+        fadeIn 0.25s ease;
+
+}
+
+
+.terminal-line {
+
+    margin: 5px 0;
+
+}
+
+
+.terminal-symbol {
+
+    color: var(--accent);
+
+    margin-right: 7px;
+
+}
+
+
+.scan-spinner {
+
+    display: inline-block;
+
+    width: 11px;
+
+    height: 11px;
+
+    border:
+        2px solid
+        rgba(6,16,13,0.3);
+
+    border-top-color:
+        #06100d;
+
+    border-radius: 50%;
+
+    animation:
+        spin 0.7s linear infinite;
+
+    margin-right: 7px;
+
+    vertical-align: -1px;
+
+}
+
+
+.result-enter {
+
+    animation:
+        resultEnter 0.5s ease both;
+
+}
+
+
+.evidence-enter {
+
+    opacity: 0;
+
+    animation:
+        cardEnter 0.45s ease forwards;
+
+}
+
+
+.feature-enter {
+
+    opacity: 0;
+
+    animation:
+        cardEnter 0.4s ease forwards;
+
+}
+
+
+.has-value {
+
+    color: var(--accent) !important;
+
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+footer {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        50px 0 30px;
+
+    color: #4c5866;
+
+    font-family:
+        "JetBrains Mono",
+        monospace;
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+
+}
+
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes spin {
+
+    to {
+
+        transform:
+            rotate(360deg);
+
+    }
+
+}
+
+
+@keyframes fadeIn {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(-5px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+
+    }
+
+}
+
+
+@keyframes resultEnter {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(20px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+
+    }
+
+}
+
+
+@keyframes cardEnter {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(12px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+
+    }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 850px) {
+
+    .pipeline {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .pipeline-arrow {
+
+        height: 25px;
+
+        transform:
+            rotate(90deg);
+
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .topbar {
+
+        padding:
+            0 20px;
+
+    }
+
+
+    .status {
+
+        display: none;
+
+    }
+
+
+    .container {
+
+        width: 92%;
+
+    }
+
+
+    .hero {
+
+        padding-top: 55px;
+
+    }
+
+
+    .hero h1 {
+
+        font-size: 45px;
+
+    }
+
+
+    .scanner-card,
+    .result-section {
+
+        padding: 20px;
+
+    }
+
+
+    .url-input {
+
+        height: auto;
+
+        flex-wrap: wrap;
+
+    }
+
+
+    .url-input input {
+
+        height: 60px;
+
+        min-width: 0;
+
+    }
+
+
+    .url-input button {
+
+        width: 100%;
+
+        height: 50px;
+
+    }
+
+
+    .result-header {
+
+        align-items: flex-start;
+
+    }
+
+
+    .risk-ring {
+
+        width: 90px;
+
+        height: 90px;
+
+    }
+
+
+    .risk-number {
+
+        font-size: 22px;
+
+    }
+
+
+    .model-score {
+
+        float: none;
+
+        display: block;
+
+        margin-top: 6px;
+
+    }
+
+
+    .signal-panel {
+
+        flex-direction: column;
+
+    }
+
+
+    footer {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 10px;
+
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .hero h1 {
+
+        font-size: 38px;
+
+        letter-spacing: -2px;
+
+    }
+
+
+    .result-header {
+
+        flex-direction: column;
+
+    }
+
+
+    .risk-ring {
+
+        align-self: flex-start;
+
+    }
+
+}

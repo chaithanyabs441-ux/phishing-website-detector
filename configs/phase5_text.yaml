@@ -1,0 +1,73 @@
+version: 1
+seed: 42
+split: data/splits/temporal_assignments.csv.gz
+text_models:
+  char_svc_2_5:
+    view: url
+    vectorizer: tfidf_char_2_5
+    classifier: linear_svc
+  char_svc_3_6:
+    view: url
+    vectorizer: tfidf_char_3_6
+    classifier: linear_svc
+  char_logistic_liblinear:
+    view: url
+    vectorizer: tfidf_char_2_5
+    classifier: logistic_liblinear
+  char_logistic_saga:
+    view: url
+    vectorizer: tfidf_char_2_5
+    classifier: logistic_saga
+  hash_sgd_modified_huber:
+    view: url
+    vectorizer: hashing_char
+    classifier: sgd_modified_huber
+  hash_sgd_log_loss:
+    view: url
+    vectorizer: hashing_char
+    classifier: sgd_log_loss
+  char_complement_nb:
+    view: url
+    vectorizer: tfidf_char_2_5
+    classifier: complement_nb
+  char_multinomial_nb:
+    view: url
+    vectorizer: tfidf_char_2_5
+    classifier: multinomial_nb
+  char_nbsvm:
+    view: url
+    vectorizer: tfidf_char_2_5
+    classifier: nbsvm
+  html_word_svc:
+    view: cleaned_html
+    vectorizer: tfidf_word_1_2
+    classifier: linear_svc
+  char_svc_2_5_min_df1:
+    view: url
+    vectorizer: tfidf_char_2_5_min_df1
+    classifier: linear_svc
+  char_svc_2_5_min_df3:
+    view: url
+    vectorizer: tfidf_char_2_5_min_df3
+    classifier: linear_svc
+pilot:
+  fit_rows: 25000
+  validation_rows: 6000
+  models:
+    - char_svc_2_5
+    - hash_sgd_log_loss
+    - html_word_svc
+  oof_folds: 5
+full:
+  oof_folds: 5
+  bootstrap_replicates: 200
+  n_jobs: 1
+tree_reference:
+  models:
+    - extra_trees
+    - hist_gradient_boosting
+  trials_per_model: 10
+  timeout_seconds_per_model: 600
+  fit_rows: 100000
+  validation_rows: 25000
+  n_jobs: 4

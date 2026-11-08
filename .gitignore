@@ -35,6 +35,10 @@ experiments/*
 !experiments/phase4_*_trials.csv
 !experiments/phase4_studies/
 !experiments/phase4_studies/*.sqlite3
+!experiments/phase5_*.json
+!experiments/phase5_*_trials.csv
+!experiments/phase5_studies/
+!experiments/phase5_studies/*.sqlite3
 
 # Only keep model artifacts loaded by webapp/app.py.
 # These are required for the app to run without retraining.

@@ -3,6 +3,11 @@ seed: 42
 split: data/splits/temporal_assignments.csv.gz
 grouped_folds: 5
 n_jobs: 4
+shuffle_diagnostic:
+  fit_rows: 25000
+  validation_rows: 6000
+  domain_holdout_fraction: 0.2
+  repeats: 5
 base_models:
   - lightgbm
   - xgboost

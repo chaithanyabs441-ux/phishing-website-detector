@@ -20,7 +20,11 @@ from sklearn.model_selection import GroupKFold, GroupShuffleSplit
 from lightgbm import LGBMClassifier
 
 from src.evaluation.evaluate_svm_blocked import _domain_bootstrap, _metric_bundle
-from src.evaluation.phase4_boosting import make_estimator, prepare_feature_frames
+from src.evaluation.phase4_boosting import (
+    grouped_tuning_split,
+    make_estimator,
+    prepare_feature_frames,
+)
 from src.evaluation.phase4_data import CATEGORICAL_FEATURES, PROJECT_ROOT
 from src.evaluation.phase5_text import MODEL_SPECS, load_phase5_data, make_classifier, make_vectorizer, score_estimator
 
@@ -32,6 +36,7 @@ RESULT_PATH = PROJECT_ROOT / "experiments" / "phase6_stacking_results.json"
 SHUFFLE_RESULT_PATH = PROJECT_ROOT / "experiments" / "phase6_label_shuffle.json"
 OOF_PATH = PROJECT_ROOT / "data" / "processed" / "phase6_base_oof.parquet"
 VALIDATION_PREDICTIONS_PATH = PROJECT_ROOT / "data" / "processed" / "phase6_validation_predictions.parquet"
+SHUFFLE_RESULT_PATH = PROJECT_ROOT / "experiments" / "phase6_label_shuffle.json"
 ARTIFACT_DIR = PROJECT_ROOT / "models" / "phase6"
 
 
@@ -137,7 +142,8 @@ def _set_fold_iterations(model, name, best_iteration):
     return model
 
 
-def _fit_gbm_oof(name, train, validation, ledger, phase4, seed, n_jobs):
+def _fit_gbm_oof(name, train, validation, ledger, phase4, seed, n_jobs,
+                 fit_validation_on_train=False):
     settings = phase4["tuning"][name]
     reference = phase4["models"][f"{name}engineered"]
     best_iteration = reference.get("best_iteration")
@@ -162,15 +168,64 @@ def _fit_gbm_oof(name, train, validation, ledger, phase4, seed, n_jobs):
     if not np.all(assignments == 1) or np.isnan(oof).any():
         raise AssertionError(f"{name} must score every training row exactly once")
 
-    saved_model = load(PROJECT_ROOT / reference["artifact"])
-    train_features, (validation_features,) = prepare_feature_frames(train, validation)
-    del train_features
-    validation_scores = saved_model.predict_proba(validation_features)[:, 1]
+    if fit_validation_on_train:
+        train_features, (validation_features,) = prepare_feature_frames(train, validation)
+        positive_weight = float((y == 0).sum() / max(1, (y == 1).sum()))
+        validation_model = make_estimator(name, settings["best_params"], seed, n_jobs, positive_weight)
+        _set_fold_iterations(validation_model, name, best_iteration)
+        if name == "catboost":
+            validation_model.fit(train_features, y, cat_features=CATEGORICAL_FEATURES, verbose=False)
+        else:
+            validation_model.fit(train_features, y)
+        validation_scores = validation_model.predict_proba(validation_features)[:, 1]
+    else:
+        saved_model = load(PROJECT_ROOT / reference["artifact"])
+        _, (validation_features,) = prepare_feature_frames(train, validation)
+        validation_scores = saved_model.predict_proba(validation_features)[:, 1]
     return oof, validation_scores, {
         "fold_assignment_min": int(assignments.min()),
         "fold_assignment_max": int(assignments.max()),
         "fold_rows": [int(len(score_indices)) for _, score_indices in ledger],
         "fixed_iterations_from_phase4_temporal_fit": best_iteration,
+    }
+
+
+def nested_meta_label_shuffle(fit_features, fit_targets, fit_groups, validation_features,
+                              validation_targets, validation_groups, seed=42, repeats=5):
+    fit_groups = np.asarray(fit_groups).astype(str)
+    validation_groups = np.asarray(validation_groups).astype(str)
+    if set(fit_groups) & set(validation_groups):
+        raise AssertionError("meta diagnostic fit/validation domains overlap")
+    fit_targets = np.asarray(fit_targets, dtype=np.int8)
+    validation_targets = np.asarray(validation_targets, dtype=np.int8)
+    reference_model = LogisticRegression(
+        C=1.0, class_weight="balanced", solver="liblinear", random_state=seed,
+    ).fit(fit_features, fit_targets)
+    reference_scores = reference_model.decision_function(validation_features)
+    reference_ap = float(average_precision_score(validation_targets, reference_scores))
+    shuffled_aps = []
+    for repeat in range(repeats):
+        shuffled_targets = np.random.default_rng(seed + repeat + 1).permutation(fit_targets)
+        model = LogisticRegression(
+            C=1.0, class_weight="balanced", solver="liblinear", random_state=seed + repeat,
+        ).fit(fit_features, shuffled_targets)
+        shuffled_scores = model.decision_function(validation_features)
+        shuffled_aps.append(float(average_precision_score(validation_targets, shuffled_scores)))
+    shuffled_mean = float(np.mean(shuffled_aps))
+    return {
+        "unshuffled_average_precision": reference_ap,
+        "shuffled_average_precision_mean": shuffled_mean,
+        "shuffled_average_precision_std": float(np.std(shuffled_aps, ddof=1)) if repeats > 1 else 0.0,
+        "shuffled_repeat_scores": shuffled_aps,
+        "validation_prevalence": float(validation_targets.mean()),
+        "difference_from_chance": shuffled_mean - float(validation_targets.mean()),
+        "drop_from_unshuffled": reference_ap - shuffled_mean,
+        "fit_rows": int(len(fit_targets)),
+        "validation_rows": int(len(validation_targets)),
+        "fit_domains": int(len(np.unique(fit_groups))),
+        "validation_domains": int(len(np.unique(validation_groups))),
+        "domain_overlap": int(len(set(fit_groups) & set(validation_groups))),
+        "repeats": repeats,
     }
 
 
@@ -261,6 +316,96 @@ def run_saved_oof_label_shuffle(config_path=None, repeats=5):
         f"domain_overlap={diagnostic['domain_overlap']}"
     )
     print(f"Wrote diagnostic: {SHUFFLE_RESULT_PATH}")
+    return output
+
+
+def run_nested_label_shuffle_diagnostic(config_path=None):
+    started = time.monotonic()
+    config_path = Path(config_path or CONFIG_PATH)
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    seed = int(config["seed"])
+    diagnostic_settings = config["shuffle_diagnostic"]
+    data = load_phase5_data()
+    full_train = data[data.split == "train"].reset_index(drop=True)
+    fit_indices, validation_indices = grouped_tuning_split(
+        full_train,
+        seed=seed,
+        domain_holdout_fraction=float(diagnostic_settings["domain_holdout_fraction"]),
+        fit_rows=int(diagnostic_settings["fit_rows"]),
+        validation_rows=int(diagnostic_settings["validation_rows"]),
+    )
+    fit_frame = full_train.iloc[fit_indices].reset_index(drop=True)
+    validation_frame = full_train.iloc[validation_indices].reset_index(drop=True)
+    ledger, fold_assignments = build_grouped_fold_ledger(
+        fit_frame, int(config["grouped_folds"]),
+    )
+    phase4 = json.loads(PHASE4_RESULTS.read_text(encoding="utf-8"))
+    phase5 = json.loads(PHASE5_RESULTS.read_text(encoding="utf-8"))
+    text_model = phase5["best_text_model_by_temporal_ap"]
+    base_names = ["lightgbm", "xgboost", "catboost", text_model]
+    oof_columns = {}
+    validation_columns = {}
+    metadata = {}
+    for name in base_names:
+        if name == text_model:
+            train_scores, validation_scores, _, base_metadata = _fit_text_oof(
+                fit_frame, validation_frame, ledger, text_model, seed,
+            )
+        else:
+            train_scores, validation_scores, base_metadata = _fit_gbm_oof(
+                name, fit_frame, validation_frame, ledger, phase4, seed,
+                int(config["n_jobs"]), fit_validation_on_train=True,
+            )
+        oof_columns[name] = train_scores
+        validation_columns[name] = validation_scores
+        metadata[name] = base_metadata
+    train_meta = build_meta_features(np.column_stack([oof_columns[name] for name in base_names]))
+    validation_meta = build_meta_features(
+        np.column_stack([validation_columns[name] for name in base_names])
+    )
+    diagnostic = nested_meta_label_shuffle(
+        train_meta,
+        fit_frame.target.to_numpy(dtype=np.int8),
+        fit_frame.group_domain.fillna("").astype(str).to_numpy(),
+        validation_meta,
+        validation_frame.target.to_numpy(dtype=np.int8),
+        validation_frame.group_domain.fillna("").astype(str).to_numpy(),
+        seed=seed,
+        repeats=int(diagnostic_settings["repeats"]),
+    )
+    split_manifest = PROJECT_ROOT / "data" / "splits" / "MANIFEST.json"
+    output = {
+        "experiment": "phase6_nested_grouped_oof_label_shuffle",
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "git_commit": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT, text=True,
+        ).strip(),
+        "seed": seed,
+        "split_manifest_sha256": hashlib.sha256(split_manifest.read_bytes()).hexdigest(),
+        "phase4_results_sha256": hashlib.sha256(PHASE4_RESULTS.read_bytes()).hexdigest(),
+        "phase5_results_sha256": hashlib.sha256(PHASE5_RESULTS.read_bytes()).hexdigest(),
+        "base_models": base_names,
+        "outer_fit_rows": int(len(fit_frame)),
+        "outer_validation_rows": int(len(validation_frame)),
+        "outer_fit_domains": int(fit_frame.group_domain.nunique()),
+        "outer_validation_domains": int(validation_frame.group_domain.nunique()),
+        "oof_folds": int(config["grouped_folds"]),
+        "oof_assignment_min": int(fold_assignments.min()),
+        "oof_assignment_max": int(fold_assignments.max()),
+        "base_oof_metadata": metadata,
+        "diagnostic": diagnostic,
+        "elapsed_seconds": time.monotonic() - started,
+        "official_test_accessed": False,
+    }
+    SHUFFLE_RESULT_PATH.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+    print(
+        f"nested shuffle AP={diagnostic['shuffled_average_precision_mean']:.6f} "
+        f"+/-{diagnostic['shuffled_average_precision_std']:.6f}; "
+        f"chance={diagnostic['validation_prevalence']:.6f}; "
+        f"unshuffled={diagnostic['unshuffled_average_precision']:.6f}; "
+        f"domain_overlap={diagnostic['domain_overlap']}"
+    )
+    print(f"Wrote nested diagnostic: {SHUFFLE_RESULT_PATH}")
     return output
 
 
@@ -466,10 +611,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     parser.add_argument("--label-shuffle-only", action="store_true")
+    parser.add_argument("--nested-label-shuffle-only", action="store_true")
     parser.add_argument("--shuffle-repeats", type=int, default=5)
     args = parser.parse_args()
     if args.label_shuffle_only:
         run_saved_oof_label_shuffle(args.config, args.shuffle_repeats)
+        return
+    if args.nested_label_shuffle_only:
+        run_nested_label_shuffle_diagnostic(args.config)
         return
     run_stacking(args.config)
 

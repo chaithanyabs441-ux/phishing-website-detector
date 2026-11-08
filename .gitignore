@@ -16,6 +16,7 @@ project_structure.txt
 __pycache__/
 *.py[cod]
 .pytest_cache/
+/experiments/
 
 # Only keep model artifacts loaded by webapp/app.py.
 # These are required for the app to run without retraining.

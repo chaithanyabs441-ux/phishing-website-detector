@@ -1,0 +1,34 @@
+# PHISH//X runtime dependencies, pinned to the versions the committed
+# model artifacts in models/ were produced with. Requires Python 3.9.
+#
+#     .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# ---------- Web application ----------
+fastapi==0.128.8
+uvicorn==0.39.0
+jinja2==3.1.6
+python-multipart==0.0.20
+anyio==4.10.0
+greenlet==3.1.1
+
+# ---------- Model inference ----------
+joblib==1.5.3
+scikit-learn==1.3.2
+numpy==1.26.4
+scipy==1.13.1
+pandas==2.3.3
+
+# ---------- Feature extraction ----------
+beautifulsoup4==4.15.0
+
+# ---------- Offline evaluation only (not needed by the web app) ----------
+pyarrow==21.0.0
+
+# ---------- Classical ML experiments ----------
+# Versions selected to remain compatible with the project's Python 3.9 venv.
+lightgbm==4.6.0
+xgboost==2.1.4
+catboost==1.2.10
+optuna==5.0.0
+tldextract==5.1.2
+PyYAML==6.0.3

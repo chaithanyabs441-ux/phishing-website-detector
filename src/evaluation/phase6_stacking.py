@@ -16,7 +16,7 @@ from scipy.special import expit, logit
 from scipy.stats import rankdata
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score
-from sklearn.model_selection import GroupKFold, train_test_split
+from sklearn.model_selection import GroupKFold, GroupShuffleSplit
 from lightgbm import LGBMClassifier
 
 from src.evaluation.evaluate_svm_blocked import _domain_bootstrap, _metric_bundle
@@ -29,6 +29,7 @@ CONFIG_PATH = PROJECT_ROOT / "configs" / "phase6_stacking.yaml"
 PHASE4_RESULTS = PROJECT_ROOT / "experiments" / "phase4_gbm_results.json"
 PHASE5_RESULTS = PROJECT_ROOT / "experiments" / "phase5_text_results.json"
 RESULT_PATH = PROJECT_ROOT / "experiments" / "phase6_stacking_results.json"
+SHUFFLE_RESULT_PATH = PROJECT_ROOT / "experiments" / "phase6_label_shuffle.json"
 OOF_PATH = PROJECT_ROOT / "data" / "processed" / "phase6_base_oof.parquet"
 VALIDATION_PREDICTIONS_PATH = PROJECT_ROOT / "data" / "processed" / "phase6_validation_predictions.parquet"
 ARTIFACT_DIR = PROJECT_ROOT / "models" / "phase6"
@@ -60,32 +61,44 @@ def build_meta_features(probabilities):
     return logit(np.clip(matrix, 1e-6, 1.0 - 1e-6))
 
 
-def label_shuffle_ap(features, targets, seed=42):
+def label_shuffle_ap(features, targets, groups, seed=42, repeats=5):
     """Measure chance-level meta performance after shuffling fit labels."""
     targets = np.asarray(targets, dtype=np.int8)
-    indices = np.arange(len(targets))
-    fit_indices, valid_indices = train_test_split(
-        indices, test_size=0.3, random_state=seed, stratify=targets,
-    )
-    shuffled_targets = np.random.default_rng(seed).permutation(targets[fit_indices])
+    groups = np.asarray(groups).astype(str)
+    splitter = GroupShuffleSplit(n_splits=1, test_size=0.3, random_state=seed)
+    fit_indices, valid_indices = next(splitter.split(features, targets, groups))
+    if set(groups[fit_indices]) & set(groups[valid_indices]):
+        raise AssertionError("registered domains overlap in label-shuffle split")
+    if len(np.unique(targets[fit_indices])) != 2 or len(np.unique(targets[valid_indices])) != 2:
+        raise ValueError("label-shuffle split must contain both classes on both sides")
     model = LogisticRegression(C=1.0, class_weight="balanced", solver="liblinear", random_state=seed)
     model.fit(features[fit_indices], targets[fit_indices])
     unshuffled_scores = model.decision_function(features[valid_indices])
     unshuffled_ap = float(average_precision_score(targets[valid_indices], unshuffled_scores))
-    shuffled_model = LogisticRegression(
-        C=1.0, class_weight="balanced", solver="liblinear", random_state=seed,
-    ).fit(features[fit_indices], shuffled_targets)
-    scores = shuffled_model.decision_function(features[valid_indices])
+    shuffled_aps = []
+    for repeat in range(repeats):
+        shuffled_targets = np.random.default_rng(seed + repeat + 1).permutation(targets[fit_indices])
+        shuffled_model = LogisticRegression(
+            C=1.0, class_weight="balanced", solver="liblinear", random_state=seed + repeat,
+        ).fit(features[fit_indices], shuffled_targets)
+        scores = shuffled_model.decision_function(features[valid_indices])
+        shuffled_aps.append(float(average_precision_score(targets[valid_indices], scores)))
+    shuffled_ap = float(np.mean(shuffled_aps))
     return {
-        "average_precision": float(average_precision_score(targets[valid_indices], scores)),
+        "average_precision": shuffled_ap,
+        "standard_deviation": float(np.std(shuffled_aps, ddof=1)) if len(shuffled_aps) > 1 else 0.0,
+        "repeat_scores": shuffled_aps,
+        "repeats": repeats,
         "unshuffled_average_precision": unshuffled_ap,
         "validation_prevalence": float(targets[valid_indices].mean()),
         "difference_from_chance": float(
-            average_precision_score(targets[valid_indices], scores)
-            - targets[valid_indices].mean()
+            shuffled_ap - targets[valid_indices].mean()
         ),
         "fit_rows": int(len(fit_indices)),
         "validation_rows": int(len(valid_indices)),
+        "fit_domains": int(len(np.unique(groups[fit_indices]))),
+        "validation_domains": int(len(np.unique(groups[valid_indices]))),
+        "domain_overlap": int(len(set(groups[fit_indices]) & set(groups[valid_indices]))),
     }
 
 
@@ -209,6 +222,48 @@ def _model_metrics(validation, scores, bootstrap_replicates, seed):
     return point, ci, completed
 
 
+def run_saved_oof_label_shuffle(config_path=None, repeats=5):
+    config_path = Path(config_path or CONFIG_PATH)
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    stack_record = json.loads(RESULT_PATH.read_text(encoding="utf-8"))
+    oof = pd.read_parquet(OOF_PATH)
+    base_names = stack_record["base_models"]
+    features = build_meta_features(oof[base_names].to_numpy(dtype=np.float64))
+    targets = oof.target.to_numpy(dtype=np.int8)
+    groups = oof.group_domain.fillna("").astype(str).to_numpy()
+    started = time.monotonic()
+    diagnostic = label_shuffle_ap(
+        features, targets, groups, seed=int(config["seed"]), repeats=repeats,
+    )
+    split_manifest = PROJECT_ROOT / "data" / "splits" / "MANIFEST.json"
+    output = {
+        "experiment": "phase6_grouped_oof_meta_label_shuffle",
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "git_commit": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT, text=True,
+        ).strip(),
+        "seed": int(config["seed"]),
+        "repeats": repeats,
+        "base_models": base_names,
+        "split_manifest_sha256": hashlib.sha256(split_manifest.read_bytes()).hexdigest(),
+        "stack_results_sha256": hashlib.sha256(RESULT_PATH.read_bytes()).hexdigest(),
+        "oof_predictions_sha256": hashlib.sha256(OOF_PATH.read_bytes()).hexdigest(),
+        "diagnostic": diagnostic,
+        "elapsed_seconds": time.monotonic() - started,
+        "official_test_accessed": False,
+    }
+    SHUFFLE_RESULT_PATH.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
+    print(
+        f"unshuffled AP={diagnostic['unshuffled_average_precision']:.6f}; "
+        f"shuffled AP={diagnostic['average_precision']:.6f} +/- "
+        f"{diagnostic['standard_deviation']:.6f}; "
+        f"prevalence={diagnostic['validation_prevalence']:.6f}; "
+        f"domain_overlap={diagnostic['domain_overlap']}"
+    )
+    print(f"Wrote diagnostic: {SHUFFLE_RESULT_PATH}")
+    return output
+
+
 def run_stacking(config_path=None):
     started = time.monotonic()
     config_path = Path(config_path or CONFIG_PATH)
@@ -320,7 +375,9 @@ def run_stacking(config_path=None):
         domain_codes, len(unique_domains), bootstrap_replicates, seed,
     )
     correlation = pd.DataFrame(validation_matrix, columns=base_names).corr().to_dict()
-    shuffled = label_shuffle_ap(train_meta, y_train, seed)
+    shuffled = label_shuffle_ap(
+        train_meta, y_train, train.group_domain.fillna("").astype(str).to_numpy(), seed,
+    )
     phase4_costs = phase4["models"]
     base_costs = {}
     for name in base_names:
@@ -408,7 +465,12 @@ def run_stacking(config_path=None):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
+    parser.add_argument("--label-shuffle-only", action="store_true")
+    parser.add_argument("--shuffle-repeats", type=int, default=5)
     args = parser.parse_args()
+    if args.label_shuffle_only:
+        run_saved_oof_label_shuffle(args.config, args.shuffle_repeats)
+        return
     run_stacking(args.config)
 
 

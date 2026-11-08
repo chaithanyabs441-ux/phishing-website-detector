@@ -41,16 +41,18 @@ def test_shuffled_meta_labels_fall_to_chance_on_synthetic_data():
     rng = np.random.default_rng(42)
     latent = rng.normal(size=8000)
     targets = (latent > 0).astype(np.int8)
+    groups = np.array([f"domain-{index // 100}" for index in range(len(targets))])
     features = np.column_stack([
         latent + rng.normal(0, 0.2, size=len(latent)),
         rng.normal(size=(len(latent), 20)),
     ])
 
-    result = label_shuffle_ap(features, targets, seed=7)
+    result = label_shuffle_ap(features, targets, groups, seed=7)
 
     assert abs(result["difference_from_chance"]) < 0.1
     assert result["unshuffled_average_precision"] > 0.95
     assert result["unshuffled_average_precision"] - result["average_precision"] > 0.25
+    assert result["domain_overlap"] == 0
 
 
 def test_paired_domain_bootstrap_reports_zero_for_identical_predictions():

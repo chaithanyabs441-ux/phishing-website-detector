@@ -1,0 +1,2866 @@
+{
+  "experiment": "phase4_classical_boosted_models",
+  "created_utc": "2026-11-08T17:33:54.332193+00:00",
+  "git_commit": "3172538f048f085219aed47eaa9840cee7bc82b1",
+  "seed": 42,
+  "split_manifest_sha256": "f41e1c4925c7ae106c427bf0a7c2c58fd89a6c86994a8d793b338a02a792ee82",
+  "config_sha256": "fec654c69048ace1755c1a36a2883baf060398733644b09cbfee9034eef90aee",
+  "html_feature_spec_hash": "f5434603820e65699462bc276cc34b2c6ba4ad7ed72f9f061a1cc0d13d79e6d3",
+  "training_rows": 397480,
+  "validation_rows": 100775,
+  "validation_domains": 46561,
+  "n_jobs": 4,
+  "tuning": {
+    "lightgbm": {
+      "model": "lightgbm",
+      "study_name": "phase4_lightgbm_effd8271fa18",
+      "best_value_ap": 0.9871781687533112,
+      "best_params": {
+        "learning_rate": 0.04734995247058659,
+        "num_leaves": 61,
+        "max_depth": 9,
+        "min_child_samples": 33,
+        "subsample": 0.9315724179859354,
+        "colsample_bytree": 0.7018173818275549,
+        "reg_alpha": 0.00011873028340666262,
+        "reg_lambda": 0.0001790510677270772
+      },
+      "total_trials": 60,
+      "trials_this_run": 59,
+      "elapsed_seconds_this_run": 213.63999999999942,
+      "study_db": "experiments\\phase4_studies\\phase4_lightgbm_effd8271fa18.sqlite3",
+      "trials_csv": "experiments\\phase4_lightgbm_effd8271fa18_trials.csv",
+      "fit_rows": 100000,
+      "validation_rows": 25000,
+      "fit_domains": 42845,
+      "validation_domains": 12121,
+      "parameter_importance": {
+        "colsample_bytree": 0.42540892773914085,
+        "reg_lambda": 0.1668280028884478,
+        "reg_alpha": 0.1095875943238043,
+        "num_leaves": 0.1013045280342569,
+        "learning_rate": 0.06936213036257173,
+        "min_child_samples": 0.06016851972795339,
+        "subsample": 0.058939356757284615,
+        "max_depth": 0.008400940166540399
+      }
+    },
+    "xgboost": {
+      "model": "xgboost",
+      "study_name": "phase4_xgboost_cc2e9c8c2eb7",
+      "best_value_ap": 0.9891726343310562,
+      "best_params": {
+        "learning_rate": 0.0367131281930575,
+        "max_depth": 5,
+        "min_child_weight": 2.6924562519494666,
+        "subsample": 0.8423806380277928,
+        "colsample_bytree": 0.8894675487315905,
+        "reg_alpha": 0.00022123735764463504,
+        "reg_lambda": 0.04892426446082972
+      },
+      "total_trials": 27,
+      "trials_this_run": 26,
+      "elapsed_seconds_this_run": 910.75,
+      "study_db": "experiments\\phase4_studies\\phase4_xgboost_cc2e9c8c2eb7.sqlite3",
+      "trials_csv": "experiments\\phase4_xgboost_cc2e9c8c2eb7_trials.csv",
+      "fit_rows": 100000,
+      "validation_rows": 25000,
+      "fit_domains": 42845,
+      "validation_domains": 12121,
+      "parameter_importance": {
+        "subsample": 0.3655264048224534,
+        "reg_lambda": 0.17910904805495464,
+        "max_depth": 0.16684691576679644,
+        "min_child_weight": 0.11553983223316955,
+        "learning_rate": 0.10604572499118932,
+        "reg_alpha": 0.056590444917945154,
+        "colsample_bytree": 0.010341629213491502
+      }
+    },
+    "catboost": {
+      "model": "catboost",
+      "study_name": "phase4_catboost_f64b25cc629c",
+      "best_value_ap": 0.9893933712488476,
+      "best_params": {
+        "learning_rate": 0.05106338694509668,
+        "depth": 8,
+        "l2_leaf_reg": 1.0143461946764922,
+        "random_strength": 1.6650153894808208,
+        "bagging_temperature": 0.8222762996436114
+      },
+      "total_trials": 15,
+      "trials_this_run": 14,
+      "elapsed_seconds_this_run": 904.3600000000006,
+      "study_db": "experiments\\phase4_studies\\phase4_catboost_f64b25cc629c.sqlite3",
+      "trials_csv": "experiments\\phase4_catboost_f64b25cc629c_trials.csv",
+      "fit_rows": 100000,
+      "validation_rows": 25000,
+      "fit_domains": 42845,
+      "validation_domains": 12121,
+      "parameter_importance": {
+        "random_strength": 0.7341485205563723,
+        "depth": 0.12210975804677465,
+        "l2_leaf_reg": 0.07028081103248589,
+        "bagging_temperature": 0.046028938022450824,
+        "learning_rate": 0.027431972341916327
+      }
+    }
+  },
+  "tuning_settings": {
+    "trials_per_model": 60,
+    "timeout_seconds_per_model": 900,
+    "sampler": "TPESampler",
+    "pruner": "MedianPruner",
+    "objective": "average_precision",
+    "fit_rows_cap": 100000,
+    "validation_rows_cap": 25000
+  },
+  "logistic_tuning": {
+    "best_C": 10.0,
+    "best_grouped_ap": 0.972375211935673,
+    "grid_results": [
+      {
+        "C": 0.01,
+        "average_precision": 0.9611074892005775
+      },
+      {
+        "C": 0.1,
+        "average_precision": 0.9667408829534851
+      },
+      {
+        "C": 1.0,
+        "average_precision": 0.9698995354951542
+      },
+      {
+        "C": 10.0,
+        "average_precision": 0.972375211935673
+      }
+    ],
+    "fit_rows": 100000,
+    "validation_rows": 25000,
+    "fit_domains": 42845,
+    "validation_domains": 12121
+  },
+  "text_oof": {
+    "folds": 5,
+    "rows": 397480,
+    "oof_assignment_min": 1,
+    "oof_assignment_max": 1,
+    "vectorizer_params": {
+      "analyzer": "char",
+      "ngram_range": [
+        2,
+        5
+      ],
+      "min_df": 2,
+      "max_features": 200000,
+      "sublinear_tf": true
+    },
+    "classifier_params": {
+      "C": 1.0,
+      "class_weight": "balanced",
+      "max_iter": 5000
+    },
+    "elapsed_seconds": 326.765999999996
+  },
+  "existing_svm_reference": {
+    "url_tfidf": {
+      "metrics": {
+        "average_precision": 0.8944927018365045,
+        "roc_auc": 0.9155540503257864,
+        "accuracy": 0.9059191267675515,
+        "precision": 0.9615703083142565,
+        "recall": 0.6943096293170148,
+        "f1": 0.8063718982947002,
+        "false_positive_rate": 0.0109066780940269,
+        "true_positive_rate": 0.6943096293170148,
+        "precision_at_prevalence_0.05%": 0.03086265114981957,
+        "alerts_per_1000_at_prevalence_0.05%": 11.248379569638395,
+        "precision_at_prevalence_0.5%": 0.24236404556459734,
+        "alerts_per_1000_at_prevalence_0.5%": 14.323692850141839,
+        "precision_at_prevalence_1%": 0.3913652401734789,
+        "alerts_per_1000_at_prevalence_1%": 17.74070760625678,
+        "precision_at_prevalence_5%": 0.770140331784083,
+        "alerts_per_1000_at_prevalence_5%": 45.07682565517629,
+        "precision_at_prevalence_45%": 0.9811621953536691,
+        "alerts_per_1000_at_prevalence_45%": 318.43800614437146
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8632028487556485,
+          0.9210474517792042
+        ],
+        "roc_auc": [
+          0.8776163193584582,
+          0.941439939255121
+        ],
+        "accuracy": [
+          0.8822785093441883,
+          0.9257849499208138
+        ],
+        "precision": [
+          0.957315019138823,
+          0.9654855821740488
+        ],
+        "recall": [
+          0.6401955661447969,
+          0.7543111216127737
+        ],
+        "f1": [
+          0.7675202513010106,
+          0.8446929814102483
+        ],
+        "false_positive_rate": [
+          0.009823643059859208,
+          0.01231939449785795
+        ],
+        "true_positive_rate": [
+          0.6401955661447969,
+          0.7543111216127737
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.02670921930027648,
+          0.035015272505246976
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          10.161289212858811,
+          12.658401262001066
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.2160938169310667,
+          0.26713046611172925
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          13.11912009500451,
+          15.730823595478084
+        ],
+        "precision_at_prevalence_1%": [
+          0.3565449597293157,
+          0.4228595405226963
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          16.38101714420469,
+          19.26451179033015
+        ],
+        "precision_at_prevalence_5%": [
+          0.7427457349033098,
+          0.7924299349495074
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          42.04659718367966,
+          48.54023848805194
+        ],
+        "precision_at_prevalence_45%": [
+          0.9782053897186259,
+          0.9834291971942055
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          293.61699912747025,
+          345.77088946976346
+        ]
+      },
+      "bootstrap_replicates_completed": 200,
+      "training_seconds": 3.860000000000582,
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "feature_matrix_shape": [
+        397480,
+        200000
+      ]
+    },
+    "url_engineered": {
+      "metrics": {
+        "average_precision": 0.894725893826084,
+        "roc_auc": 0.9099888813015489,
+        "accuracy": 0.916556685685934,
+        "precision": 0.9640787949015064,
+        "recall": 0.7315186044875853,
+        "f1": 0.8318502669519486,
+        "false_positive_rate": 0.010713150219101202,
+        "true_positive_rate": 0.7315186044875853,
+        "precision_at_prevalence_0.05%": 0.03302998631239993,
+        "alerts_per_1000_at_prevalence_0.05%": 11.073552946235445,
+        "precision_at_prevalence_0.5%": 0.2554688607359435,
+        "alerts_per_1000_at_prevalence_0.5%": 14.317177490443624,
+        "precision_at_prevalence_1%": 0.4081860646151568,
+        "alerts_per_1000_at_prevalence_1%": 17.921204761786043,
+        "precision_at_prevalence_5%": 0.7823155595936941,
+        "alerts_per_1000_at_prevalence_5%": 46.75342293252541,
+        "precision_at_prevalence_45%": 0.9824152145399019,
+        "alerts_per_1000_at_prevalence_45%": 335.07560463991905
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.86069530846227,
+          0.9245779358166564
+        ],
+        "roc_auc": [
+          0.8724800579946291,
+          0.9405422091570674
+        ],
+        "accuracy": [
+          0.8967323965164179,
+          0.9375954473480441
+        ],
+        "precision": [
+          0.9605315918843039,
+          0.9684913976135183
+        ],
+        "recall": [
+          0.6805324891447001,
+          0.7918890994889694
+        ],
+        "f1": [
+          0.7968447859330811,
+          0.869203925320799
+        ],
+        "false_positive_rate": [
+          0.009447770256548764,
+          0.012198659784341832
+        ],
+        "true_positive_rate": [
+          0.6805324891447001,
+          0.7918890994889694
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.028589403303490704,
+          0.037705772075104914
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          9.812677191399692,
+          12.533959311448625
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.22818015772019934,
+          0.282436123304035
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          13.096839605058026,
+          15.718550167307281
+        ],
+        "precision_at_prevalence_1%": [
+          0.37275151301598247,
+          0.44171009828461044
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          16.561953775715168,
+          19.37337529218473
+        ],
+        "precision_at_prevalence_5%": [
+          0.7558850240039442,
+          0.8047822725005717
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          43.61781961760147,
+          49.6477372491423
+        ],
+        "precision_at_prevalence_45%": [
+          0.9796480798995135,
+          0.9846356921182459
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          311.8879965804719,
+          362.167689185306
+        ]
+      },
+      "bootstrap_replicates_completed": 200,
+      "training_seconds": 226.65599999999904,
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "feature_matrix_shape": [
+        397480,
+        200013
+      ]
+    },
+    "url_html": {
+      "metrics": {
+        "average_precision": 0.9053833338678221,
+        "roc_auc": 0.9250221331014032,
+        "accuracy": 0.9177970726866782,
+        "precision": 0.9664351851851852,
+        "recall": 0.7341562917633818,
+        "f1": 0.8344325858416276,
+        "false_positive_rate": 0.010021979237223705,
+        "true_positive_rate": 0.7341562917633818,
+        "precision_at_prevalence_0.05%": 0.03535020279877933,
+        "alerts_per_1000_at_prevalence_0.05%": 10.384046393486784,
+        "precision_at_prevalence_0.5%": 0.2690665848352623,
+        "alerts_per_1000_at_prevalence_0.5%": 13.642650799854495,
+        "precision_at_prevalence_1%": 0.4252694101100538,
+        "alerts_per_1000_at_prevalence_1%": 17.263322362485287,
+        "precision_at_prevalence_5%": 0.7940482571816396,
+        "alerts_per_1000_at_prevalence_5%": 46.228694863531615,
+        "precision_at_prevalence_45%": 0.9835892316646376,
+        "alerts_per_1000_at_prevalence_45%": 335.8824198739949
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8800443441486321,
+          0.9292984278870526
+        ],
+        "roc_auc": [
+          0.896816910979787,
+          0.9502402781226592
+        ],
+        "accuracy": [
+          0.8990564455808763,
+          0.9356690459856603
+        ],
+        "precision": [
+          0.9623581105328457,
+          0.9702395458419595
+        ],
+        "recall": [
+          0.688543619939165,
+          0.7871763438846227
+        ],
+        "f1": [
+          0.8044530242717687,
+          0.8682953292373703
+        ],
+        "false_positive_rate": [
+          0.008745691628832356,
+          0.011390671178428432
+        ],
+        "true_positive_rate": [
+          0.688543619939165,
+          0.7871763438846227
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.02995877377768575,
+          0.04105750301364546
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          9.09687555478894,
+          11.737956761543968
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.23677924720104823,
+          0.300743229258294
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          12.395131752920728,
+          14.963711645482912
+        ],
+        "precision_at_prevalence_1%": [
+          0.3840875673773296,
+          0.46366990640559697
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          15.97901760540213,
+          18.687018120626217
+        ],
+        "precision_at_prevalence_5%": [
+          0.7646683177936573,
+          0.8183342434795988
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          43.71381236760726,
+          49.256985570956836
+        ],
+        "precision_at_prevalence_45%": [
+          0.9805871115972173,
+          0.9859206947246685
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          315.9152953773786,
+          359.555394778211
+        ]
+      },
+      "bootstrap_replicates_completed": 200,
+      "training_seconds": 237.64099999999962,
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "feature_matrix_shape": [
+        397480,
+        200028
+      ]
+    }
+  },
+  "bootstrap": {
+    "resampling_unit": "registered_domain",
+    "requested_replicates": 200,
+    "confidence_level": 0.95
+  },
+  "models": {
+    "lightgbmengineered": {
+      "training_seconds": 4.561999999998079,
+      "inference_seconds_per_1000": 0.03224050000017087,
+      "model_size_bytes": 9684118,
+      "artifact": "models\\phase4\\lightgbmengineered.joblib",
+      "best_iteration": 64,
+      "native_importance_type": "gain",
+      "native_importance_top_30": [
+        {
+          "feature": "num_external_domains",
+          "importance": 1539204.927622795
+        },
+        {
+          "feature": "public_suffix",
+          "importance": 1164873.001543045
+        },
+        {
+          "feature": "registered_domain",
+          "importance": 757674.1102952957
+        },
+        {
+          "feature": "path_length",
+          "importance": 232128.99585914612
+        },
+        {
+          "feature": "path_depth",
+          "importance": 172582.80088233948
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance": 153847.9801826477
+        },
+        {
+          "feature": "html_length",
+          "importance": 123617.06105041504
+        },
+        {
+          "feature": "num_subdomains",
+          "importance": 115926.38643169403
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance": 71829.94383144379
+        },
+        {
+          "feature": "num_query_params",
+          "importance": 55349.10250377655
+        },
+        {
+          "feature": "external_links_resources_ratio",
+          "importance": 49965.12264060974
+        },
+        {
+          "feature": "visible_text_length",
+          "importance": 49244.02680397034
+        },
+        {
+          "feature": "has_https",
+          "importance": 45955.282254219055
+        },
+        {
+          "feature": "hostname_length",
+          "importance": 45464.67247581482
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance": 43165.49142742157
+        },
+        {
+          "feature": "title_length",
+          "importance": 42802.5229177475
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance": 37037.400356292725
+        },
+        {
+          "feature": "num_special_chars",
+          "importance": 25734.51579093933
+        },
+        {
+          "feature": "longest_token_length",
+          "importance": 22295.89086341858
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance": 17988.618629455566
+        },
+        {
+          "feature": "digit_ratio",
+          "importance": 13040.143439292908
+        },
+        {
+          "feature": "tld_category",
+          "importance": 12739.195133209229
+        },
+        {
+          "feature": "favicon_domain_mismatch",
+          "importance": 11986.744115829468
+        },
+        {
+          "feature": "num_inputs",
+          "importance": 11852.685264587402
+        },
+        {
+          "feature": "num_hyphens",
+          "importance": 9782.528484344482
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance": 9240.210450172424
+        },
+        {
+          "feature": "num_digits",
+          "importance": 7828.50906085968
+        },
+        {
+          "feature": "num_password_inputs",
+          "importance": 7776.096597671509
+        },
+        {
+          "feature": "num_external_image_domains",
+          "importance": 6771.179126739502
+        },
+        {
+          "feature": "num_hidden_iframes",
+          "importance": 6108.692175865173
+        }
+      ],
+      "permutation_importance_top_30": [
+        {
+          "feature": "public_suffix",
+          "importance_mean": 0.08990455583409078,
+          "importance_std": 0.003992274609608024
+        },
+        {
+          "feature": "num_query_params",
+          "importance_mean": 0.04687891260216537,
+          "importance_std": 0.0021532522927962495
+        },
+        {
+          "feature": "num_external_domains",
+          "importance_mean": 0.03752597470317095,
+          "importance_std": 0.0011662908871746442
+        },
+        {
+          "feature": "path_length",
+          "importance_mean": 0.02508420462599048,
+          "importance_std": 0.0010697822859652851
+        },
+        {
+          "feature": "registered_domain",
+          "importance_mean": 0.018038997093027625,
+          "importance_std": 0.0010544842137453294
+        },
+        {
+          "feature": "num_subdomains",
+          "importance_mean": 0.015896038568641968,
+          "importance_std": 0.0007205353482299651
+        },
+        {
+          "feature": "hostname_length",
+          "importance_mean": 0.010553057209922797,
+          "importance_std": 0.00029852448591601857
+        },
+        {
+          "feature": "path_depth",
+          "importance_mean": 0.006161164014666191,
+          "importance_std": 0.0004271786333621556
+        },
+        {
+          "feature": "has_https",
+          "importance_mean": 0.005400982283724616,
+          "importance_std": 0.0003652237259221718
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance_mean": 0.0038283151796013972,
+          "importance_std": 0.00024566702768102916
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance_mean": 0.00268585618512851,
+          "importance_std": 0.0003689333495599153
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance_mean": 0.0025527763287841823,
+          "importance_std": 0.0006301282989563742
+        },
+        {
+          "feature": "digit_ratio",
+          "importance_mean": 0.002178129389005153,
+          "importance_std": 2.3211243675478645e-05
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance_mean": 0.0021610281907418205,
+          "importance_std": 0.00010780734662445554
+        },
+        {
+          "feature": "html_length",
+          "importance_mean": 0.0018791405649721815,
+          "importance_std": 0.0001375125194025955
+        },
+        {
+          "feature": "num_digits",
+          "importance_mean": 0.001676565855619298,
+          "importance_std": 0.00012299676640360123
+        },
+        {
+          "feature": "num_hyphens",
+          "importance_mean": 0.0015830297953753163,
+          "importance_std": 0.00027645081968499113
+        },
+        {
+          "feature": "longest_token_length",
+          "importance_mean": 0.001406035626485817,
+          "importance_std": 0.0002573402847220253
+        },
+        {
+          "feature": "external_links_resources_ratio",
+          "importance_mean": 0.0013580681392895144,
+          "importance_std": 0.00011529410394936432
+        },
+        {
+          "feature": "num_password_inputs",
+          "importance_mean": 0.0011223077389093488,
+          "importance_std": 4.3824163531231145e-05
+        },
+        {
+          "feature": "num_special_chars",
+          "importance_mean": 0.0008649255498039595,
+          "importance_std": 0.000209575647881582
+        },
+        {
+          "feature": "visible_text_length",
+          "importance_mean": 0.0008587239918424286,
+          "importance_std": 0.0002140562138062879
+        },
+        {
+          "feature": "url_length",
+          "importance_mean": 0.0007411809493071594,
+          "importance_std": 8.353342373998174e-05
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance_mean": 0.0007165876878923635,
+          "importance_std": 0.00015392371698862633
+        },
+        {
+          "feature": "num_external_image_domains",
+          "importance_mean": 0.0006144434276298775,
+          "importance_std": 9.677841910967046e-05
+        },
+        {
+          "feature": "favicon_domain_mismatch",
+          "importance_mean": 0.0005675937821615721,
+          "importance_std": 1.378588265898433e-05
+        },
+        {
+          "feature": "num_dots",
+          "importance_mean": 0.0003994321351421896,
+          "importance_std": 5.871961106664732e-05
+        },
+        {
+          "feature": "visible_login_keyword_count",
+          "importance_mean": 0.0003725351187759222,
+          "importance_std": 6.397072815586893e-05
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance_mean": 0.0002688126624241412,
+          "importance_std": 3.467785452778064e-05
+        },
+        {
+          "feature": "tld_category",
+          "importance_mean": 0.00012026525393578809,
+          "importance_std": 0.00027093629886531417
+        }
+      ],
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "metrics": {
+        "average_precision": 0.919184900514342,
+        "roc_auc": 0.9447952040350984,
+        "accuracy": 0.9235425452741255,
+        "precision": 0.9530136806678614,
+        "recall": 0.7668284448195822,
+        "f1": 0.8498431196772749,
+        "false_positive_rate": 0.014860176110366182,
+        "true_positive_rate": 0.7668284448195822,
+        "precision_at_prevalence_0.05%": 0.025164753865242466,
+        "alerts_per_1000_at_prevalence_0.05%": 15.236160244720791,
+        "precision_at_prevalence_0.5%": 0.20591507143256285,
+        "alerts_per_1000_at_prevalence_0.5%": 18.620017453912265,
+        "precision_at_prevalence_1%": 0.34264221761160985,
+        "alerts_per_1000_at_prevalence_1%": 22.37985879745834,
+        "precision_at_prevalence_5%": 0.7308893085561262,
+        "alerts_per_1000_at_prevalence_5%": 52.45858954582698,
+        "precision_at_prevalence_45%": 0.9768628682472184,
+        "alerts_per_1000_at_prevalence_45%": 353.2458970295134
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8928532996314111,
+          0.9404798282904395
+        ],
+        "roc_auc": [
+          0.9197006798465533,
+          0.9631400227920852
+        ],
+        "accuracy": [
+          0.9011980958925955,
+          0.9393790865785555
+        ],
+        "precision": [
+          0.9484826586428621,
+          0.9577944970745559
+        ],
+        "recall": [
+          0.7092305638542968,
+          0.8186622977571519
+        ],
+        "f1": [
+          0.813711383066353,
+          0.8816763348892904
+        ],
+        "false_positive_rate": [
+          0.01305308889829538,
+          0.0166747860752093
+        ],
+        "true_positive_rate": [
+          0.7092305638542968,
+          0.8186622977571519
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.021946931046042336,
+          0.02853716451639353
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          13.418504943798,
+          17.06483294812149
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.18394586987144484,
+          0.22784877906746967
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          16.770340199037864,
+          20.575254804331195
+        ],
+        "precision_at_prevalence_1%": [
+          0.31181358528214964,
+          0.3723114699388312
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          20.391363193127418,
+          24.405272290526117
+        ],
+        "precision_at_prevalence_5%": [
+          0.7024572258419682,
+          0.7555375152056341
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          49.200790490758024,
+          55.74550194277532
+        ],
+        "precision_at_prevalence_45%": [
+          0.9734752647628443,
+          0.9796105174089329
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          327.67392980481344,
+          377.39328348129214
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "lightgbm+oof_text_score": {
+      "training_seconds": 4.14100000000326,
+      "inference_seconds_per_1000": 0.03165529999978389,
+      "model_size_bytes": 8929670,
+      "artifact": "models\\phase4\\lightgbm+oof_text_score.joblib",
+      "best_iteration": 55,
+      "native_importance_type": "gain",
+      "native_importance_top_30": [
+        {
+          "feature": "oof_text_score",
+          "importance": 2762645.006669998
+        },
+        {
+          "feature": "registered_domain",
+          "importance": 815617.9491500854
+        },
+        {
+          "feature": "num_external_domains",
+          "importance": 419863.1492767334
+        },
+        {
+          "feature": "public_suffix",
+          "importance": 320918.7620487213
+        },
+        {
+          "feature": "path_length",
+          "importance": 160707.0950241089
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance": 120090.18544483185
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance": 60614.47415447235
+        },
+        {
+          "feature": "path_depth",
+          "importance": 39723.00613117218
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance": 28764.042028427124
+        },
+        {
+          "feature": "num_subdomains",
+          "importance": 27072.753902435303
+        },
+        {
+          "feature": "html_length",
+          "importance": 26969.768241882324
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance": 21250.18682575226
+        },
+        {
+          "feature": "external_links_resources_ratio",
+          "importance": 20865.230074882507
+        },
+        {
+          "feature": "hostname_length",
+          "importance": 20195.238166809082
+        },
+        {
+          "feature": "num_query_params",
+          "importance": 15923.656044006348
+        },
+        {
+          "feature": "title_length",
+          "importance": 12394.283590316772
+        },
+        {
+          "feature": "num_hidden_iframes",
+          "importance": 10979.342522621155
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance": 10160.314238548279
+        },
+        {
+          "feature": "visible_text_length",
+          "importance": 7953.676875591278
+        },
+        {
+          "feature": "has_https",
+          "importance": 6863.692854881287
+        },
+        {
+          "feature": "tld_category",
+          "importance": 6130.26544380188
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance": 5643.084713935852
+        },
+        {
+          "feature": "num_external_image_domains",
+          "importance": 5501.607704162598
+        },
+        {
+          "feature": "num_data_uris",
+          "importance": 4370.975329399109
+        },
+        {
+          "feature": "digit_ratio",
+          "importance": 4135.755394935608
+        },
+        {
+          "feature": "letter_ratio",
+          "importance": 4067.3291330337524
+        },
+        {
+          "feature": "num_inputs",
+          "importance": 3853.3917274475098
+        },
+        {
+          "feature": "favicon_domain_mismatch",
+          "importance": 3738.268132209778
+        },
+        {
+          "feature": "num_special_chars",
+          "importance": 3382.6591186523438
+        },
+        {
+          "feature": "has_javascript_redirect",
+          "importance": 2242.633617401123
+        }
+      ],
+      "permutation_importance_top_30": [
+        {
+          "feature": "oof_text_score",
+          "importance_mean": 0.32113841303734764,
+          "importance_std": 0.008517869877926177
+        },
+        {
+          "feature": "num_external_domains",
+          "importance_mean": 0.016237375912125523,
+          "importance_std": 0.0014110287194693098
+        },
+        {
+          "feature": "num_query_params",
+          "importance_mean": 0.010417491897493636,
+          "importance_std": 0.0003041409203441561
+        },
+        {
+          "feature": "registered_domain",
+          "importance_mean": 0.007702362898505677,
+          "importance_std": 0.0008360868542471487
+        },
+        {
+          "feature": "public_suffix",
+          "importance_mean": 0.007527616700951478,
+          "importance_std": 0.0009993838882291853
+        },
+        {
+          "feature": "hostname_length",
+          "importance_mean": 0.005057226154691323,
+          "importance_std": 0.00022645228708643054
+        },
+        {
+          "feature": "num_subdomains",
+          "importance_mean": 0.0047253541902942215,
+          "importance_std": 0.0005485207846255637
+        },
+        {
+          "feature": "path_length",
+          "importance_mean": 0.004276258436058204,
+          "importance_std": 0.0013641460172487728
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance_mean": 0.002621114342398904,
+          "importance_std": 0.0002885332893090813
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance_mean": 0.0025821021114953804,
+          "importance_std": 0.00019559133191530845
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance_mean": 0.0020318098102554507,
+          "importance_std": 0.0004571971721166748
+        },
+        {
+          "feature": "html_length",
+          "importance_mean": 0.0018689206855777944,
+          "importance_std": 0.00012262111005458735
+        },
+        {
+          "feature": "num_hyphens",
+          "importance_mean": 0.0013215186085250297,
+          "importance_std": 6.315481307478445e-05
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance_mean": 0.0012390603348236089,
+          "importance_std": 9.547606609926422e-05
+        },
+        {
+          "feature": "num_digits",
+          "importance_mean": 0.0007689626001097608,
+          "importance_std": 7.169855740466687e-05
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance_mean": 0.0007317786197129269,
+          "importance_std": 3.2928423457799994e-05
+        },
+        {
+          "feature": "digit_ratio",
+          "importance_mean": 0.0006058518862079124,
+          "importance_std": 5.550798134619575e-05
+        },
+        {
+          "feature": "url_length",
+          "importance_mean": 0.0005649928883314503,
+          "importance_std": 3.563618278317701e-05
+        },
+        {
+          "feature": "has_https",
+          "importance_mean": 0.0004451011868488545,
+          "importance_std": 9.435852217183535e-05
+        },
+        {
+          "feature": "longest_token_length",
+          "importance_mean": 0.0003589645315622188,
+          "importance_std": 8.001816945562102e-05
+        },
+        {
+          "feature": "visible_text_length",
+          "importance_mean": 0.00035209066729557925,
+          "importance_std": 0.0002766090301518791
+        },
+        {
+          "feature": "external_links_resources_ratio",
+          "importance_mean": 0.0002870253828866076,
+          "importance_std": 0.0001713369985862716
+        },
+        {
+          "feature": "num_inputs",
+          "importance_mean": 0.0002643751586853445,
+          "importance_std": 2.7232867869909848e-05
+        },
+        {
+          "feature": "tld_category",
+          "importance_mean": 0.0002544699203649303,
+          "importance_std": 0.0003280473787234819
+        },
+        {
+          "feature": "visible_login_keyword_count",
+          "importance_mean": 0.00020288126202113363,
+          "importance_std": 4.9393335088847315e-05
+        },
+        {
+          "feature": "has_javascript_redirect",
+          "importance_mean": 0.00013815696848536638,
+          "importance_std": 3.5493762317181657e-05
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance_mean": 0.0001366018016604187,
+          "importance_std": 0.00012627907931691515
+        },
+        {
+          "feature": "num_external_css_domains",
+          "importance_mean": 0.00011480055481638551,
+          "importance_std": 1.789577956590392e-05
+        },
+        {
+          "feature": "html_truncated",
+          "importance_mean": 0.00010619280119320933,
+          "importance_std": 5.514948257661448e-05
+        },
+        {
+          "feature": "has_password_and_email_inputs",
+          "importance_mean": 0.00010170305280606436,
+          "importance_std": 5.800916024802306e-05
+        }
+      ],
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "metrics": {
+        "average_precision": 0.9182852510613495,
+        "roc_auc": 0.9417097512865,
+        "accuracy": 0.9123790622674275,
+        "precision": 0.9701650038372985,
+        "recall": 0.7113315045368221,
+        "f1": 0.8208270768231809,
+        "false_positive_rate": 0.008598167014556062,
+        "true_positive_rate": 0.7113315045368221,
+        "precision_at_prevalence_0.05%": 0.03974126081355577,
+        "alerts_per_1000_at_prevalence_0.05%": 8.949533683317195,
+        "precision_at_prevalence_0.5%": 0.2936514494950218,
+        "alerts_per_1000_at_prevalence_0.5%": 12.111833702167393,
+        "precision_at_prevalence_1%": 0.4552375839445968,
+        "alerts_per_1000_at_prevalence_1%": 15.625500389778724,
+        "precision_at_prevalence_5%": 0.8132322010357305,
+        "alerts_per_1000_at_prevalence_5%": 43.73483389066937,
+        "precision_at_prevalence_45%": 0.985441558612277,
+        "alerts_per_1000_at_prevalence_45%": 324.8281688995758
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8888786371722246,
+          0.9398512417416952
+        ],
+        "roc_auc": [
+          0.9138700664639706,
+          0.961020098825603
+        ],
+        "accuracy": [
+          0.8885248091442344,
+          0.9323543701785482
+        ],
+        "precision": [
+          0.9658848553016761,
+          0.9736518216596286
+        ],
+        "recall": [
+          0.6536625414491619,
+          0.7735728228660318
+        ],
+        "f1": [
+          0.7816791121365422,
+          0.8610047410116944
+        ],
+        "false_positive_rate": [
+          0.007406983165506114,
+          0.010078279933856836
+        ],
+        "true_positive_rate": [
+          0.6536625414491619,
+          0.7735728228660318
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.03359511544479417,
+          0.04628857567213829
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          7.750000430087599,
+          10.42894590260407
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.2588211475972583,
+          0.3277520226391057
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          10.879037510696618,
+          13.744216345594882
+        ],
+        "precision_at_prevalence_1%": [
+          0.41243222434065785,
+          0.49495368790853966
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          14.263881430241655,
+          17.28352077685219
+        ],
+        "precision_at_prevalence_5%": [
+          0.7852893863346424,
+          0.8362371747599326
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          40.75669344456423,
+          47.14328283110894
+        ],
+        "precision_at_prevalence_45%": [
+          0.9827158384889654,
+          0.9875592675393556
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          298.48558797946987,
+          352.8910780558057
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "xgboostengineered": {
+      "training_seconds": 60.07800000000134,
+      "inference_seconds_per_1000": 0.013016400000196882,
+      "model_size_bytes": 340287766,
+      "artifact": "models\\phase4\\xgboostengineered.joblib",
+      "best_iteration": 310,
+      "native_importance_type": "gain",
+      "native_importance_top_30": [
+        {
+          "feature": "html_truncated",
+          "importance": 6106.0625
+        },
+        {
+          "feature": "num_external_domains",
+          "importance": 4978.4501953125
+        },
+        {
+          "feature": "public_suffix",
+          "importance": 1147.0145263671875
+        },
+        {
+          "feature": "path_length",
+          "importance": 1064.6165771484375
+        },
+        {
+          "feature": "path_depth",
+          "importance": 878.4291381835938
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance": 757.9404296875
+        },
+        {
+          "feature": "registered_domain",
+          "importance": 702.4197387695312
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance": 483.8236999511719
+        },
+        {
+          "feature": "num_subdomains",
+          "importance": 457.32867431640625
+        },
+        {
+          "feature": "has_https",
+          "importance": 445.34527587890625
+        },
+        {
+          "feature": "html_length",
+          "importance": 413.572021484375
+        },
+        {
+          "feature": "tld_category",
+          "importance": 316.9313659667969
+        },
+        {
+          "feature": "num_query_params",
+          "importance": 312.4681396484375
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance": 253.80226135253906
+        },
+        {
+          "feature": "longest_token_length",
+          "importance": 233.43946838378906
+        },
+        {
+          "feature": "favicon_domain_mismatch",
+          "importance": 208.73583984375
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance": 178.57901000976562
+        },
+        {
+          "feature": "external_links_resources_ratio",
+          "importance": 168.67820739746094
+        },
+        {
+          "feature": "hostname_length",
+          "importance": 153.84288024902344
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance": 131.63970947265625
+        },
+        {
+          "feature": "title_length",
+          "importance": 130.49288940429688
+        },
+        {
+          "feature": "num_external_image_domains",
+          "importance": 115.7156753540039
+        },
+        {
+          "feature": "visible_text_length",
+          "importance": 85.39073181152344
+        },
+        {
+          "feature": "num_inputs",
+          "importance": 82.51547241210938
+        },
+        {
+          "feature": "digit_ratio",
+          "importance": 77.90563201904297
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance": 74.92538452148438
+        },
+        {
+          "feature": "has_javascript_redirect",
+          "importance": 72.46025848388672
+        },
+        {
+          "feature": "num_data_uris",
+          "importance": 70.72144317626953
+        },
+        {
+          "feature": "num_special_chars",
+          "importance": 68.70796203613281
+        },
+        {
+          "feature": "num_password_inputs",
+          "importance": 65.00283813476562
+        }
+      ],
+      "permutation_importance_top_30": [
+        {
+          "feature": "public_suffix",
+          "importance_mean": 0.062205306057014985,
+          "importance_std": 0.003614123683873016
+        },
+        {
+          "feature": "num_query_params",
+          "importance_mean": 0.039639485595562074,
+          "importance_std": 0.0013602464367550254
+        },
+        {
+          "feature": "num_external_domains",
+          "importance_mean": 0.02494223479481979,
+          "importance_std": 0.0010194781488026717
+        },
+        {
+          "feature": "registered_domain",
+          "importance_mean": 0.019869134042890813,
+          "importance_std": 0.0010570703230944566
+        },
+        {
+          "feature": "path_length",
+          "importance_mean": 0.019322675246928656,
+          "importance_std": 0.00043112992806931745
+        },
+        {
+          "feature": "num_subdomains",
+          "importance_mean": 0.012871413854692556,
+          "importance_std": 0.000863842278930077
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance_mean": 0.00747016149720281,
+          "importance_std": 0.00029611093460196004
+        },
+        {
+          "feature": "hostname_length",
+          "importance_mean": 0.006488992143102871,
+          "importance_std": 0.0002795254170439486
+        },
+        {
+          "feature": "has_https",
+          "importance_mean": 0.004896085625291276,
+          "importance_std": 0.0005300170557203327
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance_mean": 0.0036066215012181546,
+          "importance_std": 0.0004011018800995506
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance_mean": 0.0026529340431282003,
+          "importance_std": 0.0005945229369942077
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance_mean": 0.0023998980651405155,
+          "importance_std": 0.000359108698239549
+        },
+        {
+          "feature": "html_length",
+          "importance_mean": 0.0018250282995131428,
+          "importance_std": 0.00022712786846280236
+        },
+        {
+          "feature": "suspicious_word_count",
+          "importance_mean": 0.0016244386473417416,
+          "importance_std": 0.00012171651711550374
+        },
+        {
+          "feature": "longest_token_length",
+          "importance_mean": 0.0015108196521877264,
+          "importance_std": 0.00015115978142851735
+        },
+        {
+          "feature": "digit_ratio",
+          "importance_mean": 0.0012436673084183318,
+          "importance_std": 0.00016304515052492375
+        },
+        {
+          "feature": "num_special_chars",
+          "importance_mean": 0.0008768436711814598,
+          "importance_std": 4.392409732272078e-05
+        },
+        {
+          "feature": "num_password_inputs",
+          "importance_mean": 0.0008680811146345077,
+          "importance_std": 5.4648739653431056e-05
+        },
+        {
+          "feature": "num_dots",
+          "importance_mean": 0.0008378555575697296,
+          "importance_std": 0.00016900541694374912
+        },
+        {
+          "feature": "has_javascript_redirect",
+          "importance_mean": 0.0007997239989822417,
+          "importance_std": 3.193601558392052e-05
+        },
+        {
+          "feature": "num_digits",
+          "importance_mean": 0.0007581337945343769,
+          "importance_std": 4.27738083298375e-05
+        },
+        {
+          "feature": "letter_ratio",
+          "importance_mean": 0.0007058302410278827,
+          "importance_std": 0.00018407920949904902
+        },
+        {
+          "feature": "visible_text_length",
+          "importance_mean": 0.000605761294273662,
+          "importance_std": 0.00012259487909053226
+        },
+        {
+          "feature": "visible_login_keyword_count",
+          "importance_mean": 0.0004465436037063286,
+          "importance_std": 9.262745311315753e-05
+        },
+        {
+          "feature": "favicon_domain_mismatch",
+          "importance_mean": 0.0003414855820016068,
+          "importance_std": 7.592649425496433e-05
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance_mean": 0.0003110188154611763,
+          "importance_std": 0.00016241177425832805
+        },
+        {
+          "feature": "path_depth",
+          "importance_mean": 0.00023744076919992216,
+          "importance_std": 0.0005209922249691509
+        },
+        {
+          "feature": "num_hidden_iframes",
+          "importance_mean": 0.00023613499823652942,
+          "importance_std": 0.00028492126276012046
+        },
+        {
+          "feature": "num_external_css_domains",
+          "importance_mean": 0.0001995512795620232,
+          "importance_std": 9.259442398540255e-06
+        },
+        {
+          "feature": "num_email_inputs",
+          "importance_mean": 0.00016777552272388233,
+          "importance_std": 1.2245637644149135e-05
+        }
+      ],
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "metrics": {
+        "average_precision": 0.9209772471059166,
+        "roc_auc": 0.9418720585739001,
+        "accuracy": 0.9296452493177871,
+        "precision": 0.9623516159778183,
+        "recall": 0.7812126327635929,
+        "f1": 0.8623728550353288,
+        "false_positive_rate": 0.012012551665030895,
+        "true_positive_rate": 0.7812126327635929,
+        "precision_at_prevalence_0.05%": 0.031507746751697624,
+        "alerts_per_1000_at_prevalence_0.05%": 12.397151705580177,
+        "precision_at_prevalence_0.5%": 0.24630641854612723,
+        "alerts_per_1000_at_prevalence_0.5%": 15.858552070523706,
+        "precision_at_prevalence_1%": 0.39646301722124844,
+        "alerts_per_1000_at_prevalence_1%": 19.704552476016513,
+        "precision_at_prevalence_5%": 0.7738984301667413,
+        "alerts_per_1000_at_prevalence_5%": 50.472555719959,
+        "precision_at_prevalence_45%": 0.981552825152762,
+        "alerts_per_1000_at_prevalence_45%": 358.15258815938375
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8917961261776722,
+          0.94338199535076
+        ],
+        "roc_auc": [
+          0.9128826555527655,
+          0.9626136370517073
+        ],
+        "accuracy": [
+          0.9082709732524192,
+          0.9450104403161987
+        ],
+        "precision": [
+          0.957984615308845,
+          0.9663391640576413
+        ],
+        "recall": [
+          0.7275807127587051,
+          0.8331908327815374
+        ],
+        "f1": [
+          0.828051054428461,
+          0.8939482467699974
+        ],
+        "false_positive_rate": [
+          0.010445712829262953,
+          0.013585578201648022
+        ],
+        "true_positive_rate": [
+          0.7275807127587051,
+          0.8331908327815374
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.027314398351785587,
+          0.0358970729407385
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          10.841636775106243,
+          13.949492569331463
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.22002006853259537,
+          0.27220877517130126
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          14.404952287695851,
+          17.469895934600846
+        ],
+        "precision_at_prevalence_1%": [
+          0.36184518475770083,
+          0.4291646920238033
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          18.043269720793727,
+          21.421670202996193
+        ],
+        "precision_at_prevalence_5%": [
+          0.747121068610403,
+          0.7966392918614229
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          47.25606264276234,
+          53.88203342917402
+        ],
+        "precision_at_prevalence_45%": [
+          0.9786909631760153,
+          0.983844207462201
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          333.39423882907477,
+          382.01277881421555
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "xgboost+oof_text_score": {
+      "training_seconds": 23.68800000000192,
+      "inference_seconds_per_1000": 0.010362499999700958,
+      "model_size_bytes": 227092645,
+      "artifact": "models\\phase4\\xgboost+oof_text_score.joblib",
+      "best_iteration": 45,
+      "native_importance_type": "gain",
+      "native_importance_top_30": [
+        {
+          "feature": "oof_text_score",
+          "importance": 6250.9677734375
+        },
+        {
+          "feature": "num_external_domains",
+          "importance": 1731.8924560546875
+        },
+        {
+          "feature": "registered_domain",
+          "importance": 1413.16943359375
+        },
+        {
+          "feature": "public_suffix",
+          "importance": 1205.764892578125
+        },
+        {
+          "feature": "path_depth",
+          "importance": 1068.9599609375
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance": 717.8346557617188
+        },
+        {
+          "feature": "has_https",
+          "importance": 609.8638305664062
+        },
+        {
+          "feature": "longest_token_length",
+          "importance": 382.43914794921875
+        },
+        {
+          "feature": "html_truncated",
+          "importance": 237.5731201171875
+        },
+        {
+          "feature": "favicon_domain_mismatch",
+          "importance": 212.25547790527344
+        },
+        {
+          "feature": "path_length",
+          "importance": 187.97398376464844
+        },
+        {
+          "feature": "digit_ratio",
+          "importance": 154.8620147705078
+        },
+        {
+          "feature": "html_length",
+          "importance": 152.23109436035156
+        },
+        {
+          "feature": "num_subdomains",
+          "importance": 146.53329467773438
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance": 143.94984436035156
+        },
+        {
+          "feature": "num_data_uris",
+          "importance": 130.91668701171875
+        },
+        {
+          "feature": "num_external_image_domains",
+          "importance": 115.06739807128906
+        },
+        {
+          "feature": "hostname_length",
+          "importance": 104.10319519042969
+        },
+        {
+          "feature": "tld_category",
+          "importance": 103.80877685546875
+        },
+        {
+          "feature": "has_javascript_redirect",
+          "importance": 100.68043518066406
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance": 91.62368774414062
+        },
+        {
+          "feature": "num_query_params",
+          "importance": 89.56368255615234
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance": 86.3017578125
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance": 81.35669708251953
+        },
+        {
+          "feature": "title_length",
+          "importance": 76.06355285644531
+        },
+        {
+          "feature": "num_hidden_iframes",
+          "importance": 68.67874145507812
+        },
+        {
+          "feature": "external_links_resources_ratio",
+          "importance": 64.2411117553711
+        },
+        {
+          "feature": "num_inputs",
+          "importance": 56.0223503112793
+        },
+        {
+          "feature": "num_hyphens",
+          "importance": 38.585670471191406
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance": 38.5573616027832
+        }
+      ],
+      "permutation_importance_top_30": [
+        {
+          "feature": "oof_text_score",
+          "importance_mean": 0.3901435564915145,
+          "importance_std": 0.006245780622160851
+        },
+        {
+          "feature": "num_external_domains",
+          "importance_mean": 0.023300639547060114,
+          "importance_std": 0.0021044262300445307
+        },
+        {
+          "feature": "public_suffix",
+          "importance_mean": 0.010253137650661234,
+          "importance_std": 0.0012306680091871954
+        },
+        {
+          "feature": "registered_domain",
+          "importance_mean": 0.008817515489907501,
+          "importance_std": 0.00035242521147692984
+        },
+        {
+          "feature": "num_query_params",
+          "importance_mean": 0.0065880512989235545,
+          "importance_std": 0.0002441456621361673
+        },
+        {
+          "feature": "html_length",
+          "importance_mean": 0.003746912534509613,
+          "importance_std": 0.00037929759442315665
+        },
+        {
+          "feature": "path_depth",
+          "importance_mean": 0.0019527841633697103,
+          "importance_std": 0.00050956918017317
+        },
+        {
+          "feature": "num_subdomains",
+          "importance_mean": 0.0016849985107714183,
+          "importance_std": 9.438630800041823e-05
+        },
+        {
+          "feature": "longest_token_length",
+          "importance_mean": 0.0010360206008496187,
+          "importance_std": 1.6198466003700722e-05
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance_mean": 0.001000570477600789,
+          "importance_std": 0.0002599530119989531
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance_mean": 0.0005184041400628411,
+          "importance_std": 0.00028315221984147836
+        },
+        {
+          "feature": "hostname_length",
+          "importance_mean": 0.00047779039098420445,
+          "importance_std": 0.0001036435354615392
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance_mean": 0.0004412114181245134,
+          "importance_std": 0.0002834789834454164
+        },
+        {
+          "feature": "num_external_css_domains",
+          "importance_mean": 0.00017433279693005824,
+          "importance_std": 1.2185557157929987e-05
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance_mean": 0.0001510453110166917,
+          "importance_std": 4.768388084634895e-05
+        },
+        {
+          "feature": "html_truncated",
+          "importance_mean": 5.090068496915734e-05,
+          "importance_std": 9.397592109212638e-06
+        },
+        {
+          "feature": "title_length",
+          "importance_mean": 4.6421775839763e-05,
+          "importance_std": 1.6783370492350366e-05
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance_mean": 3.632577569475289e-05,
+          "importance_std": 3.212511717621363e-05
+        },
+        {
+          "feature": "num_external_image_domains",
+          "importance_mean": 3.47230160742118e-05,
+          "importance_std": 1.0739423173937596e-05
+        },
+        {
+          "feature": "num_password_inputs",
+          "importance_mean": 1.1557558154666006e-05,
+          "importance_std": 2.311494914822105e-06
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance_mean": 1.0890432765290706e-05,
+          "importance_std": 5.031438858764552e-06
+        },
+        {
+          "feature": "has_javascript_redirect",
+          "importance_mean": 9.622061811098703e-06,
+          "importance_std": 3.4048116815482234e-06
+        },
+        {
+          "feature": "num_form_action_domain_mismatches",
+          "importance_mean": 7.59136711536712e-06,
+          "importance_std": 4.0756467579727365e-06
+        },
+        {
+          "feature": "num_digits",
+          "importance_mean": 3.4609070568662284e-06,
+          "importance_std": 6.345096206755996e-06
+        },
+        {
+          "feature": "num_inputs",
+          "importance_mean": 1.9972256214417783e-06,
+          "importance_std": 6.484740164439652e-05
+        },
+        {
+          "feature": "num_hyphens",
+          "importance_mean": 0.0,
+          "importance_std": 0.0
+        },
+        {
+          "feature": "has_at_symbol",
+          "importance_mean": 0.0,
+          "importance_std": 0.0
+        },
+        {
+          "feature": "has_ip_address",
+          "importance_mean": 0.0,
+          "importance_std": 0.0
+        },
+        {
+          "feature": "suspicious_word_count",
+          "importance_mean": 0.0,
+          "importance_std": 0.0
+        },
+        {
+          "feature": "is_punycode_or_idn",
+          "importance_mean": 0.0,
+          "importance_std": 0.0
+        }
+      ],
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "metrics": {
+        "average_precision": 0.912945684395518,
+        "roc_auc": 0.9378887549332081,
+        "accuracy": 0.9195236913917142,
+        "precision": 0.9597773957107955,
+        "recall": 0.7460434690863051,
+        "f1": 0.8395203419344626,
+        "false_positive_rate": 0.012289020057781893,
+        "true_positive_rate": 0.7460434690863051,
+        "precision_at_prevalence_0.05%": 0.029474143651984138,
+        "alerts_per_1000_at_prevalence_0.05%": 12.655897282296156,
+        "precision_at_prevalence_0.5%": 0.23375522594988946,
+        "alerts_per_1000_at_prevalence_0.5%": 15.95779230292451,
+        "precision_at_prevalence_1%": 0.3801192344483831,
+        "alerts_per_1000_at_prevalence_1%": 19.626564548067126,
+        "precision_at_prevalence_5%": 0.7616303482678973,
+        "alerts_per_1000_at_prevalence_5%": 48.97674250920805,
+        "precision_at_prevalence_45%": 0.9802645696146761,
+        "alerts_per_1000_at_prevalence_45%": 342.47852212061736
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8802019978966509,
+          0.935613081548537
+        ],
+        "roc_auc": [
+          0.9076175369700681,
+          0.9589517583635853
+        ],
+        "accuracy": [
+          0.8957152377073327,
+          0.9367295164650965
+        ],
+        "precision": [
+          0.9546164834274956,
+          0.9634805000329637
+        ],
+        "recall": [
+          0.688194204370978,
+          0.8022756456101339
+        ],
+        "f1": [
+          0.8006796231164323,
+          0.8733650030902961
+        ],
+        "false_positive_rate": [
+          0.010749109883626443,
+          0.014054258201517768
+        ],
+        "true_positive_rate": [
+          0.688194204370978,
+          0.8022756456101339
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.025051076798104022,
+          0.03390773186047587
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          11.112475177890628,
+          14.425781818394352
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.20515660757049117,
+          0.26066428552968196
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          14.384155204420823,
+          17.834997770773175
+        ],
+        "precision_at_prevalence_1%": [
+          0.3415966576521543,
+          0.4147571265008342
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          17.95846183113883,
+          21.62511711376343
+        ],
+        "precision_at_prevalence_5%": [
+          0.7299743142660811,
+          0.786901239790332
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          45.824043105422824,
+          52.30403298758751
+        ],
+        "precision_at_prevalence_45%": [
+          0.9767575824367617,
+          0.9828779071904374
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          316.45922284573567,
+          367.95947265682895
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "catboostengineered": {
+      "training_seconds": 125.84300000000076,
+      "inference_seconds_per_1000": 0.14000119999991512,
+      "model_size_bytes": 30261927,
+      "artifact": "models\\phase4\\catboostengineered.joblib",
+      "best_iteration": 313,
+      "native_importance_type": "PredictionValuesChange",
+      "native_importance_top_30": [
+        {
+          "feature": "registered_domain",
+          "importance": 27.763323347361233
+        },
+        {
+          "feature": "public_suffix",
+          "importance": 9.976967164288912
+        },
+        {
+          "feature": "path_length",
+          "importance": 6.469598247076748
+        },
+        {
+          "feature": "num_external_domains",
+          "importance": 4.735076053116147
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance": 3.6417076027181783
+        },
+        {
+          "feature": "html_length",
+          "importance": 3.575558806027362
+        },
+        {
+          "feature": "external_links_resources_ratio",
+          "importance": 3.396026485214477
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance": 3.1705704309380494
+        },
+        {
+          "feature": "num_subdomains",
+          "importance": 3.087230553356876
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance": 2.7483637158546856
+        },
+        {
+          "feature": "visible_text_length",
+          "importance": 2.4171324252931505
+        },
+        {
+          "feature": "num_query_params",
+          "importance": 2.210401364310031
+        },
+        {
+          "feature": "title_length",
+          "importance": 2.1706144367692124
+        },
+        {
+          "feature": "path_depth",
+          "importance": 2.05229787956403
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance": 1.622288953057359
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance": 1.5698974896588487
+        },
+        {
+          "feature": "num_inputs",
+          "importance": 1.567498066116857
+        },
+        {
+          "feature": "has_https",
+          "importance": 1.5410792257962775
+        },
+        {
+          "feature": "num_external_image_domains",
+          "importance": 1.4672377412170452
+        },
+        {
+          "feature": "hostname_length",
+          "importance": 1.4386553958220945
+        },
+        {
+          "feature": "visible_login_keyword_count",
+          "importance": 1.0714517911427897
+        },
+        {
+          "feature": "digit_ratio",
+          "importance": 1.0047009151588013
+        },
+        {
+          "feature": "num_password_inputs",
+          "importance": 0.966682900496092
+        },
+        {
+          "feature": "num_hyphens",
+          "importance": 0.8586905717310593
+        },
+        {
+          "feature": "tld_category",
+          "importance": 0.8282907191445504
+        },
+        {
+          "feature": "num_forms",
+          "importance": 0.7741964379437113
+        },
+        {
+          "feature": "num_special_chars",
+          "importance": 0.7705567980934976
+        },
+        {
+          "feature": "num_data_uris",
+          "importance": 0.7085746514203832
+        },
+        {
+          "feature": "letter_ratio",
+          "importance": 0.6789141074340165
+        },
+        {
+          "feature": "favicon_domain_mismatch",
+          "importance": 0.6672198446714028
+        }
+      ],
+      "permutation_importance_top_30": [
+        {
+          "feature": "registered_domain",
+          "importance_mean": 0.12091053727031205,
+          "importance_std": 0.002761761130254168
+        },
+        {
+          "feature": "public_suffix",
+          "importance_mean": 0.019175666103960858,
+          "importance_std": 0.001654409241035519
+        },
+        {
+          "feature": "num_query_params",
+          "importance_mean": 0.012967690375984367,
+          "importance_std": 0.0008294100734597613
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance_mean": 0.009152461018151259,
+          "importance_std": 0.0006364012349728576
+        },
+        {
+          "feature": "num_external_domains",
+          "importance_mean": 0.008878411786602203,
+          "importance_std": 0.0010611612911644497
+        },
+        {
+          "feature": "num_subdomains",
+          "importance_mean": 0.00452786498365106,
+          "importance_std": 0.0006223008710046046
+        },
+        {
+          "feature": "path_length",
+          "importance_mean": 0.0036016076933844308,
+          "importance_std": 0.0003364021213969423
+        },
+        {
+          "feature": "has_https",
+          "importance_mean": 0.003259288733441538,
+          "importance_std": 0.0003809225294624995
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance_mean": 0.0024529655723293984,
+          "importance_std": 0.0003130015191463241
+        },
+        {
+          "feature": "digit_ratio",
+          "importance_mean": 0.002191969138690945,
+          "importance_std": 1.2308692315282501e-05
+        },
+        {
+          "feature": "visible_text_length",
+          "importance_mean": 0.0017533170939499538,
+          "importance_std": 0.0003061026000625914
+        },
+        {
+          "feature": "hostname_length",
+          "importance_mean": 0.0016035836680051336,
+          "importance_std": 7.677069166064031e-05
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance_mean": 0.0015110690979612817,
+          "importance_std": 0.00016577254900240252
+        },
+        {
+          "feature": "suspicious_word_count",
+          "importance_mean": 0.001419915340848769,
+          "importance_std": 0.00012666787433133396
+        },
+        {
+          "feature": "num_password_inputs",
+          "importance_mean": 0.0010805911968342723,
+          "importance_std": 0.0002413217970747078
+        },
+        {
+          "feature": "visible_login_keyword_count",
+          "importance_mean": 0.0010490569721551823,
+          "importance_std": 0.000112166037656963
+        },
+        {
+          "feature": "num_special_chars",
+          "importance_mean": 0.0009885080486860358,
+          "importance_std": 7.926378971642369e-05
+        },
+        {
+          "feature": "tld_category",
+          "importance_mean": 0.0007869990832169623,
+          "importance_std": 7.287861841054062e-05
+        },
+        {
+          "feature": "num_dots",
+          "importance_mean": 0.0007741614534072146,
+          "importance_std": 0.00011653028061908348
+        },
+        {
+          "feature": "longest_token_length",
+          "importance_mean": 0.0007152695515240856,
+          "importance_std": 6.336685005179599e-05
+        },
+        {
+          "feature": "url_length",
+          "importance_mean": 0.0005526865572490122,
+          "importance_std": 3.354837878881018e-05
+        },
+        {
+          "feature": "num_digits",
+          "importance_mean": 0.0005247653249251435,
+          "importance_std": 4.7091806674482244e-06
+        },
+        {
+          "feature": "has_javascript_redirect",
+          "importance_mean": 0.0005181539384830902,
+          "importance_std": 4.325181584413146e-05
+        },
+        {
+          "feature": "html_length",
+          "importance_mean": 0.0004655557994798591,
+          "importance_std": 0.00015779370217899443
+        },
+        {
+          "feature": "num_external_css_domains",
+          "importance_mean": 0.00036972396654988415,
+          "importance_std": 4.8302989306108307e-05
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance_mean": 0.00024522278731135366,
+          "importance_std": 0.00013307788941798043
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance_mean": 0.00024067281984837172,
+          "importance_std": 0.0002495083395688884
+        },
+        {
+          "feature": "letter_ratio",
+          "importance_mean": 0.00023456828496074925,
+          "importance_std": 6.928930836961849e-05
+        },
+        {
+          "feature": "num_email_inputs",
+          "importance_mean": 0.0002156068513064676,
+          "importance_std": 4.361272745536225e-05
+        },
+        {
+          "feature": "html_truncated",
+          "importance_mean": 0.00021415177958302353,
+          "importance_std": 4.427903732046891e-05
+        }
+      ],
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "metrics": {
+        "average_precision": 0.9407510871821221,
+        "roc_auc": 0.9631415365604749,
+        "accuracy": 0.9320664847432399,
+        "precision": 0.9791370738636364,
+        "recall": 0.7757614123936133,
+        "f1": 0.8656646128487893,
+        "false_positive_rate": 0.00649700722964847,
+        "true_positive_rate": 0.7757614123936133,
+        "precision_at_prevalence_0.05%": 0.056364578530538924,
+        "alerts_per_1000_at_prevalence_0.05%": 6.881639432230453,
+        "precision_at_prevalence_0.5%": 0.3750056646333119,
+        "alerts_per_1000_at_prevalence_0.5%": 10.343329255468294,
+        "precision_at_prevalence_1%": 0.5467092862363779,
+        "alerts_per_1000_at_prevalence_1%": 14.18965128128812,
+        "precision_at_prevalence_5%": 0.8627196254771075,
+        "alerts_per_1000_at_prevalence_5%": 44.960227487846716,
+        "precision_at_prevalence_45%": 0.9898675968702526,
+        "alerts_per_1000_at_prevalence_45%": 352.66598955343267
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.9167180218142811,
+          0.960619421036626
+        ],
+        "roc_auc": [
+          0.9418112132937946,
+          0.9782182132902657
+        ],
+        "accuracy": [
+          0.9103186914707084,
+          0.9478465472431027
+        ],
+        "precision": [
+          0.9763957179746958,
+          0.9817860350303306
+        ],
+        "recall": [
+          0.7187467657044276,
+          0.8293361050258357
+        ],
+        "f1": [
+          0.8290617661687328,
+          0.8983371917468289
+        ],
+        "false_positive_rate": [
+          0.005596258446221754,
+          0.007529113656060573
+        ],
+        "true_positive_rate": [
+          0.7187467657044276,
+          0.8293361050258357
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.04804788803719142,
+          0.06526162205683561
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          5.9607774653799535,
+          7.888174701263464
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.3364356165921935,
+          0.41222721441001886
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          9.298393973561556,
+          11.43825297481983
+        ],
+        "precision_at_prevalence_1%": [
+          0.5047413229831732,
+          0.5850207606847108
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          12.995521649824697,
+          15.481943211303333
+        ],
+        "precision_at_prevalence_5%": [
+          0.8415287083045039,
+          0.8801761265439804
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          42.07574990013563,
+          47.980156334428884
+        ],
+        "precision_at_prevalence_45%": [
+          0.9880312464073162,
+          0.9913187201992953
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          326.6674187661098,
+          377.0359394047883
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "catboost+oof_text_score": {
+      "training_seconds": 191.79700000000594,
+      "inference_seconds_per_1000": 0.13299910000023374,
+      "model_size_bytes": 42147358,
+      "artifact": "models\\phase4\\catboost+oof_text_score.joblib",
+      "best_iteration": 522,
+      "native_importance_type": "PredictionValuesChange",
+      "native_importance_top_30": [
+        {
+          "feature": "registered_domain",
+          "importance": 23.750536953325913
+        },
+        {
+          "feature": "oof_text_score",
+          "importance": 12.819898650453869
+        },
+        {
+          "feature": "public_suffix",
+          "importance": 4.995368750890371
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance": 4.071064891827578
+        },
+        {
+          "feature": "num_external_domains",
+          "importance": 3.9080749913565893
+        },
+        {
+          "feature": "path_length",
+          "importance": 3.7941714843097816
+        },
+        {
+          "feature": "external_links_resources_ratio",
+          "importance": 3.7557293959815166
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance": 3.645507615613992
+        },
+        {
+          "feature": "html_length",
+          "importance": 3.6023001438281854
+        },
+        {
+          "feature": "visible_text_length",
+          "importance": 2.9048428820270455
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance": 2.4781839424556895
+        },
+        {
+          "feature": "num_subdomains",
+          "importance": 2.1110015780842586
+        },
+        {
+          "feature": "title_length",
+          "importance": 1.8986004495782407
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance": 1.814430863975688
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance": 1.6692517500633366
+        },
+        {
+          "feature": "hostname_length",
+          "importance": 1.5736003481806344
+        },
+        {
+          "feature": "num_inputs",
+          "importance": 1.5474857166351734
+        },
+        {
+          "feature": "path_depth",
+          "importance": 1.4329462624725788
+        },
+        {
+          "feature": "letter_ratio",
+          "importance": 1.3827999889283933
+        },
+        {
+          "feature": "num_hidden_iframes",
+          "importance": 1.37614274340412
+        },
+        {
+          "feature": "num_query_params",
+          "importance": 1.3538168760231744
+        },
+        {
+          "feature": "num_external_image_domains",
+          "importance": 1.3035859976712911
+        },
+        {
+          "feature": "visible_login_keyword_count",
+          "importance": 1.1712636402447734
+        },
+        {
+          "feature": "num_password_inputs",
+          "importance": 1.0657145452635497
+        },
+        {
+          "feature": "num_data_uris",
+          "importance": 1.0132966605515634
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance": 0.8744082790541304
+        },
+        {
+          "feature": "tld_category",
+          "importance": 0.8596626940284545
+        },
+        {
+          "feature": "num_dots",
+          "importance": 0.7309078833745399
+        },
+        {
+          "feature": "favicon_domain_mismatch",
+          "importance": 0.6352412980286366
+        },
+        {
+          "feature": "num_special_chars",
+          "importance": 0.6207828768426837
+        }
+      ],
+      "permutation_importance_top_30": [
+        {
+          "feature": "oof_text_score",
+          "importance_mean": 0.1776425553635563,
+          "importance_std": 0.008837796575393445
+        },
+        {
+          "feature": "registered_domain",
+          "importance_mean": 0.054485383752804796,
+          "importance_std": 0.0008630476762736503
+        },
+        {
+          "feature": "num_external_domains",
+          "importance_mean": 0.0070092473851900055,
+          "importance_std": 0.0006342982036867861
+        },
+        {
+          "feature": "num_query_params",
+          "importance_mean": 0.006452731467257815,
+          "importance_std": 0.0005071073721453135
+        },
+        {
+          "feature": "shannon_entropy",
+          "importance_mean": 0.003786037429558372,
+          "importance_std": 0.0003649584946013591
+        },
+        {
+          "feature": "public_suffix",
+          "importance_mean": 0.002044579908530242,
+          "importance_std": 0.00031269488632806414
+        },
+        {
+          "feature": "visible_login_keyword_count",
+          "importance_mean": 0.0016247987502678123,
+          "importance_std": 2.050549954344802e-05
+        },
+        {
+          "feature": "title_registered_domain_mismatch",
+          "importance_mean": 0.001358271406558013,
+          "importance_std": 0.00017462315398095605
+        },
+        {
+          "feature": "visible_text_length",
+          "importance_mean": 0.0012901161667538223,
+          "importance_std": 0.00034186212394223735
+        },
+        {
+          "feature": "num_subdomains",
+          "importance_mean": 0.0012659663859561816,
+          "importance_std": 0.0004174063348929137
+        },
+        {
+          "feature": "hostname_length",
+          "importance_mean": 0.0011669230778584838,
+          "importance_std": 0.0001273583836451404
+        },
+        {
+          "feature": "num_password_inputs",
+          "importance_mean": 0.0011308962744161672,
+          "importance_std": 0.00020554854988963774
+        },
+        {
+          "feature": "num_external_script_domains",
+          "importance_mean": 0.0011040438423033743,
+          "importance_std": 0.00010807140630584037
+        },
+        {
+          "feature": "num_special_chars",
+          "importance_mean": 0.0007173700930110197,
+          "importance_std": 9.253584397530245e-05
+        },
+        {
+          "feature": "empty_or_hash_link_ratio",
+          "importance_mean": 0.0006994763532997365,
+          "importance_std": 0.00021677745931984946
+        },
+        {
+          "feature": "parsed_html_length",
+          "importance_mean": 0.00068821290614877,
+          "importance_std": 0.00014691510579219785
+        },
+        {
+          "feature": "num_external_css_domains",
+          "importance_mean": 0.0006189060704149633,
+          "importance_std": 8.266094406145448e-05
+        },
+        {
+          "feature": "letter_ratio",
+          "importance_mean": 0.00048673000232057895,
+          "importance_std": 0.00013821517068268513
+        },
+        {
+          "feature": "suspicious_word_count",
+          "importance_mean": 0.0004341816810254547,
+          "importance_std": 9.70813903990879e-05
+        },
+        {
+          "feature": "tld_category",
+          "importance_mean": 0.0003929032875076288,
+          "importance_std": 0.00011953286945092863
+        },
+        {
+          "feature": "num_external_resource_domains",
+          "importance_mean": 0.00033327082666848956,
+          "importance_std": 5.42309601383729e-05
+        },
+        {
+          "feature": "longest_token_length",
+          "importance_mean": 0.0003056556658443954,
+          "importance_std": 2.5398779349892205e-05
+        },
+        {
+          "feature": "digit_ratio",
+          "importance_mean": 0.00022758636670953494,
+          "importance_std": 4.122684794954562e-05
+        },
+        {
+          "feature": "has_https",
+          "importance_mean": 0.00021555682536678056,
+          "importance_std": 6.910544618806983e-05
+        },
+        {
+          "feature": "html_truncated",
+          "importance_mean": 0.00021040425804201104,
+          "importance_std": 6.893315283101557e-05
+        },
+        {
+          "feature": "num_email_inputs",
+          "importance_mean": 0.00015117630647839184,
+          "importance_std": 2.5674798336545206e-05
+        },
+        {
+          "feature": "has_javascript_redirect",
+          "importance_mean": 0.0001259705779930916,
+          "importance_std": 6.251784136776102e-05
+        },
+        {
+          "feature": "has_password_and_email_inputs",
+          "importance_mean": 0.00011467780540112364,
+          "importance_std": 5.5230351126155764e-05
+        },
+        {
+          "feature": "num_onmouseover_attributes",
+          "importance_mean": 8.736856720707269e-05,
+          "importance_std": 9.790846734707136e-06
+        },
+        {
+          "feature": "html_length",
+          "importance_mean": 6.467160790061637e-05,
+          "importance_std": 6.987580450347454e-05
+        }
+      ],
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "metrics": {
+        "average_precision": 0.9411353719710456,
+        "roc_auc": 0.9624004954798979,
+        "accuracy": 0.9250607789630365,
+        "precision": 0.9823969691369433,
+        "recall": 0.7478019272701695,
+        "f1": 0.8491952554015736,
+        "false_positive_rate": 0.005266722881906526,
+        "true_positive_rate": 0.7478019272701695,
+        "precision_at_prevalence_0.05%": 0.06631812605741343,
+        "alerts_per_1000_at_prevalence_0.05%": 5.637990484100658,
+        "precision_at_prevalence_0.5%": 0.41639865612258437,
+        "alerts_per_1000_at_prevalence_0.5%": 8.979398903847839,
+        "precision_at_prevalence_1%": 0.589188081257465,
+        "alerts_per_1000_at_prevalence_1%": 12.692074925789155,
+        "precision_at_prevalence_5%": 0.8819774556892814,
+        "alerts_per_1000_at_prevalence_5%": 42.393483101319674,
+        "precision_at_prevalence_45%": 0.9914654301053301,
+        "alerts_per_1000_at_prevalence_45%": 339.40756485662484
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.9166437705478501,
+          0.959462002081409
+        ],
+        "roc_auc": [
+          0.9382004887127512,
+          0.978706441325241
+        ],
+        "accuracy": [
+          0.9034114211676793,
+          0.9441452393589296
+        ],
+        "precision": [
+          0.9789639013589136,
+          0.9851087645862839
+        ],
+        "recall": [
+          0.6906164326861921,
+          0.8039364553608092
+        ],
+        "f1": [
+          0.8106265518654775,
+          0.8845459461617327
+        ],
+        "false_positive_rate": [
+          0.004356931706232399,
+          0.006376361658601492
+        ],
+        "true_positive_rate": [
+          0.6906164326861921,
+          0.8039364553608092
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.05492538954049652,
+          0.07949295006342122
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          4.738997912480956,
+          6.743182956308859
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.3686085749863895,
+          0.4645194846999036
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          8.13245698224115,
+          10.086858247646518
+        ],
+        "precision_at_prevalence_1%": [
+          0.5399134616746213,
+          0.635531843691512
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          11.62612454204835,
+          13.90771169079203
+        ],
+        "precision_at_prevalence_5%": [
+          0.8594434479643491,
+          0.900849775832683
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          39.54305771499071,
+          45.44597763660106
+        ],
+        "precision_at_prevalence_45%": [
+          0.9895891712110427,
+          0.9929696957899707
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          313.9644236633711,
+          364.80187572178943
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "logistic_engineered": {
+      "training_seconds": 52.09399999999732,
+      "inference_seconds_per_1000": 0.019796700000370038,
+      "model_size_bytes": 45754,
+      "artifact": "models\\phase4\\logistic_engineered.joblib",
+      "validation_rows": 100775,
+      "training_rows": 397480,
+      "metrics": {
+        "average_precision": 0.8631662048646047,
+        "roc_auc": 0.8892929094500179,
+        "accuracy": 0.897405110394443,
+        "precision": 0.8719424460431655,
+        "recall": 0.7459379615952733,
+        "f1": 0.8040334350537349,
+        "false_positive_rate": 0.04305995217096805,
+        "true_positive_rate": 0.7459379615952733,
+        "precision_at_prevalence_0.05%": 0.008591500311249646,
+        "alerts_per_1000_at_prevalence_0.05%": 43.41139117568021,
+        "precision_at_prevalence_0.5%": 0.08008035391056466,
+        "alerts_per_1000_at_prevalence_0.5%": 46.574342218089576,
+        "precision_at_prevalence_1%": 0.14892330627288825,
+        "alerts_per_1000_at_prevalence_1%": 50.08873226521111,
+        "precision_at_prevalence_5%": 0.47691893454934015,
+        "alerts_per_1000_at_prevalence_5%": 78.2038526421833,
+        "precision_at_prevalence_45%": 0.9340958940984367,
+        "alerts_per_1000_at_prevalence_45%": 359.3550564119054
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8303944407098308,
+          0.8969696146647879
+        ],
+        "roc_auc": [
+          0.8538520186400409,
+          0.9185485381065739
+        ],
+        "accuracy": [
+          0.876680141327192,
+          0.9144636181081568
+        ],
+        "precision": [
+          0.8596392998179767,
+          0.8846079830571191
+        ],
+        "recall": [
+          0.6852661242351549,
+          0.800368438485905
+        ],
+        "f1": [
+          0.7684028121563403,
+          0.8365702360863809
+        ],
+        "false_positive_rate": [
+          0.03792411935760697,
+          0.04743046205609243
+        ],
+        "true_positive_rate": [
+          0.6852661242351549,
+          0.800368438485905
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.00758996000515029,
+          0.009828592453897366
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          38.253185219016956,
+          47.797347831552145
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.07134483187428417,
+          0.09066972797407646
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          41.35985808703759,
+          51.05754750012659
+        ],
+        "precision_at_prevalence_1%": [
+          0.13377010605701167,
+          0.16696383177002486
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          45.00355446422246,
+          54.43008874087367
+        ],
+        "precision_at_prevalence_5%": [
+          0.4458761585186704,
+          0.5108435552493928
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          72.60048198820205,
+          83.74176814484395
+        ],
+        "precision_at_prevalence_45%": [
+          0.9259734004722734,
+          0.9419774335281422
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          330.58065874339064,
+          383.2672492693391
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    }
+  },
+  "wall_seconds": 3027.125,
+  "official_test_accessed": false
+}

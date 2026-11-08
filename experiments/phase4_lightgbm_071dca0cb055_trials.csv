@@ -1,0 +1,2 @@
+number,value,datetime_start,datetime_complete,duration,params_colsample_bytree,params_learning_rate,params_max_depth,params_min_child_samples,params_num_leaves,params_reg_alpha,params_reg_lambda,params_subsample,state
+0,0.9846374767956813,2026-11-08 22:01:55.415009,2026-11-08 22:01:58.848249,0 days 00:00:03.433240,0.7467983561008608,0.0425378509573798,10,80,61,0.00019517224641449495,2.1423021757741068,0.7468055921327309,COMPLETE

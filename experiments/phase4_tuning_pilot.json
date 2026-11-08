@@ -1,0 +1,85 @@
+{
+  "experiment": "phase4_grouped_tuning_runtime_pilot",
+  "created_utc": "2026-11-08T16:43:04.909941+00:00",
+  "git_commit": "3172538f048f085219aed47eaa9840cee7bc82b1",
+  "seed": 42,
+  "split_manifest_sha256": "f41e1c4925c7ae106c427bf0a7c2c58fd89a6c86994a8d793b338a02a792ee82",
+  "config_sha256": "fec654c69048ace1755c1a36a2883baf060398733644b09cbfee9034eef90aee",
+  "html_feature_spec_hash": "f5434603820e65699462bc276cc34b2c6ba4ad7ed72f9f061a1cc0d13d79e6d3",
+  "tuning": {
+    "lightgbm": {
+      "model": "lightgbm",
+      "study_name": "phase4_lightgbm_effd8271fa18",
+      "best_value_ap": 0.9846374767956813,
+      "best_params": {
+        "learning_rate": 0.0425378509573798,
+        "num_leaves": 61,
+        "max_depth": 10,
+        "min_child_samples": 80,
+        "subsample": 0.7468055921327309,
+        "colsample_bytree": 0.7467983561008608,
+        "reg_alpha": 0.00019517224641449495,
+        "reg_lambda": 2.1423021757741068
+      },
+      "total_trials": 1,
+      "trials_this_run": 1,
+      "elapsed_seconds_this_run": 3.625,
+      "study_db": "experiments\\phase4_studies\\phase4_lightgbm_effd8271fa18.sqlite3",
+      "trials_csv": "experiments\\phase4_lightgbm_effd8271fa18_trials.csv",
+      "fit_rows": 100000,
+      "validation_rows": 25000,
+      "fit_domains": 42845,
+      "validation_domains": 12121,
+      "parameter_importance": {}
+    },
+    "xgboost": {
+      "model": "xgboost",
+      "study_name": "phase4_xgboost_cc2e9c8c2eb7",
+      "best_value_ap": 0.9865885433941867,
+      "best_params": {
+        "learning_rate": 0.0425378509573798,
+        "max_depth": 10,
+        "min_child_weight": 8.960785365368121,
+        "subsample": 0.8795975452591109,
+        "colsample_bytree": 0.7468055921327309,
+        "reg_alpha": 0.000602521573620386,
+        "reg_lambda": 0.0017775399007348214
+      },
+      "total_trials": 1,
+      "trials_this_run": 1,
+      "elapsed_seconds_this_run": 22.01600000000326,
+      "study_db": "experiments\\phase4_studies\\phase4_xgboost_cc2e9c8c2eb7.sqlite3",
+      "trials_csv": "experiments\\phase4_xgboost_cc2e9c8c2eb7_trials.csv",
+      "fit_rows": 100000,
+      "validation_rows": 25000,
+      "fit_domains": 42845,
+      "validation_domains": 12121,
+      "parameter_importance": {}
+    },
+    "catboost": {
+      "model": "catboost",
+      "study_name": "phase4_catboost_f64b25cc629c",
+      "best_value_ap": 0.9879686002075159,
+      "best_params": {
+        "learning_rate": 0.0425378509573798,
+        "depth": 10,
+        "l2_leaf_reg": 8.960785365368121,
+        "random_strength": 1.1973169683940732,
+        "bagging_temperature": 0.31203728088487304
+      },
+      "total_trials": 1,
+      "trials_this_run": 1,
+      "elapsed_seconds_this_run": 97.17199999999866,
+      "study_db": "experiments\\phase4_studies\\phase4_catboost_f64b25cc629c.sqlite3",
+      "trials_csv": "experiments\\phase4_catboost_f64b25cc629c_trials.csv",
+      "fit_rows": 100000,
+      "validation_rows": 25000,
+      "fit_domains": 42845,
+      "validation_domains": 12121,
+      "parameter_importance": {}
+    }
+  },
+  "wall_seconds": 164.98399999999674,
+  "final_refits_performed": false,
+  "official_test_accessed": false
+}

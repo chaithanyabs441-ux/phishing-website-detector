@@ -1,0 +1,27 @@
+{
+  "manifest_version": 1,
+  "source_directory": "data\\raw\\data",
+  "source_glob": "train-*.parquet",
+  "rows": 498255,
+  "unique_sha256": 498255,
+  "split_config": {
+    "temporal_train_fraction": 0.8,
+    "temporal_cutoff_rule": "first UTC day whose cumulative row count reaches the requested train fraction; purge hashes spanning the cutoff",
+    "grouping": "offline Public Suffix List registered domain",
+    "grouped_folds": 5,
+    "grouped_splitter": "deterministic GroupKFold; no random seed"
+  },
+  "files": {
+    "temporal_assignments.csv.gz": {
+      "sha256": "a87bb1f479e11a00b9cd291ae6434879493e5665962f717ae32e00a8da162154"
+    },
+    "grouped_domain_folds.csv.gz": {
+      "sha256": "8eb39fa32d4067e7d6cf1d232a1f24a364d2f5d6f6de8aca7ad43685f002bf41"
+    },
+    "leakage_audit.json": {
+      "sha256": "7ee3a83851cf2e5f18846190291afbf3fa9633fd6290e270d0f249132779436b"
+    }
+  },
+  "created_utc": "2026-11-08T11:31:21.520293+00:00",
+  "git_commit": "cb02b34"
+}

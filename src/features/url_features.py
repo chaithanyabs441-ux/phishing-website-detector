@@ -183,6 +183,13 @@ def _registered_domain_parts(hostname):
     return registered_domain, suffix, subdomain_count, False
 
 
+def registered_domain_from_url(url):
+    """Return the offline-PSL registered domain for a URL, or an empty string."""
+    _, _, hostname = _parse_url_v2(url)
+    registered_domain, _, _, _ = _registered_domain_parts(hostname)
+    return registered_domain
+
+
 def _tld_category(suffix, is_ip):
     if is_ip:
         return "ip"

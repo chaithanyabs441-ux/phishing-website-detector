@@ -1,0 +1,23 @@
+version: 1
+seed: 42
+split: data/splits/temporal_assignments.csv.gz
+features:
+  url_feature_version: url_features_v1
+  html_features: saved 15-column train HTML feature cache
+text_vectorizer:
+  analyzer: char
+  ngram_range: [2, 5]
+  min_df: 2
+  max_features: 200000
+  sublinear_tf: true
+classifier:
+  type: LinearSVC
+  C: 1.0
+  class_weight: balanced
+  dual: true
+  max_iter: 5000
+threshold: 0.0
+bootstrap:
+  resampling_unit: registered_domain
+  replicates: 200
+  confidence_level: 0.95

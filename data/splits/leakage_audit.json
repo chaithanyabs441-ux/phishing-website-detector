@@ -1,0 +1,170 @@
+{
+  "source": "data/raw/data/train-*.parquet only",
+  "official_test_overlap_audit": "deferred: official test files are locked until Phase 7",
+  "rows": 498255,
+  "unique_sha256": 498255,
+  "cutoff_date_utc": "2025-07-10T00:00:00+00:00",
+  "requested_train_fraction": 0.8,
+  "actual_temporal_split": {
+    "train": {
+      "rows": 397480,
+      "unique_sha256": 397480,
+      "labels": {
+        "benign": 204388,
+        "phish": 193092
+      },
+      "date_min": "2024-07-02T00:00:00+00:00",
+      "date_max": "2025-07-09T00:00:00+00:00"
+    },
+    "validation": {
+      "rows": 100775,
+      "unique_sha256": 100775,
+      "labels": {
+        "benign": 72341,
+        "phish": 28434
+      },
+      "date_min": "2025-07-10T00:00:00+00:00",
+      "date_max": "2025-09-08T00:00:00+00:00"
+    }
+  },
+  "cross_boundary_sha256_purged": 0,
+  "exact_duplicate_url_rows_after_first": 0,
+  "urls_with_conflicting_labels": 0,
+  "near_duplicate_host_path_template_rows_after_first": 46764,
+  "near_duplicate_template_rate": 0.0938555558900563,
+  "registered_domain_overlap_temporal": 14182,
+  "registered_domain_overlap_sample": [
+    "0123movie.net",
+    "01net.com",
+    "1-stop.biz",
+    "1001fonts.com",
+    "1001games.com",
+    "1001spiele.de",
+    "101cookbooks.com",
+    "1099-etc.com",
+    "10news.com",
+    "10times.com"
+  ],
+  "grouped_folds": 5,
+  "grouped_splitter": "deterministic GroupKFold; no random seed",
+  "date_ranges_and_class_balance": {
+    "train": {
+      "rows": 397480,
+      "unique_sha256": 397480,
+      "labels": {
+        "benign": 204388,
+        "phish": 193092
+      },
+      "date_min": "2024-07-02T00:00:00+00:00",
+      "date_max": "2025-07-09T00:00:00+00:00"
+    },
+    "validation": {
+      "rows": 100775,
+      "unique_sha256": 100775,
+      "labels": {
+        "benign": 72341,
+        "phish": 28434
+      },
+      "date_min": "2025-07-10T00:00:00+00:00",
+      "date_max": "2025-09-08T00:00:00+00:00"
+    }
+  },
+  "sha_domain_conflicts": 0,
+  "grouped_fold_stats": {
+    "0": {
+      "train_rows": 398604,
+      "validation_rows": 99651,
+      "train_domains": 136490,
+      "validation_domains": 34120,
+      "domain_overlap": 0,
+      "train_labels": {
+        "benign": 227951,
+        "phish": 170653
+      },
+      "validation_labels": {
+        "phish": 50873,
+        "benign": 48778
+      },
+      "train_date_min": "2024-07-02T00:00:00+00:00",
+      "train_date_max": "2025-09-08T00:00:00+00:00",
+      "validation_date_min": "2024-07-02T00:00:00+00:00",
+      "validation_date_max": "2025-09-08T00:00:00+00:00"
+    },
+    "1": {
+      "train_rows": 398604,
+      "validation_rows": 99651,
+      "train_domains": 136490,
+      "validation_domains": 34120,
+      "domain_overlap": 0,
+      "train_labels": {
+        "benign": 225705,
+        "phish": 172899
+      },
+      "validation_labels": {
+        "benign": 51024,
+        "phish": 48627
+      },
+      "train_date_min": "2024-07-02T00:00:00+00:00",
+      "train_date_max": "2025-09-08T00:00:00+00:00",
+      "validation_date_min": "2024-07-02T00:00:00+00:00",
+      "validation_date_max": "2025-09-08T00:00:00+00:00"
+    },
+    "2": {
+      "train_rows": 398604,
+      "validation_rows": 99651,
+      "train_domains": 136487,
+      "validation_domains": 34123,
+      "domain_overlap": 0,
+      "train_labels": {
+        "benign": 221262,
+        "phish": 177342
+      },
+      "validation_labels": {
+        "benign": 55467,
+        "phish": 44184
+      },
+      "train_date_min": "2024-07-02T00:00:00+00:00",
+      "train_date_max": "2025-09-08T00:00:00+00:00",
+      "validation_date_min": "2024-07-02T00:00:00+00:00",
+      "validation_date_max": "2025-09-08T00:00:00+00:00"
+    },
+    "3": {
+      "train_rows": 398604,
+      "validation_rows": 99651,
+      "train_domains": 136486,
+      "validation_domains": 34124,
+      "domain_overlap": 0,
+      "train_labels": {
+        "benign": 209702,
+        "phish": 188902
+      },
+      "validation_labels": {
+        "benign": 67027,
+        "phish": 32624
+      },
+      "train_date_min": "2024-07-02T00:00:00+00:00",
+      "train_date_max": "2025-09-08T00:00:00+00:00",
+      "validation_date_min": "2024-07-02T00:00:00+00:00",
+      "validation_date_max": "2025-09-08T00:00:00+00:00"
+    },
+    "4": {
+      "train_rows": 398604,
+      "validation_rows": 99651,
+      "train_domains": 136487,
+      "validation_domains": 34123,
+      "domain_overlap": 0,
+      "train_labels": {
+        "benign": 222296,
+        "phish": 176308
+      },
+      "validation_labels": {
+        "benign": 54433,
+        "phish": 45218
+      },
+      "train_date_min": "2024-07-02T00:00:00+00:00",
+      "train_date_max": "2025-09-08T00:00:00+00:00",
+      "validation_date_min": "2024-07-02T00:00:00+00:00",
+      "validation_date_max": "2025-09-08T00:00:00+00:00"
+    }
+  }
+}

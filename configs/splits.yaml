@@ -1,0 +1,11 @@
+version: 1
+source: data/raw/data/train-*.parquet
+temporal:
+  train_fraction: 0.8
+  cutoff: first UTC day whose cumulative row count reaches the requested fraction
+  purge_sha256_spanning_cutoff: true
+grouped:
+  group_key: registered_domain
+  folds: 5
+  splitter: GroupKFold
+  seed: null # GroupKFold is deterministic and does not use a random seed.

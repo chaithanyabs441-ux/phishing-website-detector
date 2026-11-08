@@ -4,7 +4,15 @@
 venv/
 
 # Local data, outputs, and handoff notes
-data/
+**/data/
+/data/
+!/data/
+/data/*
+!/data/splits/
+/data/splits/*
+!/data/splits/*.csv.gz
+!/data/splits/MANIFEST.json
+!/data/splits/leakage_audit.json
 logs/
 handoff/
 results/
@@ -17,6 +25,10 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 /experiments/
+!/experiments/
+experiments/*
+!experiments/phase2_svm_baseline.json
+!experiments/phase2_grouped_cv.json
 
 # Only keep model artifacts loaded by webapp/app.py.
 # These are required for the app to run without retraining.

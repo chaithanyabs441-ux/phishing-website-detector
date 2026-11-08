@@ -40,6 +40,7 @@ experiments/*
 !experiments/phase5_studies/
 !experiments/phase5_studies/*.sqlite3
 !experiments/phase6_*.json
+!experiments/phase7_*.json
 
 # Only keep model artifacts loaded by webapp/app.py.
 # These are required for the app to run without retraining.

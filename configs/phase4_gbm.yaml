@@ -1,0 +1,40 @@
+version: 1
+seed: 42
+split: data/splits/temporal_assignments.csv.gz
+features:
+  url: url_features_v2
+  html: html_features_v2
+  exclude:
+    - cleaned_text
+  categorical:
+    - registered_domain
+    - public_suffix
+    - tld_category
+tuning:
+  objective: average_precision
+  sampler: TPESampler
+  pruner: MedianPruner
+  trials_per_model: 60
+  timeout_seconds_per_model: 900
+  domain_holdout_fraction: 0.2
+  fit_rows: 100000
+  validation_rows: 25000
+  n_jobs: 4
+text_score:
+  enabled: true
+  model: LinearSVC
+  vectorizer:
+    analyzer: char
+    ngram_range: [2, 5]
+    min_df: 2
+    max_features: 200000
+    sublinear_tf: true
+  classifier:
+    C: 1.0
+    class_weight: balanced
+    max_iter: 5000
+  grouped_oof_folds: 5
+bootstrap:
+  resampling_unit: registered_domain
+  replicates: 200
+  confidence_level: 0.95

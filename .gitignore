@@ -30,6 +30,9 @@ experiments/*
 !experiments/phase2_svm_baseline.json
 !experiments/phase2_grouped_cv.json
 !experiments/phase3_html_sample.json
+!experiments/phase4_tuning_pilot.json
+!experiments/phase4_gbm_results.json
+!experiments/phase4_*_trials.csv
 
 # Only keep model artifacts loaded by webapp/app.py.
 # These are required for the app to run without retraining.

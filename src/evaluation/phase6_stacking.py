@@ -348,7 +348,7 @@ def run_nested_label_shuffle_diagnostic(config_path=None):
     metadata = {}
     for name in base_names:
         if name == text_model:
-            train_scores, validation_scores, _, base_metadata = _fit_text_oof(
+            train_scores, validation_scores, base_metadata = _fit_text_oof(
                 fit_frame, validation_frame, ledger, text_model, seed,
             )
         else:

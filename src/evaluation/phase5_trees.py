@@ -146,7 +146,7 @@ def _tune_one(model_name, fit_frame, columns, seed, config, split_hash, config_h
 
 
 def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, pilot=False):
-    started = time.monotonic()
+    phase_started = time.monotonic()
     config_path = Path(config_path or CONFIG_PATH)
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     seed = int(config["seed"])
@@ -190,7 +190,7 @@ def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, p
             "tuning": tuning_results,
             "final_refits_performed": False,
             "official_test_accessed": False,
-            "elapsed_seconds": time.monotonic() - started,
+            "elapsed_seconds": time.monotonic() - phase_started,
         }
         PILOT_PATH.write_text(json.dumps(pilot_result, indent=2) + "\n", encoding="utf-8")
         print(f"Wrote tree pilot record: {PILOT_PATH}")
@@ -209,9 +209,9 @@ def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, p
             model_name, tuning_results[model_name]["best_params"], seed,
             int(tuning["n_jobs"]),
         )
-        started = time.monotonic()
+        model_started = time.monotonic()
         model.fit(x_train, y_train)
-        training_seconds = time.monotonic() - started
+        training_seconds = time.monotonic() - model_started
         probabilities = model.predict_proba(x_valid)[:, 1]
         scores = logit(np.clip(probabilities, 1e-12, 1.0 - 1e-12))
         artifact = MODEL_DIR / f"{model_name}.joblib"
@@ -258,7 +258,7 @@ def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, p
             "confidence_level": 0.95,
         },
         "models": results,
-        "elapsed_seconds": time.monotonic() - started,
+        "elapsed_seconds": time.monotonic() - phase_started,
         "official_test_accessed": False,
     }
     RESULT_PATH.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")

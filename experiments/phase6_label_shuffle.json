@@ -1,0 +1,95 @@
+{
+  "experiment": "phase6_nested_grouped_oof_label_shuffle",
+  "created_utc": "2026-11-08T21:44:22.858129+00:00",
+  "git_commit": "7dfee0e4a19c386f62a5dc28b106e551d3c9ee12",
+  "seed": 42,
+  "split_manifest_sha256": "f41e1c4925c7ae106c427bf0a7c2c58fd89a6c86994a8d793b338a02a792ee82",
+  "phase4_results_sha256": "d88b03a8a1a4b86aa6f715c0c77a8b83c3f040fb39d116a0c299dc8bbe973e9d",
+  "phase5_results_sha256": "1653342333c04f9e0d95ed14ef996bd3bd3b31bb019dc58866039556bf2eabfe",
+  "base_models": [
+    "lightgbm",
+    "xgboost",
+    "catboost",
+    "char_svc_2_5_min_df3"
+  ],
+  "outer_fit_rows": 25000,
+  "outer_validation_rows": 6000,
+  "outer_fit_domains": 13191,
+  "outer_validation_domains": 3592,
+  "oof_folds": 5,
+  "oof_assignment_min": 1,
+  "oof_assignment_max": 1,
+  "base_oof_metadata": {
+    "lightgbm": {
+      "fold_assignment_min": 1,
+      "fold_assignment_max": 1,
+      "fold_rows": [
+        5000,
+        5000,
+        5000,
+        5000,
+        5000
+      ],
+      "fixed_iterations_from_phase4_temporal_fit": 64
+    },
+    "xgboost": {
+      "fold_assignment_min": 1,
+      "fold_assignment_max": 1,
+      "fold_rows": [
+        5000,
+        5000,
+        5000,
+        5000,
+        5000
+      ],
+      "fixed_iterations_from_phase4_temporal_fit": 310
+    },
+    "catboost": {
+      "fold_assignment_min": 1,
+      "fold_assignment_max": 1,
+      "fold_rows": [
+        5000,
+        5000,
+        5000,
+        5000,
+        5000
+      ],
+      "fixed_iterations_from_phase4_temporal_fit": 313
+    },
+    "char_svc_2_5_min_df3": {
+      "fold_assignment_min": 1,
+      "fold_assignment_max": 1,
+      "fold_rows": [
+        5000,
+        5000,
+        5000,
+        5000,
+        5000
+      ],
+      "artifact": "models\\phase5\\char_svc_2_5_min_df3.joblib"
+    }
+  },
+  "diagnostic": {
+    "unshuffled_average_precision": 0.9993119448668061,
+    "shuffled_average_precision_mean": 0.24766251274740578,
+    "shuffled_average_precision_std": 0.05483792777569254,
+    "shuffled_repeat_scores": [
+      0.2338124810655694,
+      0.21599190480340708,
+      0.344987796857126,
+      0.2249122520300309,
+      0.21860812898089557
+    ],
+    "validation_prevalence": 0.37333333333333335,
+    "difference_from_chance": -0.12567082058592757,
+    "drop_from_unshuffled": 0.7516494321194003,
+    "fit_rows": 25000,
+    "validation_rows": 6000,
+    "fit_domains": 13191,
+    "validation_domains": 3592,
+    "domain_overlap": 0,
+    "repeats": 5
+  },
+  "elapsed_seconds": 181.57799999999406,
+  "official_test_accessed": false
+}

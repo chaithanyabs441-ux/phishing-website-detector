@@ -1,0 +1,938 @@
+{
+  "experiment": "phase6_grouped_oof_stacking",
+  "created_utc": "2026-11-08T21:30:15.846389+00:00",
+  "git_commit": "1d6873d42acb41312d6c0bd5aa63c658f9f4d210",
+  "seed": 42,
+  "split_manifest_sha256": "f41e1c4925c7ae106c427bf0a7c2c58fd89a6c86994a8d793b338a02a792ee82",
+  "phase4_results_sha256": "d88b03a8a1a4b86aa6f715c0c77a8b83c3f040fb39d116a0c299dc8bbe973e9d",
+  "phase5_results_sha256": "1653342333c04f9e0d95ed14ef996bd3bd3b31bb019dc58866039556bf2eabfe",
+  "training_rows": 397480,
+  "validation_rows": 100775,
+  "base_models": [
+    "lightgbm",
+    "xgboost",
+    "catboost",
+    "char_svc_2_5_min_df3"
+  ],
+  "grouped_folds": 5,
+  "oof_assignment_min": 1,
+  "oof_assignment_max": 1,
+  "oof_metadata": {
+    "lightgbm": {
+      "fold_assignment_min": 1,
+      "fold_assignment_max": 1,
+      "fold_rows": [
+        79496,
+        79496,
+        79496,
+        79496,
+        79496
+      ],
+      "fixed_iterations_from_phase4_temporal_fit": 64
+    },
+    "xgboost": {
+      "fold_assignment_min": 1,
+      "fold_assignment_max": 1,
+      "fold_rows": [
+        79496,
+        79496,
+        79496,
+        79496,
+        79496
+      ],
+      "fixed_iterations_from_phase4_temporal_fit": 310
+    },
+    "catboost": {
+      "fold_assignment_min": 1,
+      "fold_assignment_max": 1,
+      "fold_rows": [
+        79496,
+        79496,
+        79496,
+        79496,
+        79496
+      ],
+      "fixed_iterations_from_phase4_temporal_fit": 313
+    },
+    "char_svc_2_5_min_df3": {
+      "fold_assignment_min": 1,
+      "fold_assignment_max": 1,
+      "fold_rows": [
+        79496,
+        79496,
+        79496,
+        79496,
+        79496
+      ],
+      "artifact": "models\\phase5\\char_svc_2_5_min_df3.joblib"
+    }
+  },
+  "oof_parquet": "data\\processed\\phase6_base_oof.parquet",
+  "oof_sha256": "c1dc72ac2c60dc84325e6860237025531b354e6039a3df3937d1b494c1ff49fa",
+  "validation_predictions_parquet": "data\\processed\\phase6_validation_predictions.parquet",
+  "validation_predictions_sha256": "1d58eb83927796944a718b5e9e2710240f7723287df354e45f19b9a82fcc6d06",
+  "base_prediction_correlations": {
+    "lightgbm": {
+      "lightgbm": 1.0,
+      "xgboost": 0.9883605417129921,
+      "catboost": 0.9734971237342732,
+      "char_svc_2_5_min_df3": 0.9048202398899841
+    },
+    "xgboost": {
+      "lightgbm": 0.9883605417129921,
+      "xgboost": 1.0,
+      "catboost": 0.985117315898289,
+      "char_svc_2_5_min_df3": 0.9040224074896895
+    },
+    "catboost": {
+      "lightgbm": 0.9734971237342732,
+      "xgboost": 0.985117315898289,
+      "catboost": 1.0,
+      "char_svc_2_5_min_df3": 0.9058786811412074
+    },
+    "char_svc_2_5_min_df3": {
+      "lightgbm": 0.9048202398899841,
+      "xgboost": 0.9040224074896895,
+      "catboost": 0.9058786811412074,
+      "char_svc_2_5_min_df3": 1.0
+    }
+  },
+  "best_single_model": "catboost",
+  "best_single_average_precision": 0.9407510871821222,
+  "best_ensemble": "logistic_meta",
+  "ensemble_ap_gain_over_best_single": -0.002225463711277853,
+  "paired_ap_gain_vs_best_single": {
+    "point_difference": -0.002225463711277742,
+    "ci_95": [
+      -0.005978411579410922,
+      0.0003247377218847025
+    ],
+    "replicates_completed": 200
+  },
+  "costs": {
+    "base_models": {
+      "lightgbm": {
+        "model_size_bytes": 9684118,
+        "inference_seconds_per_1000": 0.03224050000017087
+      },
+      "xgboost": {
+        "model_size_bytes": 340287766,
+        "inference_seconds_per_1000": 0.013016400000196882
+      },
+      "catboost": {
+        "model_size_bytes": 30261927,
+        "inference_seconds_per_1000": 0.14000119999991512
+      },
+      "char_svc_2_5_min_df3": {
+        "model_size_bytes": 43208421,
+        "sparse_transform_seconds_per_1000": 0.10156288762094351,
+        "classifier_seconds_per_1000": 0.0016223999999738226,
+        "inference_seconds_per_1000": 0.10318528762091733
+      }
+    },
+    "mean_probability_total_seconds_per_1000": 0.2884433876212002,
+    "rank_average_total_seconds_per_1000": 0.2884433876212002,
+    "logistic_meta_seconds_per_1000": 4.6594889605466815e-05,
+    "logistic_stack_total_seconds_per_1000": 0.28848998251080565,
+    "lightgbm_meta_seconds_per_1000": 0.0004107030513520692,
+    "lightgbm_stack_total_seconds_per_1000": 0.28885409067255224,
+    "base_model_artifact_bytes_total": 423442232,
+    "meta_model_artifact_bytes": {
+      "logistic": 907,
+      "lightgbm": 96502
+    }
+  },
+  "label_shuffle_meta_test": {
+    "average_precision": 0.5981439718112683,
+    "unshuffled_average_precision": 0.9927749866848127,
+    "validation_prevalence": 0.48579383449062424,
+    "difference_from_chance": 0.11235013732064408,
+    "fit_rows": 278236,
+    "validation_rows": 119244
+  },
+  "bootstrap": {
+    "resampling_unit": "registered_domain",
+    "requested_replicates": 200,
+    "confidence_level": 0.95
+  },
+  "models": {
+    "lightgbm": {
+      "metrics": {
+        "average_precision": 0.919184900514342,
+        "roc_auc": 0.9447952040350984,
+        "accuracy": 0.9235425452741255,
+        "precision": 0.9530136806678614,
+        "recall": 0.7668284448195822,
+        "f1": 0.8498431196772749,
+        "false_positive_rate": 0.014860176110366182,
+        "true_positive_rate": 0.7668284448195822,
+        "precision_at_prevalence_0.05%": 0.025164753865242466,
+        "alerts_per_1000_at_prevalence_0.05%": 15.236160244720791,
+        "precision_at_prevalence_0.5%": 0.20591507143256285,
+        "alerts_per_1000_at_prevalence_0.5%": 18.620017453912265,
+        "precision_at_prevalence_1%": 0.34264221761160985,
+        "alerts_per_1000_at_prevalence_1%": 22.37985879745834,
+        "precision_at_prevalence_5%": 0.7308893085561262,
+        "alerts_per_1000_at_prevalence_5%": 52.45858954582698,
+        "precision_at_prevalence_45%": 0.9768628682472184,
+        "alerts_per_1000_at_prevalence_45%": 353.2458970295134
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8928532996314111,
+          0.9404798282904395
+        ],
+        "roc_auc": [
+          0.9197006798465533,
+          0.9631400227920852
+        ],
+        "accuracy": [
+          0.9011980958925955,
+          0.9393790865785555
+        ],
+        "precision": [
+          0.9484826586428621,
+          0.9577944970745559
+        ],
+        "recall": [
+          0.7092305638542968,
+          0.8186622977571519
+        ],
+        "f1": [
+          0.813711383066353,
+          0.8816763348892904
+        ],
+        "false_positive_rate": [
+          0.01305308889829538,
+          0.0166747860752093
+        ],
+        "true_positive_rate": [
+          0.7092305638542968,
+          0.8186622977571519
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.021946931046042336,
+          0.02853716451639353
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          13.418504943798,
+          17.06483294812149
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.18394586987144484,
+          0.22784877906746967
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          16.770340199037864,
+          20.575254804331195
+        ],
+        "precision_at_prevalence_1%": [
+          0.31181358528214964,
+          0.3723114699388312
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          20.391363193127418,
+          24.405272290526117
+        ],
+        "precision_at_prevalence_5%": [
+          0.7024572258419682,
+          0.7555375152056341
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          49.200790490758024,
+          55.74550194277532
+        ],
+        "precision_at_prevalence_45%": [
+          0.9734752647628443,
+          0.9796105174089329
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          327.67392980481344,
+          377.39328348129214
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "xgboost": {
+      "metrics": {
+        "average_precision": 0.9209772471059166,
+        "roc_auc": 0.9418720585739001,
+        "accuracy": 0.9296452493177871,
+        "precision": 0.9623516159778183,
+        "recall": 0.7812126327635929,
+        "f1": 0.8623728550353288,
+        "false_positive_rate": 0.012012551665030895,
+        "true_positive_rate": 0.7812126327635929,
+        "precision_at_prevalence_0.05%": 0.031507746751697624,
+        "alerts_per_1000_at_prevalence_0.05%": 12.397151705580177,
+        "precision_at_prevalence_0.5%": 0.24630641854612723,
+        "alerts_per_1000_at_prevalence_0.5%": 15.858552070523706,
+        "precision_at_prevalence_1%": 0.39646301722124844,
+        "alerts_per_1000_at_prevalence_1%": 19.704552476016513,
+        "precision_at_prevalence_5%": 0.7738984301667413,
+        "alerts_per_1000_at_prevalence_5%": 50.472555719959,
+        "precision_at_prevalence_45%": 0.981552825152762,
+        "alerts_per_1000_at_prevalence_45%": 358.15258815938375
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8919775543827781,
+          0.9439050576950891
+        ],
+        "roc_auc": [
+          0.9122391064904156,
+          0.9627775958780129
+        ],
+        "accuracy": [
+          0.9100859273138003,
+          0.9481244901689677
+        ],
+        "precision": [
+          0.9576689990819971,
+          0.966932671155637
+        ],
+        "recall": [
+          0.7226456842134368,
+          0.8303597904738267
+        ],
+        "f1": [
+          0.8248167281510727,
+          0.8924946901655428
+        ],
+        "false_positive_rate": [
+          0.010501199763835012,
+          0.013634422419031149
+        ],
+        "true_positive_rate": [
+          0.7226456842134368,
+          0.8303597904738267
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.027375323742118596,
+          0.03597256685505665
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          10.909935976277549,
+          14.01157269456407
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.2204134247450096,
+          0.27264072771793574
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          14.470115722254887,
+          17.449916126507357
+        ],
+        "precision_at_prevalence_1%": [
+          0.3623742953864209,
+          0.4296986751198302
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          18.14600876359555,
+          21.186456136993396
+        ],
+        "precision_at_prevalence_5%": [
+          0.7475535963704202,
+          0.7969921554711192
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          47.18747196596165,
+          53.30860417951647
+        ],
+        "precision_at_prevalence_45%": [
+          0.9787386817157514,
+          0.9838788151422361
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          331.73617749549277,
+          380.14028125133336
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "catboost": {
+      "metrics": {
+        "average_precision": 0.9407510871821222,
+        "roc_auc": 0.9631415365604749,
+        "accuracy": 0.9320664847432399,
+        "precision": 0.9791370738636364,
+        "recall": 0.7757614123936133,
+        "f1": 0.8656646128487893,
+        "false_positive_rate": 0.00649700722964847,
+        "true_positive_rate": 0.7757614123936133,
+        "precision_at_prevalence_0.05%": 0.056364578530538924,
+        "alerts_per_1000_at_prevalence_0.05%": 6.881639432230453,
+        "precision_at_prevalence_0.5%": 0.3750056646333119,
+        "alerts_per_1000_at_prevalence_0.5%": 10.343329255468294,
+        "precision_at_prevalence_1%": 0.5467092862363779,
+        "alerts_per_1000_at_prevalence_1%": 14.18965128128812,
+        "precision_at_prevalence_5%": 0.8627196254771075,
+        "alerts_per_1000_at_prevalence_5%": 44.960227487846716,
+        "precision_at_prevalence_45%": 0.9898675968702526,
+        "alerts_per_1000_at_prevalence_45%": 352.66598955343267
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.918676633026832,
+          0.9580427644855628
+        ],
+        "roc_auc": [
+          0.9424306305749074,
+          0.9781727518981969
+        ],
+        "accuracy": [
+          0.9137956793120847,
+          0.9486803565002502
+        ],
+        "precision": [
+          0.9762021530166014,
+          0.9821140119751884
+        ],
+        "recall": [
+          0.7304188493011984,
+          0.8254710869458219
+        ],
+        "f1": [
+          0.836032328399078,
+          0.89603358985386
+        ],
+        "false_positive_rate": [
+          0.005573159527120448,
+          0.007358166305654869
+        ],
+        "true_positive_rate": [
+          0.7304188493011984,
+          0.8254710869458219
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.04861450840827913,
+          0.06484200854313552
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          5.972828014401756,
+          7.734350179163609
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.33919131417972187,
+          0.41055674157450883
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          9.472026499419506,
+          11.215833888352801
+        ],
+        "precision_at_prevalence_1%": [
+          0.5078205507844503,
+          0.5833451011161442
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          13.191092717353035,
+          15.155628221865655
+        ],
+        "precision_at_prevalence_5%": [
+          0.8431645972697411,
+          0.8794467566474726
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          42.294295807356136,
+          47.59301872383267
+        ],
+        "precision_at_prevalence_45%": [
+          0.9881760470163192,
+          0.9912591606658463
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          332.0417113267881,
+          375.0543780644335
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "char_svc_2_5_min_df3": {
+      "metrics": {
+        "average_precision": 0.8946097186537936,
+        "roc_auc": 0.9157138412588204,
+        "accuracy": 0.9058794343835277,
+        "precision": 0.9614728946471189,
+        "recall": 0.6942392909896603,
+        "f1": 0.8062902072909222,
+        "false_positive_rate": 0.010934324933302,
+        "true_positive_rate": 0.6942392909896603,
+        "precision_at_prevalence_0.05%": 0.030783996160911247,
+        "alerts_per_1000_at_prevalence_0.05%": 11.27597741633018,
+        "precision_at_prevalence_0.5%": 0.2418808998862692,
+        "alerts_per_1000_at_prevalence_0.5%": 14.350849763583792,
+        "precision_at_prevalence_1%": 0.39073825303900295,
+        "alerts_per_1000_at_prevalence_1%": 17.767374593865583,
+        "precision_at_prevalence_5%": 0.769673902849317,
+        "alerts_per_1000_at_prevalence_5%": 45.099573236119916,
+        "precision_at_prevalence_45%": 0.9811134688249038,
+        "alerts_per_1000_at_prevalence_45%": 318.4215596586632
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8658309491469512,
+          0.9233691551067029
+        ],
+        "roc_auc": [
+          0.8820770247176685,
+          0.9446361131899517
+        ],
+        "accuracy": [
+          0.8845528741998955,
+          0.9274162721965314
+        ],
+        "precision": [
+          0.9573044873462464,
+          0.9650870497879255
+        ],
+        "recall": [
+          0.6455896244896093,
+          0.7539114395125392
+        ],
+        "f1": [
+          0.7723202498837339,
+          0.8451517377391116
+        ],
+        "false_positive_rate": [
+          0.009762952232736545,
+          0.012176822919870564
+        ],
+        "true_positive_rate": [
+          0.6455896244896093,
+          0.7539114395125392
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.02697092953356954,
+          0.035453989826891213
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          10.112117479267685,
+          12.50775488358158
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.21779595634981572,
+          0.26966470369017
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          13.17705557438878,
+          15.582891415616094
+        ],
+        "precision_at_prevalence_1%": [
+          0.3588469740907669,
+          0.42601235559344275
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          16.52000533919769,
+          19.084147144156447
+        ],
+        "precision_at_prevalence_5%": [
+          0.7446555736965029,
+          0.794544756547902
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          42.46852075225089,
+          48.265835819773606
+        ],
+        "precision_at_prevalence_45%": [
+          0.9784179837803869,
+          0.9836382073994182
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          297.21672997655884,
+          345.1740054741455
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "mean_probability": {
+      "metrics": {
+        "average_precision": 0.9217796707543873,
+        "roc_auc": 0.9382882385858485,
+        "accuracy": 0.9329992557677995,
+        "precision": 0.9779982363315697,
+        "recall": 0.7800872195259196,
+        "f1": 0.867903118519388,
+        "false_positive_rate": 0.006897886399137418,
+        "true_positive_rate": 0.7800872195259196,
+        "precision_at_prevalence_0.05%": 0.053544460647923356,
+        "alerts_per_1000_at_prevalence_0.05%": 7.28448106570081,
+        "precision_at_prevalence_0.5%": 0.36236497483366165,
+        "alerts_per_1000_at_prevalence_0.5%": 10.76383306477133,
+        "precision_at_prevalence_1%": 0.5332187045199699,
+        "alerts_per_1000_at_prevalence_1%": 14.629779730405241,
+        "precision_at_prevalence_5%": 0.8561595079678845,
+        "alerts_per_1000_at_prevalence_5%": 45.557353055476526,
+        "precision_at_prevalence_45%": 0.9893081066396051,
+        "alerts_per_1000_at_prevalence_45%": 354.83308630618944
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8950794536141619,
+          0.9478121310202503
+        ],
+        "roc_auc": [
+          0.9118767895411729,
+          0.9623157651732904
+        ],
+        "accuracy": [
+          0.9138940238690746,
+          0.9514615429901848
+        ],
+        "precision": [
+          0.9751867876071968,
+          0.9807853104417146
+        ],
+        "recall": [
+          0.7255888872807024,
+          0.8490178277515865
+        ],
+        "f1": [
+          0.8334613634559124,
+          0.9089795102808707
+        ],
+        "false_positive_rate": [
+          0.0060252505835259795,
+          0.007877593047224607
+        ],
+        "true_positive_rate": [
+          0.7255888872807024,
+          0.8490178277515865
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.04662657545941789,
+          0.06226837700409753
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          6.415029769944899,
+          8.263125479537964
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.3294356810630165,
+          0.40013258647612304
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          9.740563493600243,
+          11.729810095842522
+        ],
+        "precision_at_prevalence_1%": [
+          0.49686166180690255,
+          0.5727970370827141
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          13.44337331996256,
+          15.661610370797101
+        ],
+        "precision_at_prevalence_5%": [
+          0.8372799648406789,
+          0.8747857781232298
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          42.68118843696511,
+          48.72632387686785
+        ],
+        "precision_at_prevalence_45%": [
+          0.9876527235780326,
+          0.9908763628295897
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          330.22035584457007,
+          385.8324775102121
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "rank_average": {
+      "metrics": {
+        "average_precision": 0.930451401496307,
+        "roc_auc": 0.9507968771657279,
+        "accuracy": 0.7887571322252542,
+        "precision": 0.577545793905721,
+        "recall": 0.9358866146163044,
+        "f1": 0.7142933834384646,
+        "false_positive_rate": 0.26907286324490953,
+        "true_positive_rate": 0.9358866146163044,
+        "precision_at_prevalence_0.05%": 0.0017369428970553844,
+        "alerts_per_1000_at_prevalence_0.05%": 269.40627012059525,
+        "precision_at_prevalence_0.5%": 0.01717809836443948,
+        "alerts_per_1000_at_prevalence_0.5%": 272.40693200176645,
+        "precision_at_prevalence_1%": 0.03394078544871734,
+        "alerts_per_1000_at_prevalence_1%": 275.74100075862344,
+        "precision_at_prevalence_5%": 0.15473622331056433,
+        "alerts_per_1000_at_prevalence_5%": 302.4135508134793,
+        "precision_at_prevalence_45%": 0.7399755394915578,
+        "alerts_per_1000_at_prevalence_45%": 569.1390513620372
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.9046484402149696,
+          0.9543219841133848
+        ],
+        "roc_auc": [
+          0.9234100495987264,
+          0.9711915320724974
+        ],
+        "accuracy": [
+          0.7719160486869755,
+          0.8053610995830347
+        ],
+        "precision": [
+          0.5551276811102187,
+          0.6037383130500332
+        ],
+        "recall": [
+          0.9014794892903168,
+          0.9657285643907478
+        ],
+        "f1": [
+          0.6946694095702597,
+          0.7338233228902541
+        ],
+        "false_positive_rate": [
+          0.2450261294901321,
+          0.2923063124239903
+        ],
+        "true_positive_rate": [
+          0.9014794892903168,
+          0.9657285643907478
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.0015906558814387567,
+          0.001929661813129951
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          245.37711118584295,
+          292.636713413706
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.015751862435110932,
+          0.019051362444029617
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          248.53594644724063,
+          295.6103223211472
+        ],
+        "precision_at_prevalence_1%": [
+          0.031166937719298488,
+          0.037572132253728935
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          252.04576340434917,
+          298.9143322183039
+        ],
+        "precision_at_prevalence_5%": [
+          0.14355722771736376,
+          0.16903025802616364
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          278.731804658936,
+          325.34641139555856
+        ],
+        "precision_at_prevalence_45%": [
+          0.7226638378412524,
+          0.759739638987665
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          549.2602232304371,
+          590.8220512172841
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "logistic_meta": {
+      "metrics": {
+        "average_precision": 0.9385256234708443,
+        "roc_auc": 0.9595291445742689,
+        "accuracy": 0.9344579508806747,
+        "precision": 0.9475173233834926,
+        "recall": 0.8127242034184428,
+        "f1": 0.8749597713117393,
+        "false_positive_rate": 0.01769397713606392,
+        "true_positive_rate": 0.8127242034184428,
+        "precision_at_prevalence_0.05%": 0.022461502683786397,
+        "alerts_per_1000_at_prevalence_0.05%": 18.09149224920511,
+        "precision_at_prevalence_0.5%": 0.1875304334780965,
+        "alerts_per_1000_at_prevalence_0.5%": 21.669128267475816,
+        "precision_at_prevalence_1%": 0.31692222299437817,
+        "alerts_per_1000_at_prevalence_1%": 25.644279398887708,
+        "precision_at_prevalence_5%": 0.707387320871371,
+        "alerts_per_1000_at_prevalence_5%": 57.445488450182864,
+        "precision_at_prevalence_45%": 0.9740804608293959,
+        "alerts_per_1000_at_prevalence_45%": 375.45757896313444
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.9173700218633888,
+          0.9618078136125713
+        ],
+        "roc_auc": [
+          0.9380239770618083,
+          0.9782476845798846
+        ],
+        "accuracy": [
+          0.9164071543460817,
+          0.9539265730720543
+        ],
+        "precision": [
+          0.9411575720173087,
+          0.9529656643601565
+        ],
+        "recall": [
+          0.7576634405515003,
+          0.8723536881141312
+        ],
+        "f1": [
+          0.8405303007180932,
+          0.9096571932236612
+        ],
+        "false_positive_rate": [
+          0.01576137268836052,
+          0.01950649224184951
+        ],
+        "true_positive_rate": [
+          0.7576634405515003,
+          0.8723536881141312
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.019914844212772478,
+          0.02635849025831658
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          16.153544981370974,
+          19.91144251331635
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.16951385628919008,
+          0.21380251804202338
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          19.68309561846506,
+          23.56208408956831
+        ],
+        "precision_at_prevalence_1%": [
+          0.29092586449199775,
+          0.35343588682702987
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          23.674136059658103,
+          27.631111493480628
+        ],
+        "precision_at_prevalence_5%": [
+          0.6813079693740606,
+          0.740142745210735
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          54.222136437781096,
+          60.937649993729735
+        ],
+        "precision_at_prevalence_45%": [
+          0.9707888208187678,
+          0.9779140233200936
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          351.11838263643364,
+          402.2910327554564
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "lightgbm_meta": {
+      "metrics": {
+        "average_precision": 0.9166176114958686,
+        "roc_auc": 0.9336864161601475,
+        "accuracy": 0.9324634085834781,
+        "precision": 0.9590372697172935,
+        "recall": 0.7945769149609623,
+        "f1": 0.8690952454223727,
+        "false_positive_rate": 0.01333959995023569,
+        "true_positive_rate": 0.7945769149609623,
+        "precision_at_prevalence_0.05%": 0.028935333721233775,
+        "alerts_per_1000_at_prevalence_0.05%": 13.730218607741055,
+        "precision_at_prevalence_0.5%": 0.23036841891664092,
+        "alerts_per_1000_at_prevalence_0.5%": 17.245786525289322,
+        "precision_at_prevalence_1%": 0.3756514397931412,
+        "alerts_per_1000_at_prevalence_1%": 21.151973100342953,
+        "precision_at_prevalence_5%": 0.7581628722927649,
+        "alerts_per_1000_at_prevalence_5%": 52.401465700772015,
+        "precision_at_prevalence_45%": 0.9798935255611961,
+        "alerts_per_1000_at_prevalence_45%": 364.8963917050627
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8896647037339152,
+          0.943660739406848
+        ],
+        "roc_auc": [
+          0.9042330811869763,
+          0.9597095383269417
+        ],
+        "accuracy": [
+          0.9112805284965957,
+          0.9515059669633097
+        ],
+        "precision": [
+          0.9543619190473747,
+          0.9629664293636351
+        ],
+        "recall": [
+          0.7412571743200524,
+          0.8545070296591757
+        ],
+        "f1": [
+          0.8369527089522554,
+          0.9055075290919752
+        ],
+        "false_positive_rate": [
+          0.011836995030702648,
+          0.015088131426401566
+        ],
+        "true_positive_rate": [
+          0.7412571743200524,
+          0.8545070296591757
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.025283271867620492,
+          0.03292331047653864
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          12.222736191648655,
+          15.496450233575008
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.20670435882926358,
+          0.2548331070531408
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          15.6987244651459,
+          19.113617133770084
+        ],
+        "precision_at_prevalence_1%": [
+          0.3437287315026915,
+          0.4073782093199811
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          19.492499481865117,
+          23.165864013300492
+        ],
+        "precision_at_prevalence_5%": [
+          0.7318363301647512,
+          0.7817453371280305
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          49.59840584073803,
+          56.139913030623354
+        ],
+        "precision_at_prevalence_45%": [
+          0.9769715620358198,
+          0.9823573305099939
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          340.8685992427617,
+          392.3436345352081
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    }
+  },
+  "official_test_accessed": false,
+  "elapsed_seconds": 904.2660000000033
+}

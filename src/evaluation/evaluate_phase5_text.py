@@ -150,7 +150,7 @@ def _fit_catboost_text_hybrid(best_text_model, train, validation, text_train_sco
     }
 
 
-def run_text_pilot(config_path=None):
+def run_text_pilot(config_path=None, model_names=None):
     config_path = Path(config_path or CONFIG_PATH)
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     seed = int(config["seed"])
@@ -164,7 +164,7 @@ def run_text_pilot(config_path=None):
     validation_frame = train.iloc[valid_indices].reset_index(drop=True)
     results = {}
     started = time.monotonic()
-    for model_name in config["pilot"]["models"]:
+    for model_name in model_names or config["pilot"]["models"]:
         if model_name not in MODEL_SPECS:
             raise ValueError(f"Unknown pilot model {model_name}")
         _, _, scores, metadata = fit_text_model(
@@ -279,7 +279,7 @@ def main():
     parser.add_argument("--bootstrap-replicates", type=int, default=None)
     args = parser.parse_args()
     if args.pilot:
-        run_text_pilot(args.config)
+        run_text_pilot(args.config, args.models)
     else:
         run_text_comparison(args.config, args.models, args.bootstrap_replicates)
 

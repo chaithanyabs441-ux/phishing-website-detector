@@ -1,0 +1,13 @@
+version: 1
+selected_model: catboostengineered
+feature_version: url_features_v2+html_features_v2
+calibration_method: platt
+calibrator_artifact: models\phase7\catboost_engineered_calibrator.joblib
+assumed_prevalence: 0.05
+thresholds:
+  block: 0.9412894906414405
+  warn: 0.06817787498329715
+selection_constraints:
+  block_max_fpr: 0.001
+  warn_min_recall: 0.95
+source: temporal validation only; grouped OOF-calibrated scores

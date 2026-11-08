@@ -6,6 +6,7 @@ from src.evaluation.phase6_stacking import (
     build_grouped_fold_ledger,
     build_meta_features,
     label_shuffle_ap,
+    nested_meta_label_shuffle,
     paired_ap_bootstrap,
 )
 from src.evaluation.phase4_boosting import make_estimator
@@ -53,6 +54,32 @@ def test_shuffled_meta_labels_fall_to_chance_on_synthetic_data():
     assert result["unshuffled_average_precision"] > 0.95
     assert result["unshuffled_average_precision"] - result["average_precision"] > 0.25
     assert result["domain_overlap"] == 0
+
+
+def test_nested_meta_shuffle_uses_disjoint_domains_and_falls_to_chance():
+    rng = np.random.default_rng(42)
+    targets = np.tile([0, 1], 2000)
+    fit_groups = np.array([f"fit-{index // 20}" for index in range(3000)])
+    validation_targets = np.tile([0, 1], 1000)
+    validation_groups = np.array([f"validation-{index // 20}" for index in range(2000)])
+    fit_features = np.column_stack([
+        (targets * 2 - 1) + rng.normal(0, 0.25, len(targets)),
+        rng.normal(size=(len(targets), 8)),
+    ])
+    validation_features = np.column_stack([
+        (validation_targets * 2 - 1) + rng.normal(0, 0.25, len(validation_targets)),
+        rng.normal(size=(len(validation_targets), 8)),
+    ])
+
+    result = nested_meta_label_shuffle(
+        fit_features, targets, fit_groups, validation_features, validation_targets,
+        validation_groups, seed=13, repeats=5,
+    )
+
+    assert result["domain_overlap"] == 0
+    assert result["unshuffled_average_precision"] > 0.95
+    assert result["drop_from_unshuffled"] > 0.25
+    assert abs(result["difference_from_chance"]) < 0.08
 
 
 def test_paired_domain_bootstrap_reports_zero_for_identical_predictions():

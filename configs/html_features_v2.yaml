@@ -1,0 +1,12 @@
+version: html_features_v2
+max_html_chars: 500000
+cleaned_text_max_chars: 2048
+cache_root: data/processed/features_v2
+cache_key: sha256
+executor: joblib loky processes per training shard
+n_jobs: 2
+shard_timeout_seconds: 1800
+row_batch_size: 500
+sample_rows: 5000
+parser: BeautifulSoup html.parser; scripts are never executed
+public_suffix_data: bundled tldextract snapshot; network disabled

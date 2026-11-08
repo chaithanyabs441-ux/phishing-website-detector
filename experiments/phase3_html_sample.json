@@ -1,0 +1,89 @@
+{
+  "feature_spec": {
+    "version": "html_features_v2",
+    "parser": "BeautifulSoup html.parser; script text is inspected but never executed",
+    "max_html_chars": 500000,
+    "cleaned_text_max_chars": 2048,
+    "registered_domain": "shared offline tldextract snapshot, private suffixes included",
+    "columns": [
+      "html_missing",
+      "html_length",
+      "parsed_html_length",
+      "html_truncated",
+      "html_parse_error",
+      "num_forms",
+      "num_inputs",
+      "num_password_inputs",
+      "num_email_inputs",
+      "has_password_and_email_inputs",
+      "num_form_action_domain_mismatches",
+      "num_external_domains",
+      "num_external_resource_domains",
+      "num_external_script_domains",
+      "num_external_css_domains",
+      "num_external_image_domains",
+      "external_links_resources_ratio",
+      "favicon_domain_mismatch",
+      "title_length",
+      "visible_text_length",
+      "title_registered_domain_mismatch",
+      "num_hidden_iframes",
+      "has_meta_refresh",
+      "has_javascript_redirect",
+      "num_onmouseover_attributes",
+      "right_click_disabled",
+      "num_data_uris",
+      "empty_or_hash_link_ratio",
+      "visible_login_keyword_count",
+      "cleaned_text"
+    ],
+    "external_domain_comparison": "registered-domain comparison",
+    "login_keywords": [
+      "account",
+      "auth",
+      "bank",
+      "confirm",
+      "credential",
+      "invoice",
+      "log-in",
+      "login",
+      "password",
+      "pay",
+      "payment",
+      "secure",
+      "sign-in",
+      "signin",
+      "verify",
+      "wallet"
+    ],
+    "cleaned_text_rule": "title followed by visible body text; script/style/noscript/template excluded; whitespace collapsed",
+    "resource_ratio_rule": "external anchors plus external src/href/poster resources divided by all anchors plus URL-bearing resource tags",
+    "missing_html_rule": "non-string, empty, or whitespace-only input sets html_missing=1"
+  },
+  "feature_spec_hash": "f5434603820e65699462bc276cc34b2c6ba4ad7ed72f9f061a1cc0d13d79e6d3",
+  "sample_mode": true,
+  "rows": 5000,
+  "source_files": [
+    "train-000.parquet",
+    "train-001.parquet"
+  ],
+  "n_jobs": 2,
+  "parse_errors": 0,
+  "missing_html_by_label": {
+    "benign": {
+      "rows": 2811,
+      "missing_html": 0,
+      "missing_rate": 0.0
+    },
+    "phish": {
+      "rows": 2189,
+      "missing_html": 0,
+      "missing_rate": 0.0
+    }
+  },
+  "elapsed_seconds": 93.09300000000076,
+  "rows_per_second": 53.70973112908553,
+  "output_file": "sample_5000.parquet",
+  "output_sha256": "f3234a7fe5d23322b2db7d7ff9a4ca47faa53c32eb2bbaf5dade2b03a9340f4d",
+  "official_test_accessed": false
+}

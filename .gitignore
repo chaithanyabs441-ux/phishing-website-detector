@@ -29,6 +29,7 @@ __pycache__/
 experiments/*
 !experiments/phase2_svm_baseline.json
 !experiments/phase2_grouped_cv.json
+!experiments/phase3_html_sample.json
 
 # Only keep model artifacts loaded by webapp/app.py.
 # These are required for the app to run without retraining.

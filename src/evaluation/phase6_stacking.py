@@ -117,6 +117,8 @@ def _set_fold_iterations(model, name, best_iteration):
     iterations = max(1, int(best_iteration or 300))
     if name in {"lightgbm", "xgboost"}:
         model.set_params(n_estimators=iterations)
+    if name == "xgboost":
+        model.set_params(early_stopping_rounds=None)
     elif name == "catboost":
         model.set_params(iterations=iterations)
     return model

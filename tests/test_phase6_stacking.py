@@ -2,11 +2,13 @@ import numpy as np
 import pandas as pd
 
 from src.evaluation.phase6_stacking import (
+    _set_fold_iterations,
     build_grouped_fold_ledger,
     build_meta_features,
     label_shuffle_ap,
     paired_ap_bootstrap,
 )
+from src.evaluation.phase4_boosting import make_estimator
 
 
 def test_grouped_fold_ledger_is_disjoint_and_assigns_each_row_once():
@@ -63,3 +65,18 @@ def test_paired_domain_bootstrap_reports_zero_for_identical_predictions():
     assert result["point_difference"] == 0.0
     assert result["ci_95"] == [0.0, 0.0]
     assert result["replicates_completed"] == 30
+
+
+def test_xgboost_oof_fixed_iteration_model_disables_early_stopping():
+    model = make_estimator(
+        "xgboost",
+        {"learning_rate": 0.1, "max_depth": 2, "min_child_weight": 1.0,
+         "subsample": 1.0, "colsample_bytree": 1.0, "reg_alpha": 0.0,
+         "reg_lambda": 1.0},
+        n_jobs=1,
+    )
+
+    model = _set_fold_iterations(model, "xgboost", best_iteration=7)
+
+    assert model.get_params()["n_estimators"] == 7
+    assert model.get_params()["early_stopping_rounds"] is None

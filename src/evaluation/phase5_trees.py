@@ -140,6 +140,7 @@ def _tune_one(model_name, fit_frame, columns, seed, config, split_hash, config_h
 
 
 def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, pilot=False):
+    started = time.monotonic()
     config_path = Path(config_path or CONFIG_PATH)
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     seed = int(config["seed"])
@@ -168,10 +169,14 @@ def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, p
             f"elapsed={tuning_results[model_name]['elapsed_seconds']:.1f}s"
         )
 
+    git_commit = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT, text=True,
+    ).strip()
     if pilot:
         pilot_result = {
             "experiment": "phase5_tree_runtime_pilot",
             "created_utc": datetime.now(timezone.utc).isoformat(),
+            "git_commit": git_commit,
             "seed": seed,
             "split_manifest_sha256": split_hash,
             "config_sha256": config_hash,
@@ -179,6 +184,7 @@ def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, p
             "tuning": tuning_results,
             "final_refits_performed": False,
             "official_test_accessed": False,
+            "elapsed_seconds": time.monotonic() - started,
         }
         PILOT_PATH.write_text(json.dumps(pilot_result, indent=2) + "\n", encoding="utf-8")
         print(f"Wrote tree pilot record: {PILOT_PATH}")
@@ -228,9 +234,6 @@ def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, p
         }
         print(f"{model_name}: temporal AP={point['average_precision']:.6f}")
 
-    git_commit = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT, text=True,
-    ).strip()
     output = {
         "experiment": "phase5_engineered_tree_references",
         "created_utc": datetime.now(timezone.utc).isoformat(),
@@ -248,6 +251,7 @@ def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, p
             "confidence_level": 0.95,
         },
         "models": results,
+        "elapsed_seconds": time.monotonic() - started,
         "official_test_accessed": False,
     }
     RESULT_PATH.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")

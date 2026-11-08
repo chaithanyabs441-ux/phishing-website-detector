@@ -164,7 +164,8 @@ def run_text_pilot(config_path=None, model_names=None):
     validation_frame = train.iloc[valid_indices].reset_index(drop=True)
     results = {}
     started = time.monotonic()
-    for model_name in model_names or config["pilot"]["models"]:
+    selected_models = model_names or config["pilot"]["models"]
+    for model_name in selected_models:
         if model_name not in MODEL_SPECS:
             raise ValueError(f"Unknown pilot model {model_name}")
         _, _, scores, metadata = fit_text_model(
@@ -178,17 +179,35 @@ def run_text_pilot(config_path=None, model_names=None):
             f"inference_s_per_1k={metadata['inference_seconds_per_1000']:.4f}; "
             f"matrix_MB={metadata['sparse_matrix_bytes'] / 1e6:.1f}"
         )
+    identity = _experiment_identity(config_path, seed)
+    existing = {}
+    pilot_runs = []
+    if PILOT_PATH.exists():
+        previous = json.loads(PILOT_PATH.read_text(encoding="utf-8"))
+        if (
+            previous.get("config_sha256") == identity["config_sha256"]
+            and previous.get("split_manifest_sha256") == identity["split_manifest_sha256"]
+            and previous.get("seed") == seed
+        ):
+            existing = previous.get("models", {})
+            pilot_runs = previous.get("pilot_runs", [])
+    existing.update(results)
+    pilot_runs.append({
+        "models": list(selected_models),
+        "elapsed_seconds": time.monotonic() - started,
+    })
     output = {
         "experiment": "phase5_text_runtime_pilot",
         "created_utc": datetime.now(timezone.utc).isoformat(),
-        **_experiment_identity(config_path, seed),
+        **identity,
         "html_feature_spec_hash": "f5434603820e65699462bc276cc34b2c6ba4ad7ed72f9f061a1cc0d13d79e6d3",
         "fit_rows": int(len(fit_frame)),
         "validation_rows": int(len(validation_frame)),
         "fit_domains": int(fit_frame.group_domain.nunique()),
         "validation_domains": int(validation_frame.group_domain.nunique()),
-        "models": results,
-        "elapsed_seconds": time.monotonic() - started,
+        "models": existing,
+        "pilot_runs": pilot_runs,
+        "elapsed_seconds": sum(run["elapsed_seconds"] for run in pilot_runs),
         "official_test_accessed": False,
     }
     PILOT_PATH.write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")

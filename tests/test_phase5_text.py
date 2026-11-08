@@ -9,6 +9,7 @@ from src.evaluation.phase5_text import (
     grouped_oof_text_scores,
     make_vectorizer,
 )
+from src.evaluation.evaluate_phase5_text import _paired_ap_bootstrap
 
 
 def _text_frame(size=100):
@@ -89,3 +90,17 @@ def test_text_model_roundtrip_and_single_batch_prediction_parity(tmp_path):
         batch_scores,
         restored["model"].decision_function(vectorizer.transform(validation.url.astype(str))),
     )
+
+
+def test_paired_domain_bootstrap_is_zero_for_identical_predictions():
+    targets = np.tile([0, 1], 100)
+    scores = np.linspace(-2, 2, len(targets))
+    domain_codes = np.repeat(np.arange(20), 10)
+
+    result = _paired_ap_bootstrap(
+        targets, scores, scores, domain_codes, 20, replicates=30, seed=5,
+    )
+
+    assert result["point_difference"] == 0.0
+    assert result["ci_95"] == [0.0, 0.0]
+    assert result["replicates_completed"] == 30

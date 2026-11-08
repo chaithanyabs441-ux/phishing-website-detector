@@ -1,45 +1,15 @@
 from pathlib import Path
+
 import pandas as pd
 
 
-# --------------------------------------------------
-# SETTINGS
-# --------------------------------------------------
-
-input_folder = Path("data/processed/html_features")
-
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_INPUT_FOLDER = PROJECT_ROOT / "data" / "processed" / "html_features"
 EXPECTED_FILES = 56
 EXPECTED_ROWS = 498255
+EXPECTED_LABELS = {"benign", "phish"}
 
-
-# --------------------------------------------------
-# FIND CSV FILES
-# --------------------------------------------------
-
-files = sorted(input_folder.glob("train-*_html_features.csv"))
-
-print("=" * 70)
-print("HTML FEATURE DATASET VERIFICATION")
-print("=" * 70)
-
-print()
-print("Expected CSV files :", EXPECTED_FILES)
-print("Found CSV files    :", len(files))
-
-if len(files) == EXPECTED_FILES:
-    print("FILE COUNT: OK")
-else:
-    print("FILE COUNT: PROBLEM")
-
-
-# --------------------------------------------------
-# CHECK EACH FILE
-# --------------------------------------------------
-
-total_rows = 0
-all_labels = set()
-
-required_columns = {
+REQUIRED_COLUMNS = {
     "url",
     "label",
     "html_length",
@@ -56,129 +26,77 @@ required_columns = {
     "num_external_form_actions",
     "has_password_field",
     "has_form",
-    "has_external_form_action"
+    "has_external_form_action",
 }
 
-print()
-print("-" * 70)
-print("CHECKING FILES")
-print("-" * 70)
 
-for number, file in enumerate(files, start=1):
+def verify_html_dataset(
+    input_folder=DEFAULT_INPUT_FOLDER,
+    expected_files=EXPECTED_FILES,
+    expected_rows=EXPECTED_ROWS,
+):
+    """Validate processed HTML-feature CSVs and return whether all checks pass."""
+    input_folder = Path(input_folder)
+    files = sorted(input_folder.glob("train-*_html_features.csv"))
+    total_rows = 0
+    labels = set()
+    missing_columns_by_file = {}
+    missing_values = 0
+    unreadable_files = []
 
-    try:
-        df = pd.read_csv(file)
+    for file in files:
+        try:
+            frame = pd.read_csv(file)
+        except Exception as error:
+            unreadable_files.append((file.name, str(error)))
+            continue
 
-        rows = len(df)
-        total_rows += rows
-
-        all_labels.update(df["label"].dropna().unique())
-
-        missing_columns = required_columns - set(df.columns)
-
+        total_rows += len(frame)
+        if "label" in frame:
+            labels.update(frame["label"].dropna().unique())
+        missing_columns = REQUIRED_COLUMNS - set(frame.columns)
         if missing_columns:
-            print()
-            print(f"[{number}/{len(files)}] PROBLEM: {file.name}")
-            print("Missing columns:", missing_columns)
-        else:
-            print(
-                f"[{number}/{len(files)}] OK: "
-                f"{file.name} | rows={rows}"
-            )
+            missing_columns_by_file[file.name] = sorted(missing_columns)
+        missing_values += int(frame.isnull().sum().sum())
 
-    except Exception as e:
+    files_ok = len(files) == expected_files
+    rows_ok = total_rows == expected_rows
+    labels_ok = labels == EXPECTED_LABELS
+    columns_ok = not missing_columns_by_file
+    readable_ok = not unreadable_files
+    missing_ok = missing_values == 0
 
-        print()
-        print(f"[{number}/{len(files)}] FAILED: {file.name}")
-        print("ERROR:", e)
+    print("=" * 70)
+    print("HTML FEATURE DATASET VERIFICATION")
+    print("=" * 70)
+    print("Expected files:", expected_files)
+    print("Found files   :", len(files))
+    print("Files         :", "OK" if files_ok else "PROBLEM")
+    print("Expected rows :", expected_rows)
+    print("Actual rows   :", total_rows)
+    print("Rows          :", "OK" if rows_ok else "PROBLEM")
+    print("Expected labels:", sorted(EXPECTED_LABELS))
+    print("Found labels   :", sorted(labels))
+    print("Labels         :", "OK" if labels_ok else "PROBLEM")
+    print("Columns        :", "OK" if columns_ok else "PROBLEM")
+    print("Readable files :", "OK" if readable_ok else "PROBLEM")
+    print("Missing values :", missing_values)
+    print("Missing values :", "OK" if missing_ok else "PROBLEM")
 
+    for filename, columns in missing_columns_by_file.items():
+        print("Missing columns in {}: {}".format(filename, columns))
+    for filename, error in unreadable_files:
+        print("Could not read {}: {}".format(filename, error))
 
-# --------------------------------------------------
-# TOTAL ROW CHECK
-# --------------------------------------------------
-
-print()
-print("=" * 70)
-print("ROW COUNT CHECK")
-print("=" * 70)
-
-print("Expected rows :", EXPECTED_ROWS)
-print("Actual rows   :", total_rows)
-
-if total_rows == EXPECTED_ROWS:
-    print("ROW COUNT: OK")
-else:
-    print("ROW COUNT: PROBLEM")
-
-
-# --------------------------------------------------
-# LABEL CHECK
-# --------------------------------------------------
-
-print()
-print("=" * 70)
-print("LABEL CHECK")
-print("=" * 70)
-
-print("Labels found:", sorted(all_labels))
-
-if all_labels == {benign, phish}:
-    print("LABELS: OK")
-else:
-    print("LABELS: PROBLEM")
+    passed = all((files_ok, rows_ok, labels_ok, columns_ok, readable_ok, missing_ok))
+    print("Final result   :", "EVERYTHING LOOKS GOOD" if passed else "PROBLEM FOUND")
+    print("=" * 70)
+    return passed
 
 
-# --------------------------------------------------
-# CHECK COMPLETE DATASET
-# --------------------------------------------------
-
-print()
-print("=" * 70)
-print("MISSING VALUE CHECK")
-print("=" * 70)
-
-missing_total = 0
-
-for file in files:
-
-    df = pd.read_csv(file)
-
-    missing = df.isnull().sum().sum()
-
-    if missing > 0:
-        print(f"{file.name}: {missing} missing values")
-        missing_total += missing
+def main():
+    return verify_html_dataset()
 
 
-if missing_total == 0:
-    print("MISSING VALUES: NONE")
-else:
-    print("TOTAL MISSING VALUES:", missing_total)
-
-
-# --------------------------------------------------
-# FINAL RESULT
-# --------------------------------------------------
-
-print()
-print("=" * 70)
-print("FINAL VERIFICATION RESULT")
-print("=" * 70)
-
-files_ok = len(files) == EXPECTED_FILES
-rows_ok = total_rows == EXPECTED_ROWS
-labels_ok = all_labels == {benign, phish}
-missing_ok = missing_total == 0
-
-if files_ok and rows_ok and labels_ok and missing_ok:
-
-    print("EVERYTHING LOOKS GOOD")
-    print()
-    print("HTML DATASET IS READY FOR MODEL TRAINING.")
-
-else:
-
-    print("VERIFICATION FOUND A PROBLEM.")
-    print("DO NOT TRAIN THE MODEL YET.")
-
-print("=" * 70)
+if __name__ == "__main__":
+    main()

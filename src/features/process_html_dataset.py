@@ -6,8 +6,8 @@ from datetime import datetime
 
 import pandas as pd
 
-sys.path.append(str(Path(__file__).resolve().parent))
-from html_features import extract_html_features
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from src.features.html_features import extract_html_features
 
 
 input_folder = Path("data/raw/data")

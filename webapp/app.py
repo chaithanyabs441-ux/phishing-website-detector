@@ -4,6 +4,7 @@ import re
 
 import joblib
 import pandas as pd
+import yaml
 
 from scipy.sparse import hstack, csr_matrix
 
@@ -72,6 +73,14 @@ MODEL_DIR = os.path.join(
     "models"
 )
 
+CONFIG_PATH = os.path.join(PROJECT_ROOT, "configs", "model_config.yaml")
+with open(CONFIG_PATH, "r", encoding="utf-8") as config_file:
+    MODEL_CONFIG = yaml.safe_load(config_file)
+
+
+def model_artifact(name):
+    return os.path.join(MODEL_DIR, MODEL_CONFIG["artifacts"][name])
+
 GOOGLE_SAFE_BROWSING_API_KEY = os.environ.get(
     "GOOGLE_SAFE_BROWSING_API_KEY",
     "",
@@ -93,20 +102,18 @@ GOOGLE_SAFE_BROWSING_API_KEY = os.environ.get(
 # is available for them.
 # ------------------------------------------------------------
 
-CLASSIFICATION_THRESHOLDS = {
-    "url_tfidf": 1.5,
-    "url_engineered": 0.0,
-    "url_html": 0.0,
-}
+CLASSIFICATION_THRESHOLDS = MODEL_CONFIG["thresholds"]
+DEFAULT_MODEL = MODEL_CONFIG["default_model"]
+FALLBACK_MODEL = MODEL_CONFIG["fallback_model"]
 
 
 # ============================================================
 # FEATURE EXTRACTORS
 # ============================================================
 
-from src.features.url_features import extract_url_features
-from src.features.html_features import extract_html_features
-from src.reputation.google_safe_browsing import lookup_url as lookup_safe_browsing
+from src.features.url_features import extract_url_features  # noqa: E402
+from src.features.html_features import extract_html_features  # noqa: E402
+from src.reputation.google_safe_browsing import lookup_url as lookup_safe_browsing  # noqa: E402
 
 
 # ============================================================
@@ -124,17 +131,11 @@ print("=" * 60)
 # ------------------------------------------------------------
 
 url_tfidf = joblib.load(
-    os.path.join(
-        MODEL_DIR,
-        "url_tfidf.joblib"
-    )
+    model_artifact("url_tfidf")
 )
 
 url_svm = joblib.load(
-    os.path.join(
-        MODEL_DIR,
-        "url_linear_svm.joblib"
-    )
+    model_artifact("url_linear_svm")
 )
 
 print("[OK] URL TF-IDF model loaded")
@@ -146,24 +147,18 @@ print("[OK] URL TF-IDF model loaded")
 # ------------------------------------------------------------
 
 combined_tfidf = joblib.load(
-    os.path.join(
-        MODEL_DIR,
-        "combined_tfidf.joblib"
-    )
+    model_artifact("combined_tfidf")
 )
 
 combined_svm = joblib.load(
-    os.path.join(
-        MODEL_DIR,
-        "combined_linear_svm.joblib"
-    )
+    model_artifact("combined_linear_svm")
 )
 
 url_scaler = joblib.load(
-    os.path.join(
-        MODEL_DIR,
-        "url_engineered_scaler.joblib"
-    )
+    model_artifact("combined_url_scaler")
+)
+url_html_scaler = joblib.load(
+    model_artifact("url_html_scaler")
 )
 
 print("[OK] URL + Engineered Features model loaded")
@@ -175,31 +170,19 @@ print("[OK] URL + Engineered Features model loaded")
 # ------------------------------------------------------------
 
 url_html_tfidf = joblib.load(
-    os.path.join(
-        MODEL_DIR,
-        "url_html_tfidf.joblib"
-    )
+    model_artifact("url_html_tfidf")
 )
 
 url_html_svm = joblib.load(
-    os.path.join(
-        MODEL_DIR,
-        "url_html_linear_svm.joblib"
-    )
+    model_artifact("url_html_linear_svm")
 )
 
 html_scaler = joblib.load(
-    os.path.join(
-        MODEL_DIR,
-        "html_scaler.joblib"
-    )
+    model_artifact("html_scaler")
 )
 
 html_feature_columns = joblib.load(
-    os.path.join(
-        MODEL_DIR,
-        "html_feature_columns.joblib"
-    )
+    model_artifact("html_feature_columns")
 )
 
 print("[OK] URL + HTML model loaded")
@@ -670,7 +653,7 @@ def predict_url_html(
         columns=html_feature_columns
     )
 
-    url_scaled = url_scaler.transform(
+    url_scaled = url_html_scaler.transform(
         url_df
     )
 
@@ -752,7 +735,7 @@ async def scan(
     url = normalize_url(url)
 
     if not model_choice:
-        model_choice = "url_html" if html.strip() else "url_tfidf"
+        model_choice = DEFAULT_MODEL if html.strip() else FALLBACK_MODEL
 
 
     # --------------------------------------------------------

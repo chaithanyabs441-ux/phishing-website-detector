@@ -26,6 +26,8 @@ models/*
 !models/combined_tfidf.joblib
 !models/combined_linear_svm.joblib
 !models/url_engineered_scaler.joblib
+!models/combined_url_scaler.joblib
+!models/MANIFEST.json
 !models/url_html_tfidf.joblib
 !models/url_html_linear_svm.joblib
 !models/html_scaler.joblib

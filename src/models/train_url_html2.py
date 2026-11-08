@@ -27,6 +27,7 @@ from sklearn.metrics import (
 # ============================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 HTML_FOLDER = (
     PROJECT_ROOT
@@ -138,7 +139,7 @@ try:
         str(PROJECT_ROOT / "src" / "features")
     )
 
-    from url_features import extract_url_features
+    from src.features.url_features import extract_url_features_v1 as extract_url_features
 
     log("URL feature function loaded successfully")
 

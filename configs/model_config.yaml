@@ -1,0 +1,22 @@
+﻿version: 1
+feature_versions:
+  url_tfidf: url_string_v1
+  url_engineered: url_features_v1
+  url_html: url_features_v1 + html_features_v1
+artifacts:
+  url_tfidf: url_tfidf.joblib
+  url_linear_svm: url_linear_svm.joblib
+  combined_tfidf: combined_tfidf.joblib
+  combined_linear_svm: combined_linear_svm.joblib
+  combined_url_scaler: combined_url_scaler.joblib
+  url_html_tfidf: url_html_tfidf.joblib
+  url_html_linear_svm: url_html_linear_svm.joblib
+  url_html_scaler: url_engineered_scaler.joblib
+  html_scaler: html_scaler.joblib
+  html_feature_columns: html_feature_columns.joblib
+thresholds:
+  url_tfidf: 1.5
+  url_engineered: 0.0
+  url_html: 0.0
+default_model: url_html
+fallback_model: url_tfidf

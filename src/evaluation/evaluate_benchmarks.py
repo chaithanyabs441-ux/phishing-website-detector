@@ -1,4 +1,5 @@
 import os
+import sys
 import gc
 import glob
 import time
@@ -6,8 +7,17 @@ import joblib
 import numpy as np
 import pandas as pd
 
+sys.path.insert(
+    0,
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+)
+
 from scipy.sparse import hstack, csr_matrix
 from sklearn.metrics import average_precision_score, precision_recall_curve
+from src.features.url_features import (
+    URL_FEATURE_COLUMNS_V1 as FEATURE_COLUMNS,
+    extract_url_features_v1 as extract_url_features,
+)
 
 
 # ============================================================
@@ -89,125 +99,13 @@ combined_svm = joblib.load(
 )
 
 url_scaler = joblib.load(
-    os.path.join(MODEL_DIR, "url_engineered_scaler.joblib")
+    os.path.join(MODEL_DIR, "combined_url_scaler.joblib")
 )
 
 
 # ============================================================
 # FEATURE ORDER
 # ============================================================
-
-FEATURE_COLUMNS = [
-    "url_length",
-    "hostname_length",
-    "path_length",
-    "num_dots",
-    "num_hyphens",
-    "num_digits",
-    "num_special_chars",
-    "num_subdomains",
-    "num_query_params",
-    "has_at_symbol",
-    "has_ip_address",
-    "has_https",
-    "suspicious_word_count",
-]
-
-
-# ============================================================
-# URL FEATURE EXTRACTION
-# ============================================================
-
-from urllib.parse import urlparse
-import re
-
-
-SUSPICIOUS_WORDS = [
-    "login",
-    "signin",
-    "verify",
-    "verification",
-    "secure",
-    "account",
-    "update",
-    "confirm",
-    "password",
-    "bank",
-    "wallet",
-    "payment",
-    "invoice",
-    "auth",
-]
-
-
-def extract_url_features(url):
-
-    if not isinstance(url, str):
-        url = ""
-
-    try:
-        parsed = urlparse(url)
-
-        hostname = parsed.hostname or ""
-        path = parsed.path or ""
-        query = parsed.query or ""
-
-    except Exception:
-        hostname = ""
-        path = ""
-        query = ""
-
-    url_lower = url.lower()
-
-    num_query_params = 0
-
-    if query:
-        num_query_params = query.count("&") + 1
-
-    suspicious_word_count = sum(
-        word in url_lower
-        for word in SUSPICIOUS_WORDS
-    )
-
-    try:
-        ip_pattern = (
-            r"^(?:\d{1,3}\.){3}\d{1,3}$"
-        )
-
-        has_ip = int(
-            re.match(ip_pattern, hostname) is not None
-        )
-
-    except Exception:
-        has_ip = 0
-
-    if hostname:
-        subdomain_parts = hostname.split(".")
-        num_subdomains = max(
-            0,
-            len(subdomain_parts) - 2
-        )
-    else:
-        num_subdomains = 0
-
-    return {
-        "url_length": len(url),
-        "hostname_length": len(hostname),
-        "path_length": len(path),
-        "num_dots": url.count("."),
-        "num_hyphens": url.count("-"),
-        "num_digits": sum(c.isdigit() for c in url),
-        "num_special_chars": sum(
-            not c.isalnum() for c in url
-        ),
-        "num_subdomains": num_subdomains,
-        "num_query_params": num_query_params,
-        "has_at_symbol": int("@" in url),
-        "has_ip_address": has_ip,
-        "has_https": int(url_lower.startswith("https://")),
-        "suspicious_word_count": suspicious_word_count,
-    }
-
 
 def extract_feature_dataframe(urls):
 
@@ -218,10 +116,7 @@ def extract_feature_dataframe(urls):
             extract_url_features(url)
         )
 
-    return pd.DataFrame(
-        rows,
-        columns=FEATURE_COLUMNS
-    )
+    return pd.DataFrame(rows, columns=FEATURE_COLUMNS)
 
 
 # ============================================================

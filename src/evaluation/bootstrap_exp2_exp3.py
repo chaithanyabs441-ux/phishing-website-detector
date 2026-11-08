@@ -159,8 +159,9 @@ try:
             "features"
         )
     )
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-    from url_features import extract_url_features
+    from src.features.url_features import extract_url_features_v1 as extract_url_features
 
     log(
         "URL feature function loaded successfully"
@@ -203,7 +204,7 @@ try:
 
     url_scaler = joblib.load(
         MODEL_FOLDER /
-        "url_engineered_scaler.joblib"
+        "combined_url_scaler.joblib"
     )
 
     log(

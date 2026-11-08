@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from pathlib import Path
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -14,12 +13,11 @@ from sklearn.metrics import (
 
 import joblib
 
-from pathlib import Path
 import sys
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "features"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from url_features import extract_url_features
+from src.features.url_features import extract_url_features_v1 as extract_url_features
 
 
 DATA_PATH = Path("data/raw/data")
@@ -258,7 +256,7 @@ def main():
 
     joblib.dump(
         scaler,
-        MODEL_PATH / "url_feature_scaler.joblib"
+        MODEL_PATH / "combined_url_scaler.joblib"
     )
 
     joblib.dump(
@@ -271,7 +269,7 @@ def main():
         "models/combined_tfidf.joblib"
     )
     print(
-        "models/url_feature_scaler.joblib"
+        "models/combined_url_scaler.joblib"
     )
     print(
         "models/combined_linear_svm.joblib"

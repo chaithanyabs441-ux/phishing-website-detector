@@ -132,9 +132,10 @@ try:
     sys.path.append(
         str(PROJECT_ROOT / "src" / "features")
     )
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-    from url_features import extract_url_features
-    from html_features import extract_html_features
+    from src.features.url_features import extract_url_features_v1 as extract_url_features
+    from src.features.html_features import extract_html_features
 
     log(
         "URL feature function loaded successfully"
@@ -310,9 +311,7 @@ try:
             checkpoint.to_dict("records")
         )
 
-        log(
-            f"Checkpoint found."
-        )
+        log("Checkpoint found.")
 
         log(
             f"Completed files: "

@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from pathlib import Path
 
 from sklearn.metrics import (
@@ -65,7 +64,7 @@ def main():
     )
 
     scaler = joblib.load(
-        MODEL_PATH / "url_feature_scaler.joblib"
+        MODEL_PATH / "combined_url_scaler.joblib"
     )
 
     model = joblib.load(
@@ -87,8 +86,9 @@ def main():
             / "features"
         )
     )
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-    from url_features import extract_url_features
+    from src.features.url_features import extract_url_features_v1 as extract_url_features
 
     print("\nExtracting URL features...")
 

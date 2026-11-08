@@ -10,8 +10,6 @@
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    console.log("PHISH//X interface initialized.");
-
     setupScanner();
 
     setupHtmlCounter();
@@ -308,96 +306,6 @@ function animateExistingResult() {
         }
     );
 
-
-    animateRiskScore();
-
-}
-
-
-// ============================================================
-// RISK SCORE ANIMATION
-// ============================================================
-
-function animateRiskScore() {
-
-    const number =
-        document.querySelector(
-            ".risk-number"
-        );
-
-    if (!number) {
-        return;
-    }
-
-
-    const target =
-        parseFloat(
-            number.textContent
-        );
-
-
-    if (isNaN(target)) {
-        return;
-    }
-
-
-    let current = 0;
-
-    const duration = 900;
-
-    const start =
-        performance.now();
-
-
-    function update(timestamp) {
-
-        const elapsed =
-            timestamp - start;
-
-
-        const progress =
-            Math.min(
-                elapsed / duration,
-                1
-            );
-
-
-        // Smooth easing
-        const eased =
-            1 -
-            Math.pow(
-                1 - progress,
-                3
-            );
-
-
-        current =
-            target * eased;
-
-
-        number.textContent =
-            current.toFixed(1);
-
-
-        if (progress < 1) {
-
-            requestAnimationFrame(
-                update
-            );
-
-        } else {
-
-            number.textContent =
-                target.toFixed(1);
-
-        }
-
-    }
-
-
-    requestAnimationFrame(
-        update
-    );
 
 }
 

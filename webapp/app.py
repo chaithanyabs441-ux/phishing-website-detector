@@ -27,6 +27,46 @@ PROJECT_ROOT = os.path.abspath(
 
 sys.path.append(PROJECT_ROOT)
 
+
+# ============================================================
+# LOCAL ENVIRONMENT FILE
+# ============================================================
+#
+# Optional convenience: server-side keys may be kept in the
+# Git-ignored root .env file. Values already present in the
+# process environment always take precedence, so a key exported
+# in the shell is never overridden by the file.
+# ============================================================
+
+def load_env_file(path):
+
+    try:
+        with open(path, "r", encoding="utf-8") as env_file:
+            lines = env_file.readlines()
+    except OSError:
+        return
+
+    for line in lines:
+
+        line = line.strip()
+
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        name, value = line.split("=", 1)
+
+        name = name.strip()
+
+        value = value.strip().strip('"').strip("'")
+
+        if name:
+            os.environ.setdefault(name, value)
+
+
+load_env_file(
+    os.path.join(PROJECT_ROOT, ".env")
+)
+
 MODEL_DIR = os.path.join(
     PROJECT_ROOT,
     "models"
@@ -1110,6 +1150,12 @@ async def scan(
     # RESULT
     # ========================================================
 
+    reputation_message = reputation_messages.get(
+        reputation_result.status,
+        "Threat intelligence status is unavailable; local model analysis is shown.",
+    )
+
+
     result = {
 
         "url":
@@ -1146,7 +1192,7 @@ async def scan(
             reputation_result.status,
 
         "reputation_message":
-            reputation_messages[reputation_result.status],
+            reputation_message,
 
         "evidence":
             evidence,

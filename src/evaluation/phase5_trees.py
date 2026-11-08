@@ -86,7 +86,12 @@ def _tune_one(model_name, fit_frame, columns, seed, config, split_hash, config_h
     x_valid = tuning_valid[columns].to_numpy(dtype=np.float32)
     y_fit = tuning_fit.target.to_numpy(dtype=np.int8)
     y_valid = tuning_valid.target.to_numpy(dtype=np.int8)
-    identity = hashlib.sha256(f"{model_name}:{split_hash}:{config_hash}".encode()).hexdigest()[:12]
+    source_commit = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT, text=True,
+    ).strip()
+    identity = hashlib.sha256(
+        f"{model_name}:{split_hash}:{config_hash}:{source_commit}".encode()
+    ).hexdigest()[:12]
     study_name = f"phase5_{model_name}_{identity}"
     STUDY_DIR.mkdir(parents=True, exist_ok=True)
     db_path = (STUDY_DIR / f"{study_name}.sqlite3").resolve().as_posix()

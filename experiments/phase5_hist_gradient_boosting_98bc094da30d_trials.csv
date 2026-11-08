@@ -1,0 +1,2 @@
+number,value,datetime_start,datetime_complete,duration,params_l2_regularization,params_learning_rate,params_max_iter,params_max_leaf_nodes,params_min_samples_leaf,state
+0,0.9880761985808761,2026-11-09 01:42:07.351823,2026-11-09 01:42:12.701117,0 days 00:00:05.349294,0.0006026889128682511,0.061053157936408836,291,50,68,COMPLETE

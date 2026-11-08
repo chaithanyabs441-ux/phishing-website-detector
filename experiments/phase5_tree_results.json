@@ -1,0 +1,418 @@
+{
+  "experiment": "phase5_engineered_tree_references",
+  "created_utc": "2026-11-08T21:04:20.419697+00:00",
+  "git_commit": "124e4e5a437528cdd8ea5ec7e143599b9eda96d8",
+  "seed": 42,
+  "split_manifest_sha256": "f41e1c4925c7ae106c427bf0a7c2c58fd89a6c86994a8d793b338a02a792ee82",
+  "config_sha256": "d871e7738ba7937d58b921734ea46c115e08cbe5a52e8f403cb625f6ef5ba994",
+  "feature_columns": [
+    "html_missing",
+    "html_length",
+    "parsed_html_length",
+    "html_truncated",
+    "html_parse_error",
+    "num_forms",
+    "num_inputs",
+    "num_password_inputs",
+    "num_email_inputs",
+    "has_password_and_email_inputs",
+    "num_form_action_domain_mismatches",
+    "num_external_domains",
+    "num_external_resource_domains",
+    "num_external_script_domains",
+    "num_external_css_domains",
+    "num_external_image_domains",
+    "external_links_resources_ratio",
+    "favicon_domain_mismatch",
+    "title_length",
+    "visible_text_length",
+    "title_registered_domain_mismatch",
+    "num_hidden_iframes",
+    "has_meta_refresh",
+    "has_javascript_redirect",
+    "num_onmouseover_attributes",
+    "right_click_disabled",
+    "num_data_uris",
+    "empty_or_hash_link_ratio",
+    "visible_login_keyword_count",
+    "url_length",
+    "hostname_length",
+    "path_length",
+    "num_dots",
+    "num_hyphens",
+    "num_digits",
+    "num_special_chars",
+    "num_subdomains",
+    "num_query_params",
+    "has_at_symbol",
+    "has_ip_address",
+    "has_https",
+    "suspicious_word_count",
+    "shannon_entropy",
+    "digit_ratio",
+    "letter_ratio",
+    "longest_token_length",
+    "path_depth",
+    "is_punycode_or_idn",
+    "hex_encoding_count",
+    "is_shortener"
+  ],
+  "training_rows": 397480,
+  "validation_rows": 100775,
+  "tuning": {
+    "extra_trees": {
+      "study_name": "phase5_extra_trees_6017c5cfbb8a",
+      "best_params": {
+        "n_estimators": 200,
+        "max_features": "sqrt",
+        "min_samples_leaf": 4,
+        "max_depth": 24
+      },
+      "best_grouped_ap": 0.9844269240791129,
+      "total_trials": 10,
+      "trials_this_run": 10,
+      "elapsed_seconds": 142.29700000000594,
+      "sqlite": "experiments\\phase5_studies\\phase5_extra_trees_6017c5cfbb8a.sqlite3",
+      "trial_csv": "experiments\\phase5_extra_trees_6017c5cfbb8a_trials.csv",
+      "fit_rows": 100000,
+      "validation_rows": 25000
+    },
+    "hist_gradient_boosting": {
+      "study_name": "phase5_hist_gradient_boosting_4d73135647cf",
+      "best_params": {
+        "learning_rate": 0.031194713369389154,
+        "max_iter": 294,
+        "max_leaf_nodes": 55,
+        "min_samples_leaf": 37,
+        "l2_regularization": 0.0008111941985431928
+      },
+      "best_grouped_ap": 0.9864047850352508,
+      "total_trials": 10,
+      "trials_this_run": 10,
+      "elapsed_seconds": 35.875,
+      "sqlite": "experiments\\phase5_studies\\phase5_hist_gradient_boosting_4d73135647cf.sqlite3",
+      "trial_csv": "experiments\\phase5_hist_gradient_boosting_4d73135647cf_trials.csv",
+      "fit_rows": 100000,
+      "validation_rows": 25000
+    }
+  },
+  "bootstrap": {
+    "resampling_unit": "registered_domain",
+    "requested_replicates": 200,
+    "confidence_level": 0.95
+  },
+  "models": {
+    "extra_trees": {
+      "feature_columns": [
+        "html_missing",
+        "html_length",
+        "parsed_html_length",
+        "html_truncated",
+        "html_parse_error",
+        "num_forms",
+        "num_inputs",
+        "num_password_inputs",
+        "num_email_inputs",
+        "has_password_and_email_inputs",
+        "num_form_action_domain_mismatches",
+        "num_external_domains",
+        "num_external_resource_domains",
+        "num_external_script_domains",
+        "num_external_css_domains",
+        "num_external_image_domains",
+        "external_links_resources_ratio",
+        "favicon_domain_mismatch",
+        "title_length",
+        "visible_text_length",
+        "title_registered_domain_mismatch",
+        "num_hidden_iframes",
+        "has_meta_refresh",
+        "has_javascript_redirect",
+        "num_onmouseover_attributes",
+        "right_click_disabled",
+        "num_data_uris",
+        "empty_or_hash_link_ratio",
+        "visible_login_keyword_count",
+        "url_length",
+        "hostname_length",
+        "path_length",
+        "num_dots",
+        "num_hyphens",
+        "num_digits",
+        "num_special_chars",
+        "num_subdomains",
+        "num_query_params",
+        "has_at_symbol",
+        "has_ip_address",
+        "has_https",
+        "suspicious_word_count",
+        "shannon_entropy",
+        "digit_ratio",
+        "letter_ratio",
+        "longest_token_length",
+        "path_depth",
+        "is_punycode_or_idn",
+        "hex_encoding_count",
+        "is_shortener"
+      ],
+      "training_rows": 397480,
+      "validation_rows": 100775,
+      "training_seconds": 37.03100000000268,
+      "inference_seconds_per_1000": 0.03109660000001213,
+      "model_size_bytes": 284796297,
+      "artifact": "models\\phase5\\extra_trees.joblib",
+      "metrics": {
+        "average_precision": 0.8931751901020746,
+        "roc_auc": 0.9303221801769681,
+        "accuracy": 0.9040436616224262,
+        "precision": 0.9355213072138149,
+        "recall": 0.7087641555883801,
+        "f1": 0.8065071234192412,
+        "false_positive_rate": 0.01920072987655686,
+        "true_positive_rate": 0.7087641555883801,
+        "precision_at_prevalence_0.05%": 0.01813112315699878,
+        "alerts_per_1000_at_prevalence_0.05%": 19.545511589412776,
+        "precision_at_prevalence_0.5%": 0.15647011603620326,
+        "alerts_per_1000_at_prevalence_0.5%": 22.64854700511598,
+        "precision_at_prevalence_1%": 0.27159498233463925,
+        "alerts_per_1000_at_prevalence_1%": 26.096364133675095,
+        "precision_at_prevalence_5%": 0.6601887708612123,
+        "alerts_per_1000_at_prevalence_5%": 53.67890116214802,
+        "precision_at_prevalence_45%": 0.9679506387406306,
+        "alerts_per_1000_at_prevalence_45%": 329.5042714468774
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8643772637341676,
+          0.9177985314695355
+        ],
+        "roc_auc": [
+          0.9031344474071769,
+          0.950980361859095
+        ],
+        "accuracy": [
+          0.8804860494917907,
+          0.9213170034941663
+        ],
+        "precision": [
+          0.9274126245511102,
+          0.9417960947581717
+        ],
+        "recall": [
+          0.6467810994202142,
+          0.7621716879087503
+        ],
+        "f1": [
+          0.7628770512594859,
+          0.8416843910271055
+        ],
+        "false_positive_rate": [
+          0.01731697078248692,
+          0.021610643565513746
+        ],
+        "true_positive_rate": [
+          0.6467810994202142,
+          0.7621716879087503
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.015577474272130989,
+          0.020273819068518772
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          17.665226990833407,
+          21.924579903295275
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.1371539820398046,
+          0.17209590758888332
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          20.67240132379689,
+          24.913355278372133
+        ],
+        "precision_at_prevalence_1%": [
+          0.24214649391450555,
+          0.2947010039688222
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          23.925090925584385,
+          28.372268656552922
+        ],
+        "precision_at_prevalence_5%": [
+          0.6247438720871077,
+          0.6852532244612223
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          50.32230079154571,
+          57.51409708910347
+        ],
+        "precision_at_prevalence_45%": [
+          0.9627986991363775,
+          0.9713013880525988
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          302.90492584430376,
+          353.8370158832324
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    },
+    "hist_gradient_boosting": {
+      "feature_columns": [
+        "html_missing",
+        "html_length",
+        "parsed_html_length",
+        "html_truncated",
+        "html_parse_error",
+        "num_forms",
+        "num_inputs",
+        "num_password_inputs",
+        "num_email_inputs",
+        "has_password_and_email_inputs",
+        "num_form_action_domain_mismatches",
+        "num_external_domains",
+        "num_external_resource_domains",
+        "num_external_script_domains",
+        "num_external_css_domains",
+        "num_external_image_domains",
+        "external_links_resources_ratio",
+        "favicon_domain_mismatch",
+        "title_length",
+        "visible_text_length",
+        "title_registered_domain_mismatch",
+        "num_hidden_iframes",
+        "has_meta_refresh",
+        "has_javascript_redirect",
+        "num_onmouseover_attributes",
+        "right_click_disabled",
+        "num_data_uris",
+        "empty_or_hash_link_ratio",
+        "visible_login_keyword_count",
+        "url_length",
+        "hostname_length",
+        "path_length",
+        "num_dots",
+        "num_hyphens",
+        "num_digits",
+        "num_special_chars",
+        "num_subdomains",
+        "num_query_params",
+        "has_at_symbol",
+        "has_ip_address",
+        "has_https",
+        "suspicious_word_count",
+        "shannon_entropy",
+        "digit_ratio",
+        "letter_ratio",
+        "longest_token_length",
+        "path_depth",
+        "is_punycode_or_idn",
+        "hex_encoding_count",
+        "is_shortener"
+      ],
+      "training_rows": 397480,
+      "validation_rows": 100775,
+      "training_seconds": 14.93800000000192,
+      "inference_seconds_per_1000": 0.009242200000016965,
+      "model_size_bytes": 1897622,
+      "artifact": "models\\phase5\\hist_gradient_boosting.joblib",
+      "metrics": {
+        "average_precision": 0.9033884230358276,
+        "roc_auc": 0.9235253548668083,
+        "accuracy": 0.9181642272388986,
+        "precision": 0.9489391985055375,
+        "recall": 0.7503341070549342,
+        "f1": 0.8380305202584598,
+        "false_positive_rate": 0.01586928574390733,
+        "true_positive_rate": 0.7503341070549342,
+        "precision_at_prevalence_0.05%": 0.02310637354364281,
+        "alerts_per_1000_at_prevalence_0.05%": 16.236518154562845,
+        "precision_at_prevalence_0.5%": 0.1919836985787476,
+        "alerts_per_1000_at_prevalence_0.5%": 19.54160985046246,
+        "precision_at_prevalence_1%": 0.32322574383309444,
+        "alerts_per_1000_at_prevalence_1%": 23.213933957017595,
+        "precision_at_prevalence_5%": 0.7133466982613088,
+        "alerts_per_1000_at_prevalence_5%": 52.592526809458676,
+        "precision_at_prevalence_45%": 0.9748018185751879,
+        "alerts_per_1000_at_prevalence_45%": 346.3784553338694
+      },
+      "domain_bootstrap_95ci": {
+        "average_precision": [
+          0.8713898762338705,
+          0.9293014797397094
+        ],
+        "roc_auc": [
+          0.8886054534779116,
+          0.9489251441387928
+        ],
+        "accuracy": [
+          0.8969802333351717,
+          0.9370798537727401
+        ],
+        "precision": [
+          0.9435067573207692,
+          0.9542451121211472
+        ],
+        "recall": [
+          0.6958292333899522,
+          0.8076633014173931
+        ],
+        "f1": [
+          0.8014069762971268,
+          0.8734788995535103
+        ],
+        "false_positive_rate": [
+          0.014217931800266183,
+          0.01781431158162584
+        ],
+        "true_positive_rate": [
+          0.6958292333899522,
+          0.8076633014173931
+        ],
+        "precision_at_prevalence_0.05%": [
+          0.02014090024936886,
+          0.026454482122429
+        ],
+        "alerts_per_1000_at_prevalence_0.05%": [
+          14.590479840900125,
+          18.177196526986332
+        ],
+        "precision_at_prevalence_0.5%": [
+          0.1711411061547845,
+          0.2144308007520491
+        ],
+        "alerts_per_1000_at_prevalence_0.5%": [
+          17.88372241654601,
+          21.443161035230716
+        ],
+        "precision_at_prevalence_1%": [
+          0.29330650897369764,
+          0.35428958909859354
+        ],
+        "alerts_per_1000_at_prevalence_1%": [
+          21.405097186797214,
+          25.102073039071676
+        ],
+        "precision_at_prevalence_5%": [
+          0.6838008541390153,
+          0.7408602222570686
+        ],
+        "alerts_per_1000_at_prevalence_5%": [
+          49.0064738178104,
+          55.83375596031378
+        ],
+        "precision_at_prevalence_45%": [
+          0.971113168277523,
+          0.9779945222650397
+        ],
+        "alerts_per_1000_at_prevalence_45%": [
+          321.85504036661706,
+          371.920428699523
+        ]
+      },
+      "bootstrap_replicates_completed": 200
+    }
+  },
+  "elapsed_seconds": 285.28199999999924,
+  "official_test_accessed": false
+}

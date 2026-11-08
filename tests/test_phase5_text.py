@@ -6,6 +6,7 @@ from sklearn.metrics import average_precision_score
 from src.evaluation.phase5_text import (
     MODEL_SPECS,
     fit_text_model,
+    fit_text_models_shared,
     grouped_oof_text_scores,
     make_vectorizer,
 )
@@ -90,6 +91,21 @@ def test_text_model_roundtrip_and_single_batch_prediction_parity(tmp_path):
         batch_scores,
         restored["model"].decision_function(vectorizer.transform(validation.url.astype(str))),
     )
+
+
+def test_shared_vectorizer_fits_once_for_multiple_classifiers(tmp_path):
+    train = _text_frame(100)
+    validation = _text_frame(20).drop(columns=["target", "group_domain"])
+
+    results = fit_text_models_shared(
+        ["char_svc_2_5", "char_complement_nb"],
+        train, validation, artifact_dir=tmp_path,
+    )
+
+    assert results["char_svc_2_5"]["metadata"]["vectorizer_shared_with"] == ["char_complement_nb"]
+    assert results["char_complement_nb"]["metadata"]["vectorizer_shared_with"] == ["char_svc_2_5"]
+    assert len(results["char_svc_2_5"]["scores"]) == len(validation)
+    assert len(results["char_complement_nb"]["scores"]) == len(validation)
 
 
 def test_paired_domain_bootstrap_is_zero_for_identical_predictions():

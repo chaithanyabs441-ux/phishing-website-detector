@@ -196,6 +196,76 @@ def fit_text_model(model_name, train_frame, validation_frame=None, seed=42, save
     }
 
 
+def fit_text_models_shared(model_names, train_frame, validation_frame, seed=42,
+                           artifact_dir=TEXT_ARTIFACT_DIR):
+    """Reuse each train-fitted sparse representation across compatible classifiers."""
+    grouped = {}
+    for model_name in model_names:
+        if model_name not in MODEL_SPECS:
+            raise ValueError(f"Unknown text model: {model_name}")
+        view, vectorizer_name, classifier_name = MODEL_SPECS[model_name]
+        grouped.setdefault((view, vectorizer_name), []).append((model_name, classifier_name))
+
+    targets = train_frame.target.to_numpy(dtype=np.int8)
+    results = {}
+    artifact_dir = Path(artifact_dir)
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    for (view, vectorizer_name), candidates in grouped.items():
+        vectorizer = make_vectorizer(vectorizer_name)
+        fit_started = time.monotonic()
+        train_features = vectorizer.fit_transform(_view_values(train_frame, view))
+        vectorizer_seconds = time.monotonic() - fit_started
+        transform_started = time.monotonic()
+        validation_features = vectorizer.transform(_view_values(validation_frame, view))
+        validation_transform_seconds = time.monotonic() - transform_started
+        matrix_bytes = int(
+            train_features.data.nbytes
+            + train_features.indices.nbytes
+            + train_features.indptr.nbytes
+        )
+
+        for model_name, classifier_name in candidates:
+            model = make_classifier(classifier_name, seed)
+            fit_started = time.monotonic()
+            model.fit(train_features, targets)
+            classifier_seconds = time.monotonic() - fit_started
+            scores = score_estimator(model, validation_features)
+            inference_rows = min(1000, len(validation_frame))
+            inference_started = time.perf_counter()
+            score_estimator(model, validation_features[:inference_rows])
+            inference_seconds_per_1000 = (
+                time.perf_counter() - inference_started
+            ) / max(1, inference_rows) * 1000
+            artifact = artifact_dir / f"{model_name}.joblib"
+            dump({
+                "model_name": model_name,
+                "view": view,
+                "vectorizer": vectorizer,
+                "model": model,
+            }, artifact)
+            results[model_name] = {
+                "scores": scores,
+                "metadata": {
+                    "view": view,
+                    "vectorizer": vectorizer_name,
+                    "classifier": classifier_name,
+                    "fit_rows": int(len(targets)),
+                    "feature_count": int(train_features.shape[1]),
+                    "nonzero_features": int(train_features.nnz),
+                    "sparse_matrix_bytes": matrix_bytes,
+                    "vectorizer_seconds": vectorizer_seconds,
+                    "vectorizer_shared_with": [name for name, _ in candidates if name != model_name],
+                    "classifier_seconds": classifier_seconds,
+                    "validation_transform_seconds": validation_transform_seconds,
+                    "inference_seconds_per_1000": inference_seconds_per_1000,
+                },
+                "artifact": str(artifact),
+                "artifact_bytes": artifact.stat().st_size,
+            }
+        del train_features, validation_features, vectorizer
+    return results
+
+
 def grouped_oof_text_scores(
     model_name,
     train_frame,

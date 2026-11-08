@@ -24,6 +24,7 @@ from src.evaluation.phase4_data import PHASE4_FEATURE_COLUMNS, PROJECT_ROOT
 from src.evaluation.phase5_text import (
     MODEL_SPECS,
     fit_text_model,
+    fit_text_models_shared,
     grouped_oof_text_scores,
     load_phase5_data,
 )
@@ -228,20 +229,21 @@ def run_text_comparison(config_path=None, model_names=None, bootstrap_replicates
     validation = data[data["split"] == "validation"].reset_index(drop=True)
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     results = {}
+    shared_fits = fit_text_models_shared(
+        model_names, train, validation, seed=seed, artifact_dir=ARTIFACT_DIR,
+    )
     for index, model_name in enumerate(model_names):
-        if model_name not in MODEL_SPECS:
-            raise ValueError(f"Unknown text model {model_name}")
-        artifact = ARTIFACT_DIR / f"{model_name}.joblib"
-        _, _, scores, metadata = fit_text_model(
-            model_name, train, validation, seed=seed, save_path=artifact,
-        )
+        fit_result = shared_fits[model_name]
+        scores = fit_result["scores"]
+        metadata = fit_result["metadata"]
+        artifact = Path(fit_result["artifact"])
         point, intervals, completed, domain_count = _metric_details(
             validation, scores, bootstrap_replicates, seed + index,
         )
         results[model_name] = {
             "metadata": metadata,
             "artifact": str(artifact.relative_to(PROJECT_ROOT)),
-            "artifact_bytes": artifact.stat().st_size,
+            "artifact_bytes": fit_result["artifact_bytes"],
             "validation_rows": int(len(validation)),
             "validation_domains": domain_count,
             "metrics": point,

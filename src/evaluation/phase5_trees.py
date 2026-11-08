@@ -13,6 +13,7 @@ import optuna
 import pandas as pd
 import yaml
 from joblib import dump
+from scipy.special import logit
 from sklearn.ensemble import ExtraTreesClassifier, HistGradientBoostingClassifier
 from sklearn.metrics import average_precision_score
 
@@ -211,7 +212,8 @@ def run_phase5_trees(config_path=None, models=None, bootstrap_replicates=None, p
         started = time.monotonic()
         model.fit(x_train, y_train)
         training_seconds = time.monotonic() - started
-        scores = model.predict_proba(x_valid)[:, 1]
+        probabilities = model.predict_proba(x_valid)[:, 1]
+        scores = logit(np.clip(probabilities, 1e-12, 1.0 - 1e-12))
         artifact = MODEL_DIR / f"{model_name}.joblib"
         dump(model, artifact)
         inference_rows = min(1000, len(x_valid))

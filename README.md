@@ -1,6 +1,6 @@
-# PHISH//X
+# PhishReaper
 
-PHISH//X is a classical machine-learning phishing URL detector. The deployed path uses URL and HTML structure features with a CatBoost classifier, then applies a Platt calibrator. If the primary model cannot load or predict, the app falls back to the verified URL TF-IDF SVM and clearly identifies that its margin is uncalibrated. Pasted HTML is optional; server-side fetching is disabled by default.
+PhishReaper is a classical machine-learning phishing URL detector. The deployed path uses URL and HTML structure features with a CatBoost classifier, then applies a Platt calibrator. If the primary model cannot load or predict, the app falls back to the verified URL TF-IDF SVM and clearly identifies that its margin is uncalibrated. An HTML file upload is optional; server-side fetching is disabled by default.
 
 Use the output for analyst triage. `BLOCK`, `WARN`, and `SAFE-LOOKING` are model signals, not proof about a site. The test set is an offline evaluation asset and should not be used to tune a deployment.
 
@@ -22,7 +22,7 @@ Run the app locally:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tasks.ps1 run-app
 ```
 
-Open `http://127.0.0.1:8000`. The HTML form accepts a URL and optional pasted HTML. The JSON endpoint is `POST /api/v1/scan` with `{"url":"https://example.org","html":""}`. `/health` and `/version` return service status and model/feature version.
+Open `http://127.0.0.1:8000`. The HTML form accepts a URL and optional `.html`/`.htm` file up to 10 MB. The JSON endpoint is `POST /api/v1/scan` with `{"url":"https://example.org","html":""}`. `/health` and `/version` return service status and model/feature version.
 
 For tests and lint:
 
@@ -80,7 +80,7 @@ The evaluations above need local data and caches. Set seeds and resource limits 
 
 The local `configs/top_sites.txt` list is a small bootstrap context list, not a current Tranco snapshot. To refresh it, download a Tranco list manually, review its format, and replace the file with one registered domain per line. The app does not fetch that list. `configs/shared_hosting_domains.txt` contains platforms where URL-only evidence is inconclusive.
 
-HTML fetching is controlled by `serving.enable_html_fetch` and is `false` by default. If enabled, the fetcher applies DNS/IP, scheme, port, redirect, response-size, timeout, and content-type checks. Keep it disabled unless deployment egress controls also address DNS rebinding. Pasted HTML is parsed locally and JavaScript is never executed.
+HTML fetching is controlled by `serving.enable_html_fetch` and is `false` by default. If enabled, the fetcher applies DNS/IP, scheme, port, redirect, response-size, timeout, and content-type checks. Keep it disabled unless deployment egress controls also address DNS rebinding. Uploaded HTML is parsed locally and JavaScript is never executed. Uploads are limited to 10 MB and parsing is limited to 10 million characters.
 
 Google Safe Browsing is optional. Set `GOOGLE_SAFE_BROWSING_API_KEY` in the environment or copy `.env.example` to `.env`. When enabled, the complete submitted URL, including path and query, is sent to Google's Safe Browsing API for lookup; submitted HTML is not sent. A threat match overrides the model verdict. No match does not mean safe. Do not put secrets in Git or logs.
 
@@ -94,7 +94,7 @@ docker compose up --build
 
 The service binds to `127.0.0.1:8000`. The data directory is not copied into the image. See `Dockerfile` and `docker-compose.yml` before changing the network exposure or mounting secrets.
 
-Safe Browsing is disabled in Compose by default. To enable it for a one-off Compose run, first supply `GOOGLE_SAFE_BROWSING_API_KEY` through your secret manager or PowerShell process environment, then use `docker compose run --service-ports -e GOOGLE_SAFE_BROWSING_API_KEY phishx`. Compose files deliberately do not interpolate the project `.env` key into rendered configuration.
+Safe Browsing is disabled in Compose by default. To enable it for a one-off Compose run, first supply `GOOGLE_SAFE_BROWSING_API_KEY` through your secret manager or PowerShell process environment, then use `docker compose run --service-ports -e GOOGLE_SAFE_BROWSING_API_KEY phishreaper`. Compose files deliberately do not interpolate the project `.env` key into rendered configuration.
 
 ## Evaluation protocol and results
 

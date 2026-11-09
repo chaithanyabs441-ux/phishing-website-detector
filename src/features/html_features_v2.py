@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from src.features.url_features import registered_domain_from_url
 
 
-MAX_HTML_CHARS = 500_000
+MAX_HTML_CHARS = 10_000_000
 CLEANED_TEXT_MAX_CHARS = 2_048
 LOGIN_KEYWORDS = {
     "account", "auth", "bank", "confirm", "credential", "invoice", "log-in",

@@ -32,8 +32,9 @@ serving:
   shared_hosting_file: configs/shared_hosting_domains.txt
   enable_html_fetch: false
   max_url_chars: 4096
-  max_html_chars: 500000
-  max_request_bytes: 1200000
+  max_html_chars: 10000000
+  max_html_upload_bytes: 10000000
+  max_request_bytes: 12000000
   rate_limit_per_minute: 30
   fetcher:
     max_bytes: 1000000

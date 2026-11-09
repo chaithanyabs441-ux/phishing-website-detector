@@ -6,8 +6,12 @@ calibrator_artifact: models\phase7\catboost_engineered_calibrator.joblib
 assumed_prevalence: 0.05
 thresholds:
   block: 0.9412894906414405
-  warn: 0.06817787498329715
+  warn: 0.8
 selection_constraints:
   block_max_fpr: 0.001
   warn_min_recall: 0.95
-source: temporal validation only; grouped OOF-calibrated scores
+source: user-requested manual adjustment; WARN cutoff raised from the validation-selected value
+manual_override:
+  previous_warn: 0.06817787498329715
+  reason: Raise the WARN cutoff above the current 0.785428 score for w3schools.com/rust.
+  validation_recall_guarantee: no longer applies

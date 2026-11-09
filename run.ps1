@@ -1,5 +1,5 @@
 # ============================================================
-# PHISH//X - local launcher
+# PhishReaper - local launcher
 # ============================================================
 #
 # Usage, from the project root:

@@ -1,1 +1,1 @@
-"""Serving utilities for the PHISH//X web application."""
+"""Serving utilities for the PhishReaper web application."""

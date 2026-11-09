@@ -40,13 +40,25 @@ def test_invalid_empty_and_oversized_inputs():
     client = TestClient(webapp.app)
     assert client.post("/api/v1/scan", json={"url": ""}).status_code == 400
     assert client.post("/api/v1/scan", json={"url": "http://[::"}).status_code == 400
-    assert client.post("/api/v1/scan", json={"url": "https://example.com", "html": "x" * 500001}).status_code == 413
+    assert client.post("/api/v1/scan", json={"url": "https://example.com", "html": "x" * 10000001}).status_code == 413
 
 
 def test_html_body_limit_and_shared_host_routing():
     client = TestClient(webapp.app)
-    oversized = "html=" + ("x" * 1_200_001) + "&url=https%3A%2F%2Fexample.com"
+    oversized = "html=" + ("x" * 12_000_001) + "&url=https%3A%2F%2Fexample.com"
     assert client.post("/scan", content=oversized, headers={"content-type": "application/x-www-form-urlencoded"}).status_code == 413
     result = client.post("/api/v1/scan", json={"url": "https://my-site.vercel.app"}).json()
     assert result["prediction"] == "NEEDS PAGE CONTENT"
     assert client.post("/api/v1/scan", json={"url": "https://google.com"}).json()["allowlisted"] is True
+
+
+def test_html_file_upload_is_analyzed():
+    client = TestClient(webapp.app)
+    response = client.post(
+        "/scan",
+        data={"url": "https://example.com"},
+        files={"html_file": ("page.html", b"<html><body>Example</body></html>", "text/html")},
+    )
+    assert response.status_code == 200
+    assert "HTML provided" in response.text
+    assert "Yes" in response.text

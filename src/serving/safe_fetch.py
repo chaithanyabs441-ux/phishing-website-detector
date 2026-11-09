@@ -7,7 +7,7 @@ from urllib.parse import urljoin, urlsplit
 import httpx
 
 
-USER_AGENT = "PHISH-X-HTML-Fetch/1.0"
+USER_AGENT = "PhishReaper-HTML-Fetch/1.0"
 REDIRECT_CODES = {301, 302, 303, 307, 308}
 
 

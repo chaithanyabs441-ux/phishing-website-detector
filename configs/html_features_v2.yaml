@@ -1,5 +1,5 @@
 version: html_features_v2
-max_html_chars: 500000
+max_html_chars: 10000000
 cleaned_text_max_chars: 2048
 cache_root: data/processed/features_v2
 cache_key: sha256

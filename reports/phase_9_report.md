@@ -58,7 +58,7 @@ The selected model's separate, one-pass locked-test estimates and corrected benc
 
 - The reported 99.45% CatBoost accuracy claim was **not reproduced** on this project's blocked temporal validation: the CatBoost engineered model had accuracy 0.9321 [0.9138, 0.9487]. Its separate official-test accuracy at a 0.5 cut was 0.96123 [0.95688, 0.96606], below 0.9945. The datasets, labels, splits, and operating conditions may differ, so this is not a direct replication of the paper.
 - The reported 97.34% stacking accuracy claim was **not reproduced**: the logistic OOF stack had temporal-validation accuracy 0.9345 [0.9164, 0.9539], and it did not improve AP over the best single CatBoost model. The stack was not selected for the one-time test evaluation. Paper protocol differences prevent an apples-to-apples claim.
-- The CNN+LightGBM result was deliberately not tested because PHISH//X is classical-ML-only.
+- The CNN+LightGBM result was deliberately not tested because PhishReaper is classical-ML-only.
 
 ## Verification
 

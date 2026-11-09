@@ -96,7 +96,7 @@ with open(
 ) as file:
 
     file.write(
-        "PHISH//X - URL + HTML OFFICIAL TEST EVALUATION\n"
+        "PhishReaper - URL + HTML OFFICIAL TEST EVALUATION\n"
     )
 
     file.write("=" * 70 + "\n\n")

@@ -1,4 +1,4 @@
-# PHISH//X model card
+# PhishReaper model card
 
 **Version:** serving model and calibration committed at Phase 8, with the Phase 9 serving-calibration parity correction.
 
@@ -7,7 +7,7 @@
 
 ## Intended use
 
-PHISH//X is a local analyst-triage aid for suspicious URLs. Its signals can help prioritize manual inspection. It is not an autonomous blocklist, a guarantee of safety, or a substitute for incident response. The model was trained and evaluated on a historical PhreshPhish collection; it is not validated for any specific organization, geography, language, or live traffic distribution.
+PhishReaper is a local analyst-triage aid for suspicious URLs. Its signals can help prioritize manual inspection. It is not an autonomous blocklist, a guarantee of safety, or a substitute for incident response. The model was trained and evaluated on a historical PhreshPhish collection; it is not validated for any specific organization, geography, language, or live traffic distribution.
 
 The service accepts a URL and optional user-supplied HTML. It does not render JavaScript. A local, short popular-domain list provides context only, and shared-hosting domains without HTML return `NEEDS PAGE CONTENT`.
 
@@ -63,7 +63,7 @@ The selected BLOCK threshold produced 63,602 true positives, 98 false positives,
 
 ## Privacy, ethics, and security
 
-The URL and pasted HTML are security-sensitive. Structured application logs omit both. If `GOOGLE_SAFE_BROWSING_API_KEY` is configured, PHISH//X sends the complete submitted URL—including path and query string—to Google's Safe Browsing API. It sends no pasted HTML. Query strings can contain account identifiers, reset tokens, or other secrets; operators should disable the integration or redact inputs where that is not acceptable, and should review Google's current service terms and retention policies.
+The URL and pasted HTML are security-sensitive. Structured application logs omit both. If `GOOGLE_SAFE_BROWSING_API_KEY` is configured, PhishReaper sends the complete submitted URL—including path and query string—to Google's Safe Browsing API. It sends no pasted HTML. Query strings can contain account identifiers, reset tokens, or other secrets; operators should disable the integration or redact inputs where that is not acceptable, and should review Google's current service terms and retention policies.
 
 The model can falsely label legitimate sites or miss phishing sites. Do not use a score as evidence of user intent, as a basis for punitive action, or as a sole control for account access. Keep a human review path and provide a way to challenge incorrect classifications. The project is restricted to classical machine learning; no neural network or pretrained embedding was used.
 

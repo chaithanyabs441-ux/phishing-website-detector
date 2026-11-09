@@ -108,7 +108,7 @@ with open(
 ) as file:
 
     file.write(
-        "PHISH//X - EXPERIMENT 3 LOG\n"
+        "PhishReaper - EXPERIMENT 3 LOG\n"
     )
 
     file.write(

@@ -75,7 +75,7 @@ from src.features.html_features import extract_html_features
 # ============================================================
 
 print("=" * 60)
-print("PHISH//X - Loading Models")
+print("PhishReaper - Loading Models")
 print("=" * 60)
 
 
@@ -178,7 +178,7 @@ print("=" * 60)
 # ============================================================
 
 app = FastAPI(
-    title="PHISH//X",
+    title="PhishReaper",
     description="Explainable phishing website detection",
     version="1.0"
 )

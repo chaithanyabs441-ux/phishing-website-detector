@@ -58,7 +58,7 @@ with open(
 ) as file:
 
     file.write(
-        "PHISH//X - PHRESH PHISH BENCHMARK INSPECTION\n"
+        "PhishReaper - PHRESH PHISH BENCHMARK INSPECTION\n"
     )
 
     file.write(

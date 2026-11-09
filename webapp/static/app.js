@@ -1,5 +1,5 @@
 // ============================================================
-// PHISH//X WEB APP
+// PhishReaper WEB APP
 // Frontend interaction
 // ============================================================
 
@@ -415,3 +415,20 @@ document.addEventListener(
 
     }
 );
+
+
+// ============================================================
+// START WITH AN EMPTY URL BOX
+// (also after Back / reload, when the browser restores old values)
+// ============================================================
+
+window.addEventListener("pageshow", function () {
+
+    const input = document.querySelector('input[name="url"]');
+
+    if (input) {
+        input.value = "";
+        input.classList.remove("has-value");
+    }
+
+});

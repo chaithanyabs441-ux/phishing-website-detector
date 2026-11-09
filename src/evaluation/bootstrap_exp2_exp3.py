@@ -98,7 +98,7 @@ with open(
 ) as file:
 
     file.write(
-        "PHISH//X - EXP2 vs EXP3 PAIRED BOOTSTRAP\n"
+        "PhishReaper - EXP2 vs EXP3 PAIRED BOOTSTRAP\n"
     )
 
     file.write(

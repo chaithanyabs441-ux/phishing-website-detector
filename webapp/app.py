@@ -1,4 +1,4 @@
-"""PHISH//X FastAPI application with verified CatBoost serving and SVM fallback."""
+"""PhishReaper FastAPI application with verified CatBoost serving and SVM fallback."""
 
 import json
 import logging
@@ -10,7 +10,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 import yaml
-from fastapi import FastAPI, Form, HTTPException, Request
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -34,7 +34,7 @@ SERVING_CONFIG = MODEL_CONFIG["serving"]
 THRESHOLDS = yaml.safe_load((PROJECT_ROOT / SERVING_CONFIG["thresholds"]).read_text(encoding="utf-8"))
 REGISTRY = ModelRegistry(PROJECT_ROOT)
 GOOGLE_SAFE_BROWSING_API_KEY = os.environ.get("GOOGLE_SAFE_BROWSING_API_KEY", "").strip()
-logger = logging.getLogger("phishx.scan")
+logger = logging.getLogger("PhishReaper.scan")
 rate_limiter = ScanRateLimiter(SERVING_CONFIG["rate_limit_per_minute"], 60)
 
 
@@ -167,10 +167,10 @@ def _evidence(url_features, html_features, registered_domain, allowlisted):
 
 class ScanPayload(BaseModel):
     url: str = Field(..., max_length=4096)
-    html: str = Field(default="", max_length=1200000)
+    html: str = Field(default="", max_length=12000000)
 
 
-app = FastAPI(title="PHISH//X", description="Calibrated phishing analysis with local evidence", version="2.0")
+app = FastAPI(title="PhishReaper", description="Calibrated phishing analysis with local evidence", version="2.0")
 app.add_middleware(MaxBodySizeMiddleware, max_bytes=SERVING_CONFIG["max_request_bytes"])
 app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
@@ -189,6 +189,30 @@ def _error_page(request, message, status_code=400):
         context={"request": request, "result": {"error": message}},
         status_code=status_code,
     )
+
+
+async def _read_html_upload(upload):
+    if upload is None or not upload.filename:
+        return ""
+    if Path(upload.filename).suffix.lower() not in {".html", ".htm"}:
+        raise HTTPException(status_code=400, detail="Choose an .html or .htm file.")
+
+    max_bytes = int(SERVING_CONFIG["max_html_upload_bytes"])
+    content = await upload.read(max_bytes + 1)
+    await upload.close()
+    if len(content) > max_bytes:
+        raise HTTPException(status_code=413, detail="HTML file exceeds the 10 MB upload limit.")
+
+    if content.startswith((b"\xff\xfe", b"\xfe\xff")):
+        html = content.decode("utf-16")
+    else:
+        try:
+            html = content.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            html = content.decode("windows-1252", errors="replace")
+    if len(html) > int(SERVING_CONFIG["max_html_chars"]):
+        raise HTTPException(status_code=413, detail="HTML exceeds the configured character limit.")
+    return html
 
 
 async def _analyze(request, raw_url, html):
@@ -326,14 +350,22 @@ async def health():
 
 @app.get("/version")
 async def version():
-    return {"name": "PHISH//X", "version": app.version, "backend": REGISTRY.active_backend, "feature_version": THRESHOLDS["feature_version"]}
+    return {"name": "PhishReaper", "version": app.version, "backend": REGISTRY.active_backend, "feature_version": THRESHOLDS["feature_version"]}
 
 
 @app.post("/scan", response_class=HTMLResponse)
-async def scan(request: Request, url: str = Form(""), model_choice: str = Form(""), html: str = Form("")):
+async def scan(
+    request: Request,
+    url: str = Form(""),
+    model_choice: str = Form(""),
+    html: str = Form(""),
+    html_file: UploadFile = File(None),
+):
     # Old explicit model choices are deliberately removed; all requests use the configured
     # calibrated model, with the verified URL SVM as an automatic load/inference fallback.
     try:
+        if getattr(html_file, "filename", None):
+            html = await _read_html_upload(html_file)
         result = await _analyze(request, url, html)
     except HTTPException as error:
         return _error_page(request, str(error.detail), error.status_code)

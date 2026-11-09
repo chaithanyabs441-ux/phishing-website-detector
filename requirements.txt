@@ -1,4 +1,4 @@
-# PHISH//X runtime dependencies, pinned to the versions the committed
+# PhishReaper runtime dependencies, pinned to the versions the committed
 # model artifacts in models/ were produced with. Requires Python 3.9.
 #
 #     .\.venv\Scripts\python.exe -m pip install -r requirements.txt

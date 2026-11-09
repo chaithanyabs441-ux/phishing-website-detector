@@ -33,7 +33,7 @@ def lookup_url(url, api_key):
     )
     request_body = {
         "client": {
-            "clientId": "phishx-local",
+            "clientId": "PhishReaper-local",
             "clientVersion": "1.0",
         },
         "threatInfo": {

@@ -1,1 +1,1 @@
-"""Regression tests for the PHISH//X application."""
+"""Regression tests for the PhishReaper application."""

@@ -1,1200 +1,348 @@
+"""PHISH//X FastAPI application with verified CatBoost serving and SVM fallback."""
+
+import json
+import logging
 import os
-import sys
 import re
+import sys
+import time
+from pathlib import Path
+from urllib.parse import urlsplit
 
-import joblib
-import pandas as pd
 import yaml
-
-from scipy.sparse import hstack, csr_matrix
-
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 
-# ============================================================
-# PATH SETUP
-# ============================================================
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 
-PROJECT_ROOT = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        ".."
-    )
-)
-
-sys.path.append(PROJECT_ROOT)
+from src.features.html_features_v2 import extract_html_features_v2  # noqa: E402
+from src.features.url_features import registered_domain_from_url  # noqa: E402
+from src.reputation.google_safe_browsing import lookup_url as lookup_safe_browsing  # noqa: E402
+from src.serving.model_registry import ModelRegistry  # noqa: E402
+from src.serving.request_security import MaxBodySizeMiddleware, ScanRateLimiter  # noqa: E402
+from src.serving.safe_fetch import UnsafeTarget, fetch_html  # noqa: E402
 
 
-# ============================================================
-# LOCAL ENVIRONMENT FILE
-# ============================================================
-#
-# Optional convenience: server-side keys may be kept in the
-# Git-ignored root .env file. Values already present in the
-# process environment always take precedence, so a key exported
-# in the shell is never overridden by the file.
-# ============================================================
-
-def load_env_file(path):
-
-    try:
-        with open(path, "r", encoding="utf-8") as env_file:
-            lines = env_file.readlines()
-    except OSError:
-        return
-
-    for line in lines:
-
-        line = line.strip()
-
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-
-        name, value = line.split("=", 1)
-
-        name = name.strip()
-
-        value = value.strip().strip('"').strip("'")
-
-        if name:
-            os.environ.setdefault(name, value)
+MODEL_CONFIG = yaml.safe_load((PROJECT_ROOT / "configs" / "model_config.yaml").read_text(encoding="utf-8"))
+SERVING_CONFIG = MODEL_CONFIG["serving"]
+THRESHOLDS = yaml.safe_load((PROJECT_ROOT / SERVING_CONFIG["thresholds"]).read_text(encoding="utf-8"))
+REGISTRY = ModelRegistry(PROJECT_ROOT)
+GOOGLE_SAFE_BROWSING_API_KEY = os.environ.get("GOOGLE_SAFE_BROWSING_API_KEY", "").strip()
+logger = logging.getLogger("phishx.scan")
+rate_limiter = ScanRateLimiter(SERVING_CONFIG["rate_limit_per_minute"], 60)
 
 
-load_env_file(
-    os.path.join(PROJECT_ROOT, ".env")
-)
-
-MODEL_DIR = os.path.join(
-    PROJECT_ROOT,
-    "models"
-)
-
-CONFIG_PATH = os.path.join(PROJECT_ROOT, "configs", "model_config.yaml")
-with open(CONFIG_PATH, "r", encoding="utf-8") as config_file:
-    MODEL_CONFIG = yaml.safe_load(config_file)
+def _read_domain_file(path):
+    return {
+        line.strip().lower().lstrip(".")
+        for line in Path(path).read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    }
 
 
-def model_artifact(name):
-    return os.path.join(MODEL_DIR, MODEL_CONFIG["artifacts"][name])
-
-GOOGLE_SAFE_BROWSING_API_KEY = os.environ.get(
-    "GOOGLE_SAFE_BROWSING_API_KEY",
-    "",
-).strip()
-
-
-# ============================================================
-# CLASSIFICATION CONFIGURATION
-# ============================================================
-
-# ------------------------------------------------------------
-# MODEL-SPECIFIC LINEAR SVM DECISION THRESHOLDS
-# ------------------------------------------------------------
-#
-# URL TF-IDF's threshold is raised to suppress weak positive
-# scores like the reported false positive. The other models
-# retain their existing decision boundary because their scores
-# are not directly comparable and no matching threshold report
-# is available for them.
-# ------------------------------------------------------------
-
+TOP_SITES = _read_domain_file(PROJECT_ROOT / SERVING_CONFIG["top_sites_file"])
+SHARED_HOSTING_DOMAINS = _read_domain_file(PROJECT_ROOT / SERVING_CONFIG["shared_hosting_file"])
 CLASSIFICATION_THRESHOLDS = MODEL_CONFIG["thresholds"]
 DEFAULT_MODEL = MODEL_CONFIG["default_model"]
 FALLBACK_MODEL = MODEL_CONFIG["fallback_model"]
 
 
-# ============================================================
-# FEATURE EXTRACTORS
-# ============================================================
-
-from src.features.url_features import extract_url_features  # noqa: E402
-from src.features.html_features import extract_html_features  # noqa: E402
-from src.reputation.google_safe_browsing import lookup_url as lookup_safe_browsing  # noqa: E402
-
-
-# ============================================================
-# LOAD MODELS
-# ============================================================
-
-print("=" * 60)
-print("PHISH//X - Loading Models")
-print("=" * 60)
+def load_env_file(path):
+    """Load local environment values without overriding exported values."""
+    try:
+        lines = Path(path).read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        os.environ.setdefault(name.strip(), value.strip().strip("\"'"))
 
 
-# ------------------------------------------------------------
-# MODEL 1
-# URL TF-IDF
-# ------------------------------------------------------------
-
-url_tfidf = joblib.load(
-    model_artifact("url_tfidf")
-)
-
-url_svm = joblib.load(
-    model_artifact("url_linear_svm")
-)
-
-print("[OK] URL TF-IDF model loaded")
+load_env_file(PROJECT_ROOT / ".env")
+GOOGLE_SAFE_BROWSING_API_KEY = os.environ.get("GOOGLE_SAFE_BROWSING_API_KEY", "").strip()
 
 
-# ------------------------------------------------------------
-# MODEL 2
-# URL + ENGINEERED FEATURES
-# ------------------------------------------------------------
-
-combined_tfidf = joblib.load(
-    model_artifact("combined_tfidf")
-)
-
-combined_svm = joblib.load(
-    model_artifact("combined_linear_svm")
-)
-
-url_scaler = joblib.load(
-    model_artifact("combined_url_scaler")
-)
-url_html_scaler = joblib.load(
-    model_artifact("url_html_scaler")
-)
-
-print("[OK] URL + Engineered Features model loaded")
-
-
-# ------------------------------------------------------------
-# MODEL 3
-# URL + HTML
-# ------------------------------------------------------------
-
-url_html_tfidf = joblib.load(
-    model_artifact("url_html_tfidf")
-)
-
-url_html_svm = joblib.load(
-    model_artifact("url_html_linear_svm")
-)
-
-html_scaler = joblib.load(
-    model_artifact("html_scaler")
-)
-
-html_feature_columns = joblib.load(
-    model_artifact("html_feature_columns")
-)
-
-print("[OK] URL + HTML model loaded")
-
-print("=" * 60)
-for model_choice, threshold in CLASSIFICATION_THRESHOLDS.items():
-    print("Classification threshold ({}) = {:.2f}".format(
-        model_choice,
-        threshold,
-    ))
-print("=" * 60)
-
-
-# ============================================================
-# FASTAPI
-# ============================================================
-
-app = FastAPI(
-    title="PHISH//X",
-    description="Explainable phishing website detection",
-    version="1.0"
-)
-
-
-# ============================================================
-# TEMPLATES
-# ============================================================
-
-templates = Jinja2Templates(
-    directory=os.path.join(
-        os.path.dirname(__file__),
-        "templates"
-    )
-)
-
-
-# ============================================================
-# STATIC FILES
-# ============================================================
-
-app.mount(
-    "/static",
-    StaticFiles(
-        directory=os.path.join(
-            os.path.dirname(__file__),
-            "static"
-        )
-    ),
-    name="static"
-)
-
-
-# ============================================================
-# URL FEATURE COLUMNS
-# ============================================================
-
-URL_FEATURE_COLUMNS = [
-    "url_length",
-    "hostname_length",
-    "path_length",
-    "num_dots",
-    "num_hyphens",
-    "num_digits",
-    "num_special_chars",
-    "num_subdomains",
-    "num_query_params",
-    "has_at_symbol",
-    "has_ip_address",
-    "has_https",
-    "suspicious_word_count"
-]
-
-
-# ============================================================
-# HELPER FUNCTIONS
-# ============================================================
-
-def normalize_url(url):
-
-    url = url.strip()
-
-    if not url:
+def normalize_url(value):
+    value = value.strip()
+    if not value:
         return ""
-
-    if not re.match(
-        r"^https?://",
-        url,
-        re.IGNORECASE
-    ):
-        url = "https://" + url
-
-    return url
+    if not re.match(r"^https?://", value, re.IGNORECASE):
+        value = "https://" + value
+    return value
 
 
-# ============================================================
-# MODEL SIGNAL INDICATOR
-# ============================================================
-#
-# IMPORTANT:
-#
-# LinearSVC.decision_function() is NOT a calibrated
-# probability.
-# The UI reports score bands instead of a probability-like
-# sigmoid value.
-#
-# ============================================================
-
-def get_risk_level(decision_score, threshold):
-
-    if decision_score >= threshold:
-        return "HIGH RISK"
-
-    if decision_score >= 0.0:
-        return "REVIEW"
-
-    return "LOW RISK"
+def validate_url(value):
+    if not value or len(value) > int(SERVING_CONFIG["max_url_chars"]):
+        raise ValueError("Enter a URL under the configured length limit.")
+    if any(ord(char) < 32 for char in value):
+        raise ValueError("URL contains control characters.")
+    try:
+        parsed = urlsplit(value)
+        hostname = parsed.hostname
+        _ = parsed.port
+    except ValueError as error:
+        raise ValueError("Enter a valid HTTP or HTTPS URL.") from error
+    if parsed.scheme.lower() not in {"http", "https"} or not hostname:
+        raise ValueError("Enter a valid HTTP or HTTPS URL with a hostname.")
+    if any(char.isspace() for char in hostname):
+        raise ValueError("The hostname cannot contain spaces.")
+    try:
+        hostname.encode("idna")
+    except UnicodeError as error:
+        raise ValueError("The hostname is malformed.") from error
+    return value
 
 
 def get_prediction(decision_score, threshold):
-
     if decision_score >= threshold:
         return "PHISHING"
-
-    if decision_score >= 0.0:
+    if decision_score >= 0:
         return "REVIEW REQUIRED"
-
     return "LIKELY BENIGN"
 
 
+def get_risk_level(decision_score, threshold):
+    if decision_score >= threshold:
+        return "HIGH RISK"
+    if decision_score >= 0:
+        return "REVIEW"
+    return "LOW RISK"
+
+
 def get_risk_class(level):
-
-    if level == "HIGH RISK":
+    if level in {"BLOCK", "HIGH RISK"}:
         return "danger"
-
-    if level == "REVIEW":
+    if level in {"WARN", "REVIEW", "NEEDS PAGE CONTENT"}:
         return "warning"
-
     return "safe"
 
 
-# ============================================================
-# URL EVIDENCE
-# ============================================================
-
-def build_url_evidence(features):
-
-    evidence = []
-
-
-    # --------------------------------------------------------
-    # IP ADDRESS
-    # --------------------------------------------------------
-
-    if features["has_ip_address"]:
-
-        evidence.append({
-            "title": "IP address detected",
-            "description":
-                "The URL uses an IP address instead of a conventional domain name.",
-            "severity": "high"
-        })
-
-
-    # --------------------------------------------------------
-    # @ SYMBOL
-    # --------------------------------------------------------
-
-    if features["has_at_symbol"]:
-
-        evidence.append({
-            "title": "@ symbol detected",
-            "description":
-                "The URL contains an @ symbol, which can obscure the actual destination.",
-            "severity": "high"
-        })
-
-
-    # --------------------------------------------------------
-    # SUSPICIOUS KEYWORDS
-    # --------------------------------------------------------
-
-    if features["suspicious_word_count"] > 0:
-
-        evidence.append({
-            "title": "Suspicious keywords",
-            "description":
-                f'{features["suspicious_word_count"]} suspicious keyword(s) detected.',
-            "severity": "medium"
-        })
-
-
-    # --------------------------------------------------------
-    # SUBDOMAINS
-    # --------------------------------------------------------
-
-    if features["num_subdomains"] >= 3:
-
-        evidence.append({
-            "title": "Complex subdomain structure",
-            "description":
-                f'{features["num_subdomains"]} subdomain level(s) detected.',
-            "severity": "medium"
-        })
-
-
-    # --------------------------------------------------------
-    # URL LENGTH
-    # --------------------------------------------------------
-
-    if features["url_length"] > 100:
-
-        evidence.append({
-            "title": "Long URL",
-            "description":
-                f'The URL contains {features["url_length"]} characters.',
-            "severity": "medium"
-        })
-
-
-    # --------------------------------------------------------
-    # QUERY PARAMETERS
-    # --------------------------------------------------------
-
-    if features["num_query_params"] >= 4:
-
-        evidence.append({
-            "title": "Many query parameters",
-            "description":
-                f'{features["num_query_params"]} query parameter(s) detected.',
-            "severity": "medium"
-        })
-
-
-    # --------------------------------------------------------
-    # HTTPS
-    # --------------------------------------------------------
-
-    if not features["has_https"]:
-
-        evidence.append({
-            "title": "HTTPS not detected",
-            "description":
-                "The URL does not use HTTPS.",
-            "severity": "medium"
-        })
-
-
-    # --------------------------------------------------------
-    # NO OBVIOUS EVIDENCE
-    # --------------------------------------------------------
-
-    if not evidence:
-
-        evidence.append({
-            "title": "No obvious URL indicators",
-            "description":
-                "No major suspicious URL patterns were detected.",
-            "severity": "low"
-        })
-
-
-    return evidence
-
-
-# ============================================================
-# HTML EVIDENCE
-# ============================================================
-
-def build_html_evidence(features):
-
-    evidence = []
-
-
-    # --------------------------------------------------------
-    # PASSWORD INPUT
-    # --------------------------------------------------------
-
-    if features["num_password_inputs"] > 0:
-
-        evidence.append({
-            "title": "Password field detected",
-            "description":
-                f'{features["num_password_inputs"]} password input(s) found.',
-            "severity": "medium"
-        })
-
-
-    # --------------------------------------------------------
-    # EXTERNAL FORM ACTION
-    # --------------------------------------------------------
-
-    if features["has_external_form_action"]:
-
-        evidence.append({
-            "title": "External form destination",
-            "description":
-                f'{features["num_external_form_actions"]} form action(s) '
-                "point outside the current domain.",
-            "severity": "high"
-        })
-
-
-    # --------------------------------------------------------
-    # IFRAMES
-    # --------------------------------------------------------
-
-    if features["num_iframes"] > 0:
-
-        evidence.append({
-            "title": "Iframe detected",
-            "description":
-                f'{features["num_iframes"]} iframe(s) detected.',
-            "severity": "low"
-        })
-
-
-    # --------------------------------------------------------
-    # HIDDEN INPUTS
-    # --------------------------------------------------------
-
-    if features["num_hidden_inputs"] > 0:
-
-        evidence.append({
-            "title": "Hidden inputs",
-            "description":
-                f'{features["num_hidden_inputs"]} hidden input(s) detected.',
-            "severity": "low"
-        })
-
-
-    # --------------------------------------------------------
-    # EXTERNAL LINKS
-    # --------------------------------------------------------
-
-    if features["num_external_links"] > 0:
-
-        evidence.append({
-            "title": "External links",
-            "description":
-                f'{features["num_external_links"]} external link(s) detected.',
-            "severity": "low"
-        })
-
-
-    # --------------------------------------------------------
-    # FORMS
-    # --------------------------------------------------------
-
-    if features["num_forms"] > 0:
-
-        evidence.append({
-            "title": "Forms detected",
-            "description":
-                f'{features["num_forms"]} form(s) found.',
-            "severity": "low"
-        })
-
-
-    # --------------------------------------------------------
-    # NO OBVIOUS EVIDENCE
-    # --------------------------------------------------------
-
-    if not evidence:
-
-        evidence.append({
-            "title": "No major HTML indicators",
-            "description":
-                "No major suspicious structural indicators were detected.",
-            "severity": "low"
-        })
-
-
-    return evidence
-
-
-# ============================================================
-# MODEL 1
-# URL TF-IDF
-# ============================================================
-
 def predict_url_tfidf(url):
-
-    tfidf_features = url_tfidf.transform(
-        [url]
-    )
-
-    decision_score = float(
-        url_svm.decision_function(
-            tfidf_features
-        )[0]
-    )
-
-    return decision_score
+    """Compatibility entry point for the verified SVM fallback."""
+    vector = REGISTRY.fallback_vectorizer.transform([url])
+    return float(REGISTRY.fallback_model.decision_function(vector)[0])
 
 
-# ============================================================
-# MODEL 2
-# URL + ENGINEERED FEATURES
-# ============================================================
-
-def predict_url_engineered(url):
-
-    url_features = extract_url_features(
-        url
-    )
-
-    feature_df = pd.DataFrame(
-        [url_features],
-        columns=URL_FEATURE_COLUMNS
-    )
-
-    scaled_features = url_scaler.transform(
-        feature_df
-    )
-
-    tfidf_features = combined_tfidf.transform(
-        [url]
-    )
-
-    combined_features = hstack(
-        [
-            tfidf_features,
-            csr_matrix(
-                scaled_features
-            )
-        ],
-        format="csr"
-    )
-
-    decision_score = float(
-        combined_svm.decision_function(
-            combined_features
-        )[0]
-    )
-
-    return (
-        decision_score,
-        url_features
-    )
+def _shared_hosting(hostname):
+    host = hostname.rstrip(".").lower()
+    return any(host == domain or host.endswith("." + domain) for domain in SHARED_HOSTING_DOMAINS)
 
 
-# ============================================================
-# MODEL 3
-# URL + HTML
-# ============================================================
-
-def predict_url_html(
-    url,
-    html
-):
-
-    url_features = extract_url_features(
-        url
-    )
-
-    html_features = extract_html_features(
-        html,
-        url
-    )
-
-    url_df = pd.DataFrame(
-        [url_features],
-        columns=URL_FEATURE_COLUMNS
-    )
-
-    html_df = pd.DataFrame(
-        [html_features],
-        columns=html_feature_columns
-    )
-
-    url_scaled = url_html_scaler.transform(
-        url_df
-    )
-
-    html_scaled = html_scaler.transform(
-        html_df
-    )
-
-    tfidf_features = url_html_tfidf.transform(
-        [url]
-    )
-
-    combined_features = hstack(
-        [
-            tfidf_features,
-            csr_matrix(
-                url_scaled
-            ),
-            csr_matrix(
-                html_scaled
-            )
-        ],
-        format="csr"
-    )
-
-    decision_score = float(
-        url_html_svm.decision_function(
-            combined_features
-        )[0]
-    )
-
-    return (
-        decision_score,
-        url_features,
-        html_features
-    )
-
-
-# ============================================================
-# HOME PAGE
-# ============================================================
-
-@app.get(
-    "/",
-    response_class=HTMLResponse
-)
-async def home(
-    request: Request
-):
-
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={
-            "request": request,
-            "result": None
-        }
-    )
-
-
-# ============================================================
-# SCAN
-# ============================================================
-
-@app.post(
-    "/scan",
-    response_class=HTMLResponse
-)
-async def scan(
-    request: Request,
-    url: str = Form(...),
-    model_choice: str = Form(""),
-    html: str = Form("")
-):
-
-    # --------------------------------------------------------
-    # NORMALIZE URL
-    # --------------------------------------------------------
-
-    url = normalize_url(url)
-
-    if not model_choice:
-        model_choice = DEFAULT_MODEL if html.strip() else FALLBACK_MODEL
-
-
-    # --------------------------------------------------------
-    # EMPTY URL
-    # --------------------------------------------------------
-
-    if not url:
-
-        return templates.TemplateResponse(
-            request=request,
-            name="index.html",
-            context={
-                "request": request,
-                "result": {
-                    "error":
-                        "Please enter a URL."
-                }
-            }
-        )
-
-
-    # --------------------------------------------------------
-    # INITIALIZE
-    # --------------------------------------------------------
-
-    decision_score = None
-
-    url_features = None
-
-    html_features = None
-
+def _evidence(url_features, html_features, registered_domain, allowlisted):
     evidence = []
-
-    feature_summary = {}
-
-
-    # ========================================================
-    # MODEL 1
-    # URL TF-IDF
-    # ========================================================
-
-    if model_choice == "url_tfidf":
-
-        decision_score = predict_url_tfidf(
-            url
-        )
-
-        model_name = (
-            "URL TF-IDF"
-        )
-
-        model_description = (
-            "Character-level TF-IDF + Linear SVM"
-        )
-
-        url_features = extract_url_features(
-            url
-        )
-
-        evidence = build_url_evidence(
-            url_features
-        )
-
-        feature_summary = {
-
-            "URL length":
-                url_features[
-                    "url_length"
-                ],
-
-            "Hostname length":
-                url_features[
-                    "hostname_length"
-                ],
-
-            "Path length":
-                url_features[
-                    "path_length"
-                ],
-
-            "Dots":
-                url_features[
-                    "num_dots"
-                ],
-
-            "Digits":
-                url_features[
-                    "num_digits"
-                ],
-
-            "HTTPS":
-                (
-                    "Yes"
-                    if url_features[
-                        "has_https"
-                    ]
-                    else "No"
-                )
-        }
-
-
-    # ========================================================
-    # MODEL 2
-    # URL + ENGINEERED FEATURES
-    # ========================================================
-
-    elif model_choice == "url_engineered":
-
-        (
-            decision_score,
-            url_features
-        ) = predict_url_engineered(
-            url
-        )
-
-        model_name = (
-            "URL + Engineered Features"
-        )
-
-        model_description = (
-            "Character TF-IDF + engineered URL features + Linear SVM"
-        )
-
-        evidence = build_url_evidence(
-            url_features
-        )
-
-        feature_summary = {
-
-            "URL length":
-                url_features[
-                    "url_length"
-                ],
-
-            "Hostname length":
-                url_features[
-                    "hostname_length"
-                ],
-
-            "Path length":
-                url_features[
-                    "path_length"
-                ],
-
-            "Subdomains":
-                url_features[
-                    "num_subdomains"
-                ],
-
-            "Query parameters":
-                url_features[
-                    "num_query_params"
-                ],
-
-            "Suspicious keywords":
-                url_features[
-                    "suspicious_word_count"
-                ],
-
-            "IP address":
-                (
-                    "Yes"
-                    if url_features[
-                        "has_ip_address"
-                    ]
-                    else "No"
-                ),
-
-            "HTTPS":
-                (
-                    "Yes"
-                    if url_features[
-                        "has_https"
-                    ]
-                    else "No"
-                )
-        }
-
-
-    # ========================================================
-    # MODEL 3
-    # URL + HTML
-    # ========================================================
-
-    elif model_choice == "url_html":
-
-        if not html.strip():
-
-            return templates.TemplateResponse(
-                request=request,
-                name="index.html",
-                context={
-                    "request": request,
-                    "result": {
-                        "error":
-                            "HTML is required when using the URL + HTML model."
-                    }
-                }
-            )
-
-
-        (
-            decision_score,
-            url_features,
-            html_features
-        ) = predict_url_html(
-            url,
-            html
-        )
-
-        model_name = (
-            "URL + HTML"
-        )
-
-        model_description = (
-            "URL TF-IDF + engineered URL features + HTML structural features + Linear SVM"
-        )
-
-        url_evidence = build_url_evidence(
-            url_features
-        )
-
-        html_evidence = build_html_evidence(
-            html_features
-        )
-
-        evidence = (
-            url_evidence
-            +
-            html_evidence
-        )
-
-        feature_summary = {
-
-            "URL length":
-                url_features[
-                    "url_length"
-                ],
-
-            "Subdomains":
-                url_features[
-                    "num_subdomains"
-                ],
-
-            "Query parameters":
-                url_features[
-                    "num_query_params"
-                ],
-
-            "Suspicious keywords":
-                url_features[
-                    "suspicious_word_count"
-                ],
-
-            "HTML length":
-                html_features[
-                    "html_length"
-                ],
-
-            "Forms":
-                html_features[
-                    "num_forms"
-                ],
-
-            "Inputs":
-                html_features[
-                    "num_inputs"
-                ],
-
-            "Password inputs":
-                html_features[
-                    "num_password_inputs"
-                ],
-
-            "External links":
-                html_features[
-                    "num_external_links"
-                ],
-
-            "Scripts":
-                html_features[
-                    "num_scripts"
-                ],
-
-            "Iframes":
-                html_features[
-                    "num_iframes"
-                ]
-        }
-
-
-    # ========================================================
-    # INVALID MODEL
-    # ========================================================
-
-    else:
-
-        return templates.TemplateResponse(
-            request=request,
-            name="index.html",
-            context={
-                "request": request,
-                "result": {
-                    "error":
-                        "Invalid model selection."
-                }
-            }
-        )
-
-
-    # ========================================================
-    # ACTUAL CLASSIFICATION
-    # ========================================================
-    #
-    # This is the important part.
-    #
-    # The model produces a decision score.
-    #
-    # We compare it against the selected model's threshold:
-    #
-    # score >= threshold -> PHISHING
-    # score <  threshold -> LIKELY BENIGN
-    #
-    # ========================================================
-
-    classification_threshold = CLASSIFICATION_THRESHOLDS[model_choice]
-
-    prediction = get_prediction(
-        decision_score,
-        classification_threshold,
-    )
-
-    reputation_result = await run_in_threadpool(
-        lookup_safe_browsing,
-        url,
-        GOOGLE_SAFE_BROWSING_API_KEY,
-    )
-
-    if reputation_result.status == "matched":
-        prediction = "PHISHING"
-        evidence = [
-            item for item in evidence
-            if item["title"] != "No obvious URL indicators"
-        ]
-        evidence.insert(0, {
-            "title": "Threat intelligence match",
-            "description": (
-                "Google Safe Browsing lists this URL as {}.".format(
-                    ", ".join(reputation_result.threat_types)
-                )
-            ),
-            "severity": "high",
-        })
-
-
-    # ========================================================
-    # VISUAL RISK INDICATOR
-    # ========================================================
-    #
-    # This does NOT control the classification.
-    #
-    # A positive score below the stricter URL-only cutoff is
-    # shown as needing review rather than as a phishing verdict.
-    # ========================================================
-
-    risk_level = get_risk_level(
-        decision_score,
-        classification_threshold,
-    )
-
-    if reputation_result.status == "matched":
-        risk_level = "HIGH RISK"
-
-    risk_class = get_risk_class(
-        risk_level
-    )
-
-    reputation_messages = {
-        "matched": "Listed by Google Safe Browsing.",
-        "not_listed": (
-            "No Google Safe Browsing match. This does not confirm the site is safe."
-        ),
-        "not_configured": (
-            "Google Safe Browsing is not configured; only local model analysis ran."
-        ),
-        "unavailable": (
-            "{} Local model analysis is shown.".format(
-                reputation_result.detail
-            )
-        ),
-    }
-
-
-    # ========================================================
-    # RESULT
-    # ========================================================
-
-    reputation_message = reputation_messages.get(
-        reputation_result.status,
-        "Threat intelligence status is unavailable; local model analysis is shown.",
-    )
-
-
-    result = {
-
-        "url":
-            url,
-
-        "prediction":
-            prediction,
-
-        "decision_score":
-            round(
-                decision_score,
-                4
-            ),
-
-        "classification_threshold":
-            classification_threshold,
-
-        "risk_level":
-            risk_level,
-
-        "risk_class":
-            risk_class,
-
-        "model_choice":
-            model_choice,
-
-        "model_name":
-            model_name,
-
-        "model_description":
-            model_description,
-
-        "reputation_status":
-            reputation_result.status,
-
-        "reputation_message":
-            reputation_message,
-
-        "evidence":
-            evidence,
-
-        "feature_summary":
-            feature_summary
-    }
-
-
-    # ========================================================
-    # RENDER RESULT
-    # ========================================================
-
+    if url_features.get("has_ip_address"):
+        evidence.append({"title": "IP address in URL", "description": "The URL uses an IP address as its host.", "severity": "high"})
+    if url_features.get("has_at_symbol"):
+        evidence.append({"title": "@ symbol in URL", "description": "An @ symbol can obscure the actual destination.", "severity": "high"})
+    if url_features.get("suspicious_word_count", 0):
+        evidence.append({"title": "Account-related URL terms", "description": "The URL contains terms often used in credential prompts.", "severity": "medium"})
+    if url_features.get("is_punycode_or_idn"):
+        evidence.append({"title": "Internationalized hostname", "description": "The hostname contains IDN or punycode characters.", "severity": "medium"})
+    if html_features:
+        if html_features.get("html_missing"):
+            evidence.append({"title": "Page HTML not provided", "description": "The analysis could not inspect page structure.", "severity": "low"})
+        if html_features.get("num_password_inputs"):
+            evidence.append({"title": "Password field", "description": "A password input is present in the supplied page HTML.", "severity": "medium"})
+        if html_features.get("num_form_action_domain_mismatches"):
+            evidence.append({"title": "External form destination", "description": "A form submits to a different registered domain.", "severity": "high"})
+        if html_features.get("num_external_domains"):
+            evidence.append({"title": "External page resources", "description": "The page references resources or links on other domains.", "severity": "low"})
+        if html_features.get("has_javascript_redirect"):
+            evidence.append({"title": "JavaScript redirect pattern", "description": "The supplied script text contains a location redirect pattern.", "severity": "medium"})
+    if allowlisted:
+        evidence.append({"title": "Local popular-domain list", "description": "The registered domain is on the local context list; this is not proof that this URL or page is safe.", "severity": "low"})
+    if not evidence:
+        evidence.append({"title": "No prominent structural indicator", "description": "No listed URL or HTML indicator was found.", "severity": "low"})
+    return evidence
+
+
+class ScanPayload(BaseModel):
+    url: str = Field(..., max_length=4096)
+    html: str = Field(default="", max_length=1200000)
+
+
+app = FastAPI(title="PHISH//X", description="Calibrated phishing analysis with local evidence", version="2.0")
+app.add_middleware(MaxBodySizeMiddleware, max_bytes=SERVING_CONFIG["max_request_bytes"])
+app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
+templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+
+
+def _check_rate_limit(request):
+    host = request.client.host if request.client else "unknown"
+    if not rate_limiter.allow(host):
+        raise HTTPException(status_code=429, detail="Too many scans. Please wait and try again.")
+
+
+def _error_page(request, message, status_code=400):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={
-            "request": request,
-            "result": result,
-            "selected_model": model_choice
-        }
+        context={"request": request, "result": {"error": message}},
+        status_code=status_code,
     )
+
+
+async def _analyze(request, raw_url, html):
+    _check_rate_limit(request)
+    try:
+        url = validate_url(normalize_url(raw_url))
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    html = html or ""
+    if len(html) > int(SERVING_CONFIG["max_html_chars"]):
+        raise HTTPException(status_code=413, detail="HTML exceeds the configured 500,000 character limit.")
+
+    fetch_status = "not_requested"
+    if not html.strip() and SERVING_CONFIG.get("enable_html_fetch", False):
+        try:
+            html = await run_in_threadpool(
+                fetch_html,
+                url,
+                SERVING_CONFIG["fetcher"]["max_bytes"],
+                SERVING_CONFIG["fetcher"]["timeout_seconds"],
+                SERVING_CONFIG["fetcher"]["max_redirects"],
+            )
+            fetch_status = "fetched"
+        except Exception as error:
+            fetch_status = "blocked" if isinstance(error, UnsafeTarget) else "unavailable"
+
+    started = time.monotonic()
+    prediction = await run_in_threadpool(REGISTRY.predict, url, html)
+    url_features = prediction["url_features"]
+    html_features = prediction.get("html_features")
+    if html_features is None:
+        try:
+            html_features = await run_in_threadpool(extract_html_features_v2, html, url)
+        except Exception:
+            html_features = {"html_missing": int(not html.strip())}
+
+    registered_domain = registered_domain_from_url(url)
+    allowlisted = registered_domain in TOP_SITES
+    parts = urlsplit(url)
+    shared_host = _shared_hosting(parts.hostname or "")
+    reputation = await run_in_threadpool(lookup_safe_browsing, url, GOOGLE_SAFE_BROWSING_API_KEY)
+
+    if prediction["calibrated"]:
+        probability = prediction["probability"]
+        block_threshold = float(THRESHOLDS["thresholds"]["block"])
+        warn_threshold = float(THRESHOLDS["thresholds"]["warn"])
+        prediction_label = "BLOCK" if probability >= block_threshold else "WARN" if probability >= warn_threshold else "SAFE-LOOKING"
+        risk_level = prediction_label
+        confidence_note = "Local popular-domain context noted; the calibrated model probability is unchanged." if allowlisted else ""
+        if shared_host and not html.strip() and prediction_label != "BLOCK":
+            prediction_label = "NEEDS PAGE CONTENT"
+            risk_level = "NEEDS PAGE CONTENT"
+            confidence_note = "Shared-hosting domain: URL-only evidence is inconclusive. Add page HTML for structural analysis."
+        probability_display = "{:.1%}".format(probability)
+        score_display = None
+        model_name = "CatBoost engineered + Platt calibration"
+    else:
+        score = prediction["decision_score"]
+        prediction_label = get_prediction(score, REGISTRY.fallback_threshold)
+        risk_level = "HIGH RISK" if prediction_label == "PHISHING" else "REVIEW" if prediction_label == "REVIEW REQUIRED" else "LOW RISK"
+        confidence_note = "The verified SVM fallback is uncalibrated; no probability is shown."
+        if shared_host and not html.strip() and prediction_label != "PHISHING":
+            prediction_label = "NEEDS PAGE CONTENT"
+            risk_level = "NEEDS PAGE CONTENT"
+            confidence_note = "Shared-hosting domain: URL-only evidence is inconclusive. Add page HTML for structural analysis."
+        probability_display = None
+        score_display = "{:.4f}".format(score)
+        model_name = "URL TF-IDF SVM fallback (uncalibrated)"
+
+    if reputation.status == "matched":
+        prediction_label = "BLOCK"
+        risk_level = "BLOCK"
+    if shared_host and not html.strip():
+        # A confirmed threat match remains a block; otherwise require page content.
+        if reputation.status != "matched":
+            prediction_label = "NEEDS PAGE CONTENT"
+            risk_level = "NEEDS PAGE CONTENT"
+
+    evidence = _evidence(url_features, html_features, registered_domain, allowlisted)
+    if reputation.status == "matched":
+        evidence.insert(0, {"title": "Threat intelligence match", "description": "Google Safe Browsing lists this URL as {}.".format(", ".join(reputation.threat_types)), "severity": "high"})
+    result = {
+        "url": url,
+        "prediction": prediction_label,
+        "risk_level": risk_level,
+        "risk_class": get_risk_class(risk_level),
+        "model_name": model_name,
+        "calibrated_probability": probability_display,
+        "decision_score": score_display,
+        "classification_threshold": None,
+        "confidence_note": confidence_note,
+        "allowlisted": allowlisted,
+        "shared_hosting": shared_host,
+        "reputation_status": reputation.status,
+        "reputation_message": {
+            "matched": "Listed by Google Safe Browsing.",
+            "not_listed": "No Google Safe Browsing match. This does not confirm the site is safe.",
+            "not_configured": "Google Safe Browsing is not configured; local model analysis ran.",
+            "unavailable": "{} Local model analysis is shown.".format(reputation.detail),
+        }.get(reputation.status, "Threat intelligence status is unavailable."),
+        "fetch_status": fetch_status,
+        "evidence": evidence,
+        "feature_summary": {
+            "Registered domain": registered_domain or "Unknown",
+            "URL length": url_features.get("url_length", len(url)),
+            "Subdomains": url_features.get("num_subdomains", 0),
+            "HTTPS": "Yes" if url_features.get("has_https") else "No",
+            "HTML provided": "Yes" if html.strip() else "No",
+            "Forms": html_features.get("num_forms", 0),
+            "Password fields": html_features.get("num_password_inputs", 0),
+            "External domains": html_features.get("num_external_domains", 0),
+        },
+    }
+    logger.info(json.dumps({
+        "event": "scan_completed",
+        "backend": prediction["backend"],
+        "verdict": prediction_label,
+        "elapsed_ms": round((time.monotonic() - started) * 1000, 2),
+        "fetch_status": fetch_status,
+    }, sort_keys=True))
+    return result
+
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html", context={"request": request, "result": None})
+
+
+@app.get("/health")
+async def health():
+    if REGISTRY.fallback_model is None:
+        raise HTTPException(status_code=503, detail="No verified inference model is available")
+    return {"status": "ok", "backend": REGISTRY.active_backend}
+
+
+@app.get("/version")
+async def version():
+    return {"name": "PHISH//X", "version": app.version, "backend": REGISTRY.active_backend, "feature_version": THRESHOLDS["feature_version"]}
+
+
+@app.post("/scan", response_class=HTMLResponse)
+async def scan(request: Request, url: str = Form(""), model_choice: str = Form(""), html: str = Form("")):
+    # Old explicit model choices are deliberately removed; all requests use the configured
+    # calibrated model, with the verified URL SVM as an automatic load/inference fallback.
+    try:
+        result = await _analyze(request, url, html)
+    except HTTPException as error:
+        return _error_page(request, str(error.detail), error.status_code)
+    return templates.TemplateResponse(request=request, name="index.html", context={"request": request, "result": result})
+
+
+@app.post("/api/v1/scan")
+async def api_scan(request: Request, payload: ScanPayload):
+    try:
+        return await _analyze(request, payload.url, payload.html)
+    except HTTPException:
+        raise

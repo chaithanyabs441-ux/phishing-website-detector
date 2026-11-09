@@ -170,6 +170,7 @@
                     name="url"
                     placeholder="https://example.com/login"
                     autocomplete="off"
+                    maxlength="4096"
                     required
                 >
 
@@ -223,15 +224,14 @@
                 <textarea
                     id="html"
                     name="html"
+                    maxlength="500000"
                     placeholder="Optional: paste the page HTML here for URL + HTML analysis..."
                 ></textarea>
 
 
                 <p class="hint">
 
-                    Leave this empty for lightweight URL analysis.
-                    Paste page HTML to activate the deeper
-                    URL + HTML detector.
+                    Paste page HTML for structural analysis. Server-side fetching is disabled by default.
 
                 </p>
 
@@ -359,16 +359,15 @@
 
 
             <span class="model-score">
-
-                uncalibrated decision score:
-                {{ result.decision_score }}
-                · phishing threshold:
-                {{ result.classification_threshold }}
-
+                {% if result.calibrated_probability %}calibrated phishing probability: {{ result.calibrated_probability }}{% else %}SVM fallback active; no calibrated probability available{% endif %}
             </span>
 
 
         </div>
+
+        {% if result.confidence_note %}
+        <p class="confidence-note">{{ result.confidence_note }}</p>
+        {% endif %}
 
         <div class="reputation-status {{ result.reputation_status }}">
 
@@ -529,11 +528,11 @@
             <div class="signal-icon">
 
 
-                {% if result.prediction == "PHISHING" %}
+                {% if result.prediction in ["BLOCK", "PHISHING"] %}
 
                     !
 
-                {% elif result.risk_level == "REVIEW" %}
+                {% elif result.risk_level in ["WARN", "REVIEW", "NEEDS PAGE CONTENT"] %}
 
                     /
 
@@ -550,7 +549,7 @@
             <div class="signal-content">
 
 
-                {% if result.prediction == "PHISHING" %}
+                {% if result.prediction in ["BLOCK", "PHISHING"] %}
 
 
                 <h3>
@@ -570,7 +569,7 @@
                 </p>
 
 
-                {% elif result.risk_level == "REVIEW" %}
+                {% elif result.risk_level in ["WARN", "REVIEW", "NEEDS PAGE CONTENT"] %}
 
 
                 <h3>
@@ -579,8 +578,8 @@
 
 
                 <p>
-                    The model score is positive but below the stricter
-                    phishing threshold. This is inconclusive, not proof
+                    The model signal is inconclusive.
+                    This is not proof
                     that the website is safe or malicious.
                 </p>
 
@@ -589,17 +588,13 @@
 
 
                 <h3>
-                    No phishing decision
+                    No high-confidence phishing decision
                 </h3>
 
 
                 <p>
 
-                    The trained classifier produced a negative
-                    phishing decision for this website.
-
-                    This does not guarantee that a website is
-                    completely safe.
+                    The model marked this URL as safe-looking. This is not a guarantee that the page is safe.
 
                 </p>
 

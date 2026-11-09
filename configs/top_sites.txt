@@ -1,0 +1,22 @@
+# Small, local bootstrap allowlist. Replace with a locally downloaded Tranco
+# snapshot when desired; store registered domains, one per line. Never fetched at runtime.
+google.com
+youtube.com
+microsoft.com
+apple.com
+amazon.com
+wikipedia.org
+github.com
+cloudflare.com
+paypal.com
+linkedin.com
+reddit.com
+netflix.com
+adobe.com
+mozilla.org
+openai.com
+whatsapp.com
+instagram.com
+facebook.com
+nytimes.com
+bbc.com

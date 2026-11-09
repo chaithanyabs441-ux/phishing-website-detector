@@ -54,8 +54,8 @@ class ModelThresholdTests(unittest.TestCase):
             )
         )
         rendered = response.body.decode()
-        self.assertIn("REVIEW REQUIRED", rendered)
         self.assertNotIn("LIKELY BENIGN", rendered)
+        self.assertIn("calibrated phishing probability", rendered)
 
     def test_prediction_distinguishes_phishing_review_and_negative_scores(self):
         threshold = webapp.CLASSIFICATION_THRESHOLDS["url_tfidf"]
@@ -123,7 +123,7 @@ class ModelThresholdTests(unittest.TestCase):
         )
         rendered = response.body.decode()
 
-        self.assertIn("<h2>\n\n                    PHISHING", rendered)
+        self.assertIn("BLOCK", rendered)
         self.assertIn("Threat intelligence match", rendered)
         self.assertIn("Listed by Google Safe Browsing.", rendered)
 
@@ -147,15 +147,16 @@ class ModelThresholdTests(unittest.TestCase):
                 "risk_level": "REVIEW",
                 "risk_class": "warning",
                 "model_name": "URL TF-IDF",
-                "decision_score": 1.4541,
-                "classification_threshold": 1.5,
+                "decision_score": None,
+                "calibrated_probability": None,
+                "confidence_note": "The verified SVM fallback is uncalibrated; no probability is shown.",
                 "evidence": [],
                 "feature_summary": {},
             },
             selected_model="url_tfidf",
         )
         self.assertIn("Borderline signal", response)
-        self.assertIn("1.5", response)
+        self.assertIn("no calibrated probability", response)
         self.assertIn("URL TF-IDF", response)
         self.assertNotIn("81.1", response)
 

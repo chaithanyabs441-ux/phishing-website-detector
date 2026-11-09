@@ -18,5 +18,24 @@ thresholds:
   url_tfidf: 1.5
   url_engineered: 0.0
   url_html: 0.0
-default_model: url_html
+default_model: catboostengineered
 fallback_model: url_tfidf
+serving:
+  selected_model: catboostengineered
+  primary_model: models/phase4/catboostengineered.joblib
+  calibrator: models/phase7/catboost_engineered_calibrator.joblib
+  fallback_model: url_tfidf
+  fallback_vectorizer: models/url_tfidf.joblib
+  fallback_classifier: models/url_linear_svm.joblib
+  thresholds: configs/thresholds.yaml
+  top_sites_file: configs/top_sites.txt
+  shared_hosting_file: configs/shared_hosting_domains.txt
+  enable_html_fetch: false
+  max_url_chars: 4096
+  max_html_chars: 500000
+  max_request_bytes: 1200000
+  rate_limit_per_minute: 30
+  fetcher:
+    max_bytes: 1000000
+    timeout_seconds: 4
+    max_redirects: 3

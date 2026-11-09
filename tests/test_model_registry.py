@@ -1,0 +1,27 @@
+import hashlib
+
+import joblib
+import pytest
+
+from src.serving.model_registry import ModelRegistry
+
+
+def test_registry_checks_manifest_hash_before_loading(tmp_path):
+    artifact = tmp_path / "safe.joblib"
+    joblib.dump({"trusted": True}, artifact)
+    digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+    registry = ModelRegistry.__new__(ModelRegistry)
+    registry.root = tmp_path.resolve()
+    registry.entries = {"safe.joblib": {"sha256": digest}}
+    assert registry._load_verified("safe.joblib") == {"trusted": True}
+    registry.entries["safe.joblib"]["sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="SHA-256 verification failed"):
+        registry._load_verified("safe.joblib")
+
+
+def test_registry_rejects_paths_outside_project_root(tmp_path):
+    registry = ModelRegistry.__new__(ModelRegistry)
+    registry.root = tmp_path.resolve()
+    registry.entries = {}
+    with pytest.raises(ValueError, match="escapes the project root"):
+        registry._load_verified("../outside.joblib")

@@ -53,6 +53,12 @@ models/*
 !models/url_engineered_scaler.joblib
 !models/combined_url_scaler.joblib
 !models/MANIFEST.json
+!models/phase4/
+models/phase4/*
+!models/phase4/catboostengineered.joblib
+!models/phase7/
+models/phase7/*
+!models/phase7/catboost_engineered_calibrator.joblib
 !models/url_html_tfidf.joblib
 !models/url_html_linear_svm.joblib
 !models/html_scaler.joblib

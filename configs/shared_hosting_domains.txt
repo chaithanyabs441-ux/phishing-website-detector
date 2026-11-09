@@ -1,0 +1,11 @@
+# Registered domains where URL-only signals can be ambiguous.
+blogspot.com
+github.io
+githubusercontent.com
+ondigitalocean.app
+pages.dev
+vercel.app
+netlify.app
+firebaseapp.com
+web.app
+wordpress.com

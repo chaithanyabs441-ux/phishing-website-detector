@@ -25,7 +25,12 @@ from src.evaluation.phase4_data import (
     load_phase4_data,
 )
 from src.evaluation.phase7_calibration import apply_calibrator, join_hash_predictions, precision_at_recall
-from src.features.html_features_v2 import HTML_FEATURE_COLUMNS_V2, extract_html_features_v2
+from src.features.html_features_v2 import (
+    HTML_FEATURE_COLUMNS_V2,
+    MAX_HTML_CHARS,
+    _empty_features,
+    extract_html_features_v2,
+)
 from src.features.url_features import URL_FEATURE_COLUMNS_V2, extract_url_features_v2
 
 
@@ -61,10 +66,21 @@ def _prepare_feature_batch(batch_frame, train_features, numeric_medians):
     urls = batch_frame["url"].fillna("").astype(str).tolist()
     html_values = batch_frame["html"].fillna("").astype(str).tolist()
     url_records = [extract_url_features_v2(url) for url in urls]
-    records = [
-        {**url_features, **extract_html_features_v2(html, url)}
-        for url, html, url_features in zip(urls, html_values, url_records)
-    ]
+    records = []
+    for url, html, url_features in zip(urls, html_values, url_records):
+        try:
+            html_features = extract_html_features_v2(html, url)
+        except Exception:
+            # Match the training cache's error-row representation. Malformed
+            # page URLs can make urljoin raise while resolving HTML resources.
+            html_features = _empty_features(
+                html_length=len(html),
+                parsed_length=min(len(html), MAX_HTML_CHARS),
+                html_missing=int(not html.strip()),
+                truncated=int(len(html) > MAX_HTML_CHARS),
+                parse_error=1,
+            )
+        records.append({**url_features, **html_features})
     features = pd.DataFrame(records, columns=[*URL_FEATURE_COLUMNS_V2, *NUMERIC_HTML_COLUMNS])
     for column in CATEGORICAL_FEATURES:
         categories = train_features[column].cat.categories

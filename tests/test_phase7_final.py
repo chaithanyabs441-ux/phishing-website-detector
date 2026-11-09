@@ -56,6 +56,29 @@ def test_confusion_thresholds_match_binary_counts():
     assert result == {"tp": 1, "fp": 1, "tn": 1, "fn": 1}
 
 
+def test_malformed_ipv6_page_url_uses_training_cache_parse_error_features():
+    training = _synthetic_training_rows()
+    training_features, _ = prepare_feature_frames(training)
+    numeric = [
+        column for column in PHASE4_FEATURE_COLUMNS
+        if column not in {"registered_domain", "public_suffix", "tld_category"}
+    ]
+    medians = training_features[numeric].median()
+    html = '<a href="/login">Sign in</a>'
+    batch = pd.DataFrame({
+        "sha256": ["malformed-ipv6"],
+        "url": ["http://[::1"],
+        "label": ["phish"],
+        "html": [html],
+    })
+
+    prepared, _ = _prepare_feature_batch(batch, training_features, medians)
+
+    assert prepared.iloc[0].html_parse_error == 1
+    assert prepared.iloc[0].parsed_html_length == len(html)
+    assert prepared.iloc[0].num_forms == 0
+
+
 def test_hash_benchmark_evaluation_reports_missing_and_ambiguous_hashes(tmp_path):
     benchmark = tmp_path / "benchmark"
     (benchmark / "benchmark-005").mkdir(parents=True)

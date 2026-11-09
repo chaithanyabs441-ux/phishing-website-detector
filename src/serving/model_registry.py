@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import yaml
 from joblib import load
+from scipy.special import logit
 
 from src.evaluation.phase4_data import CATEGORICAL_FEATURES, PHASE4_FEATURE_COLUMNS
 from src.features.html_features_v2 import (
@@ -37,7 +38,8 @@ def _apply_calibrator(calibrator, raw_probability):
     estimator = calibrator["model"]
     method = calibrator["method"]
     if method == "platt":
-        return estimator.predict_proba(values)[:, 1]
+        features = logit(np.clip(values, 1e-8, 1.0 - 1e-8))
+        return estimator.predict_proba(features)[:, 1]
     if method == "isotonic":
         return estimator.predict(values.ravel())
     raise ValueError("Unsupported calibration method in trusted artifact")

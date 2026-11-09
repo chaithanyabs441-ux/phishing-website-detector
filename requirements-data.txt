@@ -1,0 +1,2 @@
+# Optional dependency for fetching PhreshPhish train/test parquet files.
+huggingface_hub==1.8.0

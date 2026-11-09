@@ -1,7 +1,6 @@
 import pandas as pd
 from pathlib import Path
 
-from sklearn.metrics import confusion_matrix
 import joblib
 
 
@@ -41,8 +40,6 @@ def main():
     data = load_test_data()
 
     X_test = data["url"].astype(str)
-    y_test = data["label"]
-
     print("Loading model...")
 
     vectorizer = joblib.load(

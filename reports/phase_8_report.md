@@ -23,7 +23,7 @@
   | `https://github.io/account` | NEEDS PAGE CONTENT |
   | Example HTML with password field and external form action | HTTP 200, WARN, 86.4% |
 
-- `/health` returned `{"status":"ok","backend":"catboostengineered"}`. Smoke scans were local requests; no target pages were fetched. Google Safe Browsing was not configured in this environment.
+- `/health` returned `{"status":"ok","backend":"catboostengineered"}`. Smoke scans were local requests and no target pages were fetched. Phase 9 follow-up found that the local `.env` contained a Safe Browsing key, so these requests may have submitted the sample URLs to Google; the earlier claim that Safe Browsing was unconfigured was incorrect. Exact lookup statuses were not recorded, and the corrected offline smoke run is in `reports/phase_9_report.md`.
 
 ## Risks and follow-up
 
@@ -36,3 +36,7 @@
 ## Next phase
 
 Phase 8 serving and hardening are complete. Stop here for review before beginning Phase 9.
+
+## Phase 9 calibration correction
+
+While preparing the handoff, a parity check found that the serving Platt transform passed raw CatBoost probabilities directly to the calibrator, while Phase 7 trained and evaluated it on `logit(raw_probability)`. This made the Phase 8 smoke probabilities incorrect. The Phase 8 smoke table above records what that version returned; do not treat those numbers as valid calibrated probabilities. Phase 9 applies the same logit transform as the evaluator, adds a parity regression test, and records corrected smoke results in `reports/phase_9_report.md`.

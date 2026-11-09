@@ -282,7 +282,7 @@ try:
             )
 
             log(
-                f"First 1000 rows loaded successfully"
+                "First 1000 rows loaded successfully"
             )
 
             if "label" in df.columns:

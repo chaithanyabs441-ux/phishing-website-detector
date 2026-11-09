@@ -1,195 +1,114 @@
-# PHISH//X — Explainable Phishing Website Detection
+# PHISH//X
 
-PHISH//X is a machine-learning phishing website detector. The web application analyzes a submitted URL and can also analyze pasted HTML when the URL+HTML backend mode is selected. Depending on the model score and optional threat-intelligence result, it returns a phishing, likely-benign, or review verdict alongside observable URL/HTML evidence and a qualitative risk signal.
+PHISH//X is a classical machine-learning phishing URL detector. The deployed path uses URL and HTML structure features with a CatBoost classifier, then applies a Platt calibrator. If the primary model cannot load or predict, the app falls back to the verified URL TF-IDF SVM and clearly identifies that its margin is uncalibrated. Pasted HTML is optional; server-side fetching is disabled by default.
 
-## Quick start
+Use the output for analyst triage. `BLOCK`, `WARN`, and `SAFE-LOOKING` are model signals, not proof about a site. The test set is an offline evaluation asset and should not be used to tune a deployment.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\run.ps1
-```
+## Requirements and local setup
 
-Open `http://127.0.0.1:8000` and scan a URL. Stop the server with **Ctrl+C**.
-
-## Requirements
-
-- Python 3.9
-- The pinned dependencies in `requirements.txt` (FastAPI, Uvicorn, Jinja2, scikit-learn, pandas, SciPy, joblib, BeautifulSoup, python-multipart)
-- No dataset or retraining is needed to run the app: the fitted vectorizers, classifiers, scalers, and feature-column lists are committed under `models/`
-
-## Setup
-
-From the project root:
+- Python 3.9 (the committed model artifacts and pins target this version).
+- Windows PowerShell commands below use the project virtual environment.
+- Model inference needs the committed artifacts under `models/`; training and evaluation additionally need the local dataset and generated caches.
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-## Run
-
-Two equivalent ways to start the server from the project root:
+Run the app locally:
 
 ```powershell
-.\run.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tasks.ps1 run-app
 ```
+
+Open `http://127.0.0.1:8000`. The HTML form accepts a URL and optional pasted HTML. The JSON endpoint is `POST /api/v1/scan` with `{"url":"https://example.org","html":""}`. `/health` and `/version` return service status and model/feature version.
+
+For tests and lint:
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn webapp.app:app --host 127.0.0.1 --port 8000
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\ruff.exe check src webapp tests
 ```
 
-Then open `http://127.0.0.1:8000`. Restart the server after changing any Python file.
-
-## Configuration: optional threat intelligence
-
-Google Safe Browsing is optional. Without a key the app runs its local models only and the result page says threat intelligence is not configured.
-
-To enable it, copy `.env.example` to `.env` and fill in the key:
+Run an offline real-model smoke check (Safe Browsing is mocked and no target pages are fetched):
 
 ```powershell
-Copy-Item .env.example .env
+.\.venv\Scripts\python.exe -m src.models.serving_smoke
 ```
 
-`webapp/app.py` reads the root `.env` file at startup. A value already present in the process environment wins over the file, so an exported variable is never overridden. `.env` is ignored by Git; never commit or share the key.
+## Data
 
-When enabled, the full submitted URL is sent to Google for lookup. An explicit malware or social-engineering match overrides the model verdict to `PHISHING`; a no-match is not proof that a URL is legitimate, and uncertain model results remain `REVIEW REQUIRED`.
-
-## Tests
-
-The focused regression suite runs without a server and without live API calls (Safe Browsing responses are mocked):
+Training, validation, and test parquet files are not included in Git. Install the pinned optional download dependency, then fetch only the PhreshPhish parquet shards:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tasks.ps1 test
+.\.venv\Scripts\python.exe -m pip install -r requirements-data.txt
+.\.venv\Scripts\python.exe -m src.data.download_dataset
 ```
 
-It covers the reported false-positive and false-negative URLs, the review band and threshold boundaries, automatic URL+HTML routing when HTML is pasted, the Safe Browsing match/override/missing-key/failure paths, and the rendered result template.
+This downloads to `data/raw/`. The dataset source is `phreshphish/phreshphish` on Hugging Face. The dataset has 56 training shards (498,255 rows) and 21 official test shards (168,060 rows) in the snapshot evaluated here. Check the source dataset's current license and terms before redistribution or commercial use.
 
-## Project structure
+The benchmark hash lists are separate from dataset rows. To fetch them, run `.\.venv\Scripts\python.exe -m src.evaluation.download_benchmarks`; this downloads the benchmark directory only. Benchmark entries are SHA-256 IDs, not URLs, and must be joined on the dataset `sha256` column.
 
-```text
-phishing-website-detector/
-├── .env.example             # Template for the optional local key
-├── .gitignore
-├── data/                    # Not tracked: raw shards, processed features, splits, benchmark cache
-├── docs/                    # Architecture diagrams used by this README
-├── handoff/                 # Local project notes (not tracked)
-├── logs/                    # Run/training logs (not tracked)
-├── models/                  # Committed model and preprocessing artifacts
-├── patch/
-│   ├── backups/             # Pre-threshold-change webapp originals
-│   ├── tests/               # Model and threat-intelligence regression tests
-│   ├── ROOT_CAUSE.md        # False-positive investigation
-│   ├── TEST_REPORT.md       # Commands run and evaluation limits
-│   ├── CHANGELOG.md         # Threshold patch history
-│   └── ROLLBACK.md          # Restore instructions for the saved originals
-├── results/                 # Evaluation outputs (not tracked)
-├── src/
-│   ├── data/                # Dataset inspection and profiling utilities
-│   ├── evaluation/          # Model evaluation, threshold, and benchmark scripts
-│   ├── features/            # URL and HTML feature extraction
-│   ├── models/              # Training and comparison scripts
-│   └── reputation/          # Optional Google Safe Browsing lookup
-├── webapp/
-│   ├── static/
-│   │   ├── app.js           # Browser-side interactions
-│   │   └── style.css        # Layout and responsive styling
-│   ├── templates/
-│   │   └── index.html       # Scan form and rendered result
-│   └── app.py               # FastAPI entry point and inference orchestration
-├── README.md
-├── requirements.txt
-└── run.ps1                  # Local launcher (port 8000)
+## Reproducible pipeline
+
+All feature code is shared from `src/features/`. Configurations are under `configs/`; experiment records and phase reports are under `experiments/` and `reports/`. The fixed split manifests are stored under `data/splits/` and excluded from the raw data.
+
+The end-to-end research sequence is:
+
+1. Download the train shards, then build and audit frozen train-only splits:
+   `.\.venv\Scripts\python.exe -m src.evaluation.create_blocked_splits`
+2. Run the existing SVM baselines on the temporal holdout:
+   `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_svm_blocked`
+   `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_svm_grouped_cv`
+3. Build the richer training HTML cache (the full recorded run took 2 h 40 m on this machine, so the compute-budget approval rule applies before rerunning it):
+   `.\.venv\Scripts\python.exe -u -m src.evaluation.build_html_features_v2_cache --n-jobs 2 --timeout-seconds 1800 --row-batch-size 500`
+4. Tune and compare classical tree models with the committed config:
+   `.\.venv\Scripts\python.exe -m src.evaluation.phase4_boosting --config configs/phase4_gbm.yaml`
+5. Compare classical text models and hybrids:
+   `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_phase5_text --config configs/phase5_text.yaml`
+6. Generate grouped OOF stack comparisons:
+   `.\.venv\Scripts\python.exe -m src.evaluation.phase6_stacking --config configs/phase6_stacking.yaml`
+7. Fit calibration and choose thresholds using temporal validation only:
+   `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_phase7_calibration --config configs/phase7_calibration.yaml`
+
+The evaluations above need local data and caches. Set seeds and resource limits in the YAML configs; preserve each emitted experiment JSON/CSV with its split/config hashes. Do not rerun the locked-test evaluator as part of routine development. Phase 7 records the one completed authorized pass and its access log at `reports/test_set_access_log.md`.
+
+## Serving configuration
+
+`configs/model_config.yaml` selects the model artifacts and feature inputs; `configs/thresholds.yaml` contains the validation-selected calibrated cutoffs. `models/MANIFEST.json` records artifact hashes. On startup the loader verifies hashes and project-contained paths before loading. The CatBoost finalist and calibrator are the primary path; the URL TF-IDF SVM is the fallback.
+
+The local `configs/top_sites.txt` list is a small bootstrap context list, not a current Tranco snapshot. To refresh it, download a Tranco list manually, review its format, and replace the file with one registered domain per line. The app does not fetch that list. `configs/shared_hosting_domains.txt` contains platforms where URL-only evidence is inconclusive.
+
+HTML fetching is controlled by `serving.enable_html_fetch` and is `false` by default. If enabled, the fetcher applies DNS/IP, scheme, port, redirect, response-size, timeout, and content-type checks. Keep it disabled unless deployment egress controls also address DNS rebinding. Pasted HTML is parsed locally and JavaScript is never executed.
+
+Google Safe Browsing is optional. Set `GOOGLE_SAFE_BROWSING_API_KEY` in the environment or copy `.env.example` to `.env`. When enabled, the complete submitted URL, including path and query, is sent to Google's Safe Browsing API for lookup; submitted HTML is not sent. A threat match overrides the model verdict. No match does not mean safe. Do not put secrets in Git or logs.
+
+## Containers
+
+Docker Compose runs only the web app and mounts local model artifacts read-only:
+
+```powershell
+docker compose up --build
 ```
 
-### Important components
+The service binds to `127.0.0.1:8000`. The data directory is not copied into the image. See `Dockerfile` and `docker-compose.yml` before changing the network exposure or mounting secrets.
 
-| Component | Responsibility |
-|---|---|
-| `webapp/app.py` | Loads model artifacts and the optional `.env` key, handles `/` and `/scan`, prepares model inputs, selects a model path, classifies the decision score, and assembles the result context. |
-| `src/features/url_features.py` | Extracts URL length, hostname/path properties, character counts, subdomains, query parameters, IP/`@` indicators, HTTPS, and suspicious-word counts. |
-| `src/features/html_features.py` | Extracts page structure such as forms, inputs, password fields, links, scripts, iframes, and external form destinations from supplied HTML. |
-| `webapp/templates/index.html` | Renders the form, scan result, feature summaries, evidence, and uncertainty messaging. |
-| `webapp/static/app.js` | Handles client-side form feedback and small UI interactions. |
-| `webapp/static/style.css` | Provides visual styling and responsive result alignment. |
-| `models/` | Holds the fitted vectorizers, SVM classifiers, scalers, and saved feature-column lists required by the app. |
-| `src/reputation/google_safe_browsing.py` | Performs an optional Google Safe Browsing URL lookup when an API key is configured. |
-| `src/models/` and `src/evaluation/` | Contain offline training and analysis code; they are separate from normal web inference. |
+Safe Browsing is disabled in Compose by default. To enable it for a one-off Compose run, first supply `GOOGLE_SAFE_BROWSING_API_KEY` through your secret manager or PowerShell process environment, then use `docker compose run --service-ports -e GOOGLE_SAFE_BROWSING_API_KEY phishx`. Compose files deliberately do not interpolate the project `.env` key into rendered configuration.
 
-## Architecture
+## Evaluation protocol and results
 
-### Online scan flow
+The split protocol is temporal validation over later collection dates plus five-fold registered-domain grouped CV/OOF for tuning and stack inputs. Calibration and thresholds were fitted from grouped OOF scores on temporal validation. The final official test pass was performed once for the selected CatBoost model. It achieved AP 0.99025 [0.98783, 0.99271] and ROC-AUC 0.98892 [0.98527, 0.99226] at the test score ranking level; at a 0.5 probability cut, precision was 0.95454, recall 0.96094, F1 0.95773, FPR 0.03852, and accuracy 0.96123 (95% registered-domain bootstrap intervals are in the model card).
 
-<img src="docs/architecture-online.svg" alt="Online scan flow from URL submission through model selection, threat lookup, verdict, and result page" width="780">
+At a 0.05% assumed phishing prevalence, that same 0.5 cutoff yields estimated precision 1.23% and 38.98 alerts per 1,000. These estimates show why evaluation prevalence and operating costs matter. Full test and benchmark results are in `reports/phase_7_report.md`; the unified temporal validation comparison and published-claim discussion are in `reports/phase_9_report.md`.
 
-### Model training and app flow
+## Limitations
 
-<img src="docs/architecture-training.svg" alt="Offline model training and evaluation produce saved artifacts used by the online web app" width="900">
+- The data is a historical collection and the test set has 45.7% phishing prevalence; operational prevalence and URL distributions will differ.
+- WARN is deliberately recall-oriented and had 25.98% validation FPR at its selected threshold. It can produce many false alarms.
+- Shared hosting, famous brands, URL-only irreducible cases, and distribution shift remain difficult. Page HTML is optional and user-supplied; the server does not render pages.
+- Local allowlists are context only and do not alter the model probability. Domain lists need maintenance.
+- In-process rate limiting is per worker. Production deployment needs shared rate limiting, authentication/access controls, monitoring, and egress policy.
+- No neural-network model, pretrained embedding, or browser automation is used.
 
-### Inference flow
-
-1. The browser submits a URL and optional pasted HTML to `POST /scan`.
-2. `webapp/app.py` normalizes a scheme-less URL by prefixing `https://`.
-3. The backend selects a model from the `model_choice` request field. If omitted, it uses URL-only analysis when no HTML is supplied and URL+HTML analysis when HTML is supplied.
-4. The selected vectorizer and any required feature extractor/scaler transform the input into the feature representation expected by that trained model.
-5. The selected LinearSVC produces a decision score. A model-specific threshold determines the binary prediction; score thresholds are not interchangeable between models.
-6. When configured, the app sends the submitted URL to Google Safe Browsing. A reported threat match overrides the model verdict to phishing; no match is not treated as proof of safety. If the lookup is unavailable or not configured, its status is displayed and local model behavior remains in effect.
-7. The app builds an evidence list from observable extracted features and a risk-level signal, then renders them through `index.html`.
-
-### Available model paths
-
-| Backend choice | Input representation | Model artifacts |
-|---|---|---|
-| `url_tfidf` (default) | Character-level URL TF-IDF features | `url_tfidf.joblib`, `url_linear_svm.joblib` |
-| `url_engineered` | URL TF-IDF plus scaled engineered URL features | `combined_tfidf.joblib`, `url_engineered_scaler.joblib`, `combined_linear_svm.joblib` |
-| `url_html` | URL TF-IDF plus scaled URL and HTML structural features | `url_html_tfidf.joblib`, URL scaler, `html_scaler.joblib`, `html_feature_columns.joblib`, `url_html_linear_svm.joblib` |
-
-The current HTML page does not expose a model selector. Normal form submissions automatically use the URL+HTML path when non-empty HTML is pasted; otherwise they use the URL-only default. A client can explicitly submit `model_choice` to select a backend.
-
-## Classification and presentation
-
-`CLASSIFICATION_THRESHOLDS` in `webapp/app.py` currently sets `url_tfidf` to `1.5`, while `url_engineered` and `url_html` remain at `0.0`. Scores below zero are labeled `LIKELY BENIGN`; positive URL-only scores below `1.5` are labeled `REVIEW REQUIRED`; scores at or above the selected model's threshold are labeled `PHISHING`. Risk signals are shown separately from the verdict.
-
-An explicit malware or social-engineering match from configured Google Safe Browsing overrides the model verdict to `PHISHING`. No match, an unavailable service, or a missing key does not count as proof of safety; model uncertainty remains `REVIEW REQUIRED`.
-
-The URL-only threshold is a targeted mitigation for an observed false positive, not a threshold validated against a matching labeled validation set. The available saved threshold report belongs to the URL+engineered model and is not applied to URL-only inference. The LinearSVC decision score is not a calibrated probability, so the UI reports the raw score and threshold instead of a percentage.
-
-## Retraining and evaluation
-
-The training scripts are offline research code and are not imported by the web app:
-
-| Script | Produces |
-|---|---|
-| `src/models/train_url_baseline.py` | URL-only TF-IDF vectorizer and classifier |
-| `src/models/train_url_combined.py` | URL TF-IDF plus engineered-feature model |
-| `src/models/train_url_html2.py` | URL+HTML model and its scalers/feature-column list |
-
-They read the labeled parquet shards under `data/raw/data/`, which are not tracked because of size. `src/features/process_html_dataset.py` builds the HTML feature dataset and `src/features/verify_html_dataset.py` checks it.
-
-Evaluation and analysis live in `src/evaluation/` (`evaluate_url_baseline.py`, `evaluate_url_combined.py`, `evaluate_url_html_test.py`, `evaluate_benchmarks.py`, `find_validation_threshold.py`, `threshold_analysis.py`, `analyze_errors.py`, `feature_importance.py`), with outputs written to `results/`. See `patch/TEST_REPORT.md` for the recorded evaluation commands and their caveats.
-
-Retraining is only needed if you want different artifacts. To use new artifacts, keep the filenames listed in the model table above and place them in `models/`.
-
-## Usage examples
-
-| Input | Expected behavior |
-|---|---|
-| `example.com` | Scheme added automatically; URL-only model runs |
-| `https://notebook.google.com/?icid=home_maincta` | URL-only score above zero but below `1.5`; labeled `REVIEW REQUIRED` |
-| `https://orca-app-2ulpy.ondigitalocean.app` | URL-only `REVIEW REQUIRED`; `PHISHING` if Safe Browsing reports a match |
-| Any URL plus pasted page HTML | Routes to the URL+HTML model and adds HTML structural evidence |
-
-## Known limitations
-
-- The URL-only model sees only URL text; it does not fetch or inspect the live page. Paste the HTML to use structural signals.
-- LinearSVC decision scores are uncalibrated and are not probabilities, and thresholds differ per model.
-- The `1.5` URL-only threshold is a targeted mitigation whose false-negative cost has not been measured on a representative labeled validation set.
-- Safe Browsing no-match responses indicate only that the URL was not on the queried lists at that moment.
-- This is a local analysis prototype: it has no authentication, rate limiting, or persistence, so do not expose it publicly as-is.
-
-## Repository notes
-
-- `models/` contains the artifacts the app needs; `.gitignore` whitelists exactly those files.
-- `.env`, `data/`, `handoff/`, `logs/`, and `results/` are local-only and ignored by Git.
-- `patch/` documents the false-positive investigation, its regression tests, and how to restore the pre-patch webapp files.
+See [MODEL_CARD.md](MODEL_CARD.md) for intended use, detailed metrics, and ethical and privacy notes. Historical one-off files are preserved in `archive/phase9/`.

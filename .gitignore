@@ -5,6 +5,9 @@ venv/
 
 # Local data, outputs, and handoff notes
 **/data/
+!/src/data/
+src/data/*
+!/src/data/download_dataset.py
 /data/
 !/data/
 /data/*
@@ -21,6 +24,8 @@ results/
 # Machine-specific/generated project files
 parquet_locations.txt
 project_structure.txt
+!/archive/phase9/parquet_locations.txt
+!/archive/phase9/project_structure.txt
 __pycache__/
 *.py[cod]
 .pytest_cache/

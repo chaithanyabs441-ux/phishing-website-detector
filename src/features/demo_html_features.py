@@ -1,11 +1,6 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
-from src.features.html_features import extract_html_features
-
-
 sample_html = """
 <html>
 <head>
@@ -37,14 +32,16 @@ sample_html = """
 """
 
 
-features = extract_html_features(
-    sample_html,
-    "https://mywebsite.com/login"
-)
+def main():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from src.features.html_features import extract_html_features
+
+    features = extract_html_features(sample_html, "https://mywebsite.com/login")
+    print("\nHTML FEATURES")
+    print("=" * 40)
+    for name, value in features.items():
+        print(f"{name}: {value}")
 
 
-print("\nHTML FEATURES")
-print("=" * 40)
-
-for name, value in features.items():
-    print(f"{name}: {value}")
+if __name__ == "__main__":
+    main()

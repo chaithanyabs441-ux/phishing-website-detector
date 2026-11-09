@@ -125,3 +125,7 @@ The selected model's separate, one-pass locked-test estimates and corrected benc
 ## Next
 
 Phase 9 completes the requested project plan. No additional model or threshold change is made here. The final handoff is ready for review.
+
+## Docker follow-up after Phase 9
+
+The Docker daemon became reachable after the initial report. `docker compose config` succeeds without interpolating `.env`, but `docker compose build` still cannot resolve `python:3.9-slim`: the daemon receives an HTTP response to its HTTPS request to Docker Hub. A PowerShell HEAD request to the same registry endpoint returns HTTP 401, the expected unauthenticated registry challenge, so this host can reach the registry while the engine's registry path cannot. The image has not been built or launched; resolve the Docker Desktop/engine registry or proxy configuration and rerun the build.

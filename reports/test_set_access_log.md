@@ -37,3 +37,12 @@ Official `test-*.parquet` files are locked except for the finalist evaluations p
   - `experiments/phase7_benchmark_summary.csv`: `d5d9873e03cabeebb0199c024d1fff8ea095da9bd901a796fa17d89016e50c24`
   - `data/processed/phase7_test_predictions.parquet` (ignored): `142ce4c0b4c319e26ca697b4859cca75ad916f7493ed9f8ce0703fd3c3063080`
 
+## Access 3 — Phase 10A descriptive train-domain overlap audit
+
+- Status: **AUTHORIZED; PRE-ACCESS RECORD**
+- Authorization: user explicitly requested Phase 10A on 2026-11-12, including a descriptive train-domain overlap audit and seen/unseen metrics from the already-recorded predictions.
+- Pre-access record commit: to be recorded after this entry is committed.
+- Planned command: `python -m src.evaluation.domain_overlap_audit`
+- Scope: read only `sha256` and `url` columns from each official `test-*.parquet` shard. Join those fields by SHA-256 to `data/processed/phase7_test_predictions.parquet`; obtain targets and calibrated scores only from this prior authorized prediction artifact, and obtain training domains only from frozen `data/splits/grouped_domain_folds.csv.gz`. Report seen/unseen domain counts, AP, recall at the existing validation-selected BLOCK threshold, and FPR. No test labels will be read from the official shards; no fitting, tuning, threshold changes, benchmark evaluation, or model selection. Results are descriptive and will not change the model or thresholds.
+- Stop condition: do not proceed to any other official-test access or the Phase 10B/10C/10E evaluation steps without a separate authorized pre-access record where required.
+

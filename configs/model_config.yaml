@@ -1,4 +1,4 @@
-﻿version: 1
+version: 1
 feature_versions:
   url_tfidf: url_string_v1
   url_engineered: url_features_v1
@@ -18,12 +18,14 @@ thresholds:
   url_tfidf: 1.5
   url_engineered: 0.0
   url_html: 0.0
-default_model: catboostengineered
+default_model: catboost_url_only_or_url_html
 fallback_model: url_tfidf
 serving:
-  selected_model: catboostengineered
-  primary_model: models/phase4/catboostengineered.joblib
-  calibrator: models/phase7/catboost_engineered_calibrator.joblib
+  selected_model: catboost_url_only_or_url_html
+  url_only_model: models/phase10/catboost_url_only.joblib
+  url_only_calibrator: models/phase10/catboost_url_only_calibrator.joblib
+  url_html_model: models/phase10/catboost_url_html.joblib
+  url_html_calibrator: models/phase10/catboost_url_html_calibrator.joblib
   fallback_model: url_tfidf
   fallback_vectorizer: models/url_tfidf.joblib
   fallback_classifier: models/url_linear_svm.joblib

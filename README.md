@@ -1,8 +1,8 @@
 # PhishReaper
 
-PhishReaper is a classical machine-learning phishing URL detector. The deployed path uses URL and HTML structure features with a CatBoost classifier, then applies a Platt calibrator. If the primary model cannot load or predict, the app falls back to the verified URL TF-IDF SVM and clearly identifies that its margin is uncalibrated. An HTML file upload is optional; server-side fetching is disabled by default.
+PhishReaper is a classical machine-learning phishing URL detector. The deployed path chooses a calibrated CatBoost URL-only model when no HTML is supplied and a calibrated URL+HTML model when HTML is supplied. A failure uses the verified URL TF-IDF SVM for that request; the margin is uncalibrated and the primary model remains available for the next request. An HTML file upload is optional; server-side fetching is disabled by default.
 
-Use the output for analyst triage. `BLOCK`, `WARN`, and `SAFE-LOOKING` are model signals, not proof about a site. The test set is an offline evaluation asset and should not be used to tune a deployment.
+Use the output for analyst triage. `BLOCK`, `WARN`, and `NO STRONG SIGNAL` are model signals, not proof about a site. The test set is an offline evaluation asset and must not be used to tune a deployment.
 
 ## Requirements and local setup
 
@@ -72,11 +72,20 @@ The end-to-end research sequence is:
 7. Fit calibration and choose thresholds using temporal validation only:
    `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_phase7_calibration --config configs/phase7_calibration.yaml`
 
-The evaluations above need local data and caches. Set seeds and resource limits in the YAML configs; preserve each emitted experiment JSON/CSV with its split/config hashes. Do not rerun the locked-test evaluator as part of routine development. Phase 7 records the one completed authorized pass and its access log at `reports/test_set_access_log.md`.
+The evaluations above need local data and caches. Set seeds and resource limits in the YAML configs; preserve each emitted experiment JSON/CSV with its split/config hashes. Do not rerun the locked-test evaluator as part of routine development. `reports/test_set_access_log.md` records the authorized Phase 7 pass and the descriptive Phase 10A identity audit.
 
 ## Serving configuration
 
-`configs/model_config.yaml` selects the model artifacts and feature inputs; `configs/thresholds.yaml` contains the validation-selected calibrated cutoffs. `models/MANIFEST.json` records artifact hashes. On startup the loader verifies hashes and project-contained paths before loading. The CatBoost finalist and calibrator are the primary path; the URL TF-IDF SVM is the fallback.
+`configs/model_config.yaml` selects the URL-only and URL+HTML model artifacts; `configs/thresholds.yaml` contains separate validation-selected calibrated cutoffs. Empty HTML selects URL-only CatBoost; nonempty supplied HTML selects URL+HTML CatBoost. Both routes have their own grouped-OOF-selected calibrator. `models/MANIFEST.json` records artifact hashes. On startup the loader verifies hashes and project-contained paths before loading. The URL TF-IDF SVM is the fallback for a missing or failing primary route.
+
+The validation cutoffs use grouped-OOF calibrated validation scores. BLOCK is set at validation FPR no higher than 0.1%; WARN is set at validation FPR no higher than 2%.
+
+| Route | Calibration | BLOCK cutoff (validation FPR / recall) | WARN cutoff (validation FPR / recall) |
+|---|---|---:|---:|
+| URL-only | Isotonic | 0.98860 (0.000968 / 0.39520) | 0.38889 (0.019450 / 0.77077) |
+| URL + HTML | Platt | 0.94129 (0.000995 / 0.57062) | 0.58389 (0.019989 / 0.81068) |
+
+The threshold provenance is `validation temporal split only; grouped OOF-calibrated scores`; there is no manual override. Model and threshold methodology, artifacts, and validation metrics are in [reports/phase_10c_serving_models.md](reports/phase_10c_serving_models.md).
 
 The local `configs/top_sites.txt` list is a small bootstrap context list, not a current Tranco snapshot. To refresh it, download a Tranco list manually, review its format, and replace the file with one registered domain per line. The app does not fetch that list. `configs/shared_hosting_domains.txt` contains platforms where URL-only evidence is inconclusive.
 
@@ -98,14 +107,36 @@ Safe Browsing is disabled in Compose by default. To enable it for a one-off Comp
 
 ## Evaluation protocol and results
 
-The split protocol is temporal validation over later collection dates plus five-fold registered-domain grouped CV/OOF for tuning and stack inputs. Calibration and thresholds were fitted from grouped OOF scores on temporal validation. The final official test pass was performed once for the selected CatBoost model. It achieved AP 0.99025 [0.98783, 0.99271] and ROC-AUC 0.98892 [0.98527, 0.99226] at the test score ranking level; at a 0.5 probability cut, precision was 0.95454, recall 0.96094, F1 0.95773, FPR 0.03852, and accuracy 0.96123 (95% registered-domain bootstrap intervals are in the model card).
+The split protocol uses temporal validation plus five-fold registered-domain grouped CV/OOF for tuning and calibration. Phase 10B compared the current full categorical feature set (A) with reduced categorical variants. B and C were rejected by the preregistered validation rule: paired AP-difference 95% intervals versus A were [-0.03303, -0.01398] and [-0.04964, -0.02481], respectively, both below the -0.01 noninferiority margin.
 
-At a 0.05% assumed phishing prevalence, that same 0.5 cutoff yields estimated precision 1.23% and 38.98 alerts per 1,000. These estimates show why evaluation prevalence and operating costs matter. Full test and benchmark results are in `reports/phase_7_report.md`; the unified temporal validation comparison and published-claim discussion are in `reports/phase_9_report.md`.
+Phase 10C validation results for the current two routes are:
+
+| Route | Validation AP / ROC-AUC (raw scores) | Grouped-OOF calibrated AP / ROC-AUC |
+|---|---:|---:|
+| URL-only | 0.923877 / 0.955195 | 0.914668 / 0.946892 |
+| URL + HTML | 0.940751 / 0.963142 | 0.938509 / 0.960363 |
+
+No official test pass has been run for the new URL-only model or the Phase 10 serving package. The metrics below are the prior authorized Phase 7 pass for the earlier single URL+HTML CatBoost finalist. They are historical results and are not presented as fresh evaluation of both current serving routes.
+
+That Phase 7 pass measured test AP 0.99025 [0.98783, 0.99271] and ROC-AUC 0.98892 [0.98527, 0.99226]. At a 0.5 probability cut, precision was 0.95454, recall 0.96094, F1 0.95773, FPR 0.03852, and accuracy 0.96123 (95% registered-domain bootstrap intervals). At an assumed 0.05% phishing prevalence, the reweighted estimate was 1.23% precision and 38.98 alerts per 1,000.
+
+The corrected Phase 7 hash-mapped benchmark summary is also for that prior single-model pass:
+
+| Configured base rate | Files | AP mean (std) | P@R90 mean (std) |
+|---:|---:|---:|---:|
+| 0.05% | 586 | 0.6373 (0.0631) | 0.0603 (0.0716) |
+| 0.1% | 296 | 0.7047 (0.0435) | 0.1023 (0.0870) |
+| 0.5% | 59 | 0.8256 (0.0161) | 0.2694 (0.0910) |
+| 1% | 29 | 0.8618 (0.0107) | 0.4161 (0.0921) |
+| 5% | 5 | 0.9203 (0.0024) | 0.7775 (0.0283) |
+
+The Phase 10A descriptive overlap audit reused the prior Phase 7 predictions and read only `sha256` and `url` from official shards. At the prior BLOCK threshold of 0.941289, seen-in-training test domains had AP 0.838875, BLOCK recall 0.702309, and FPR 0.000604 (63,954 rows / 15,235 domains); unseen domains had AP 0.994796, recall 0.835670, and FPR 0.001960 (104,106 rows / 79,848 domains). These are descriptive slices of that prior test pass, not model-selection results. The corrected benchmark, locked-test protocol, and overlap audit are documented in [reports/phase_7_report.md](reports/phase_7_report.md), [reports/test_set_access_log.md](reports/test_set_access_log.md), and [reports/phase_10a_domain_overlap_audit.md](reports/phase_10a_domain_overlap_audit.md).
 
 ## Limitations
 
 - The data is a historical collection and the test set has 45.7% phishing prevalence; operational prevalence and URL distributions will differ.
-- WARN is deliberately recall-oriented and had 25.98% validation FPR at its selected threshold. It can produce many false alarms.
+- A fixed 50-URL major-site regression gate currently reports 1 BLOCK and 2 WARN, so it fails the zero-BLOCK requirement. The list is not used for fitting or threshold selection. See [reports/phase_10e_sanity_url_gate.md](reports/phase_10e_sanity_url_gate.md).
+- The Phase 10A seen/unseen test slice results are descriptive and show materially different metrics between groups. They must not be used to select features or thresholds.
 - Shared hosting, famous brands, URL-only irreducible cases, and distribution shift remain difficult. Page HTML is optional and user-supplied; the server does not render pages.
 - Local allowlists are context only and do not alter the model probability. Domain lists need maintenance.
 - In-process rate limiting is per worker. Production deployment needs shared rate limiting, authentication/access controls, monitoring, and egress policy.

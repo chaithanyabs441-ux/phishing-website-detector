@@ -123,6 +123,8 @@ def get_risk_class(level):
         return "danger"
     if level in {"WARN", "REVIEW", "NEEDS PAGE CONTENT"}:
         return "warning"
+    if level in {"NO STRONG SIGNAL", "LOW RISK"}:
+        return "safe"
     return "safe"
 
 
@@ -257,9 +259,11 @@ async def _analyze(request, raw_url, html):
 
     if prediction["calibrated"]:
         probability = prediction["probability"]
-        block_threshold = float(THRESHOLDS["thresholds"]["block"])
-        warn_threshold = float(THRESHOLDS["thresholds"]["warn"])
-        prediction_label = "BLOCK" if probability >= block_threshold else "WARN" if probability >= warn_threshold else "SAFE-LOOKING"
+        model_key = prediction.get("model_key", "url_html")
+        model_thresholds = THRESHOLDS["models"][model_key]["thresholds"]
+        block_threshold = float(model_thresholds["block"])
+        warn_threshold = float(model_thresholds["warn"])
+        prediction_label = "BLOCK" if probability >= block_threshold else "WARN" if probability >= warn_threshold else "NO STRONG SIGNAL"
         risk_level = prediction_label
         confidence_note = "Local popular-domain context noted; the calibrated model probability is unchanged." if allowlisted else ""
         if shared_host and not html.strip() and prediction_label != "BLOCK":
@@ -268,7 +272,7 @@ async def _analyze(request, raw_url, html):
             confidence_note = "Shared-hosting domain: URL-only evidence is inconclusive. Add page HTML for structural analysis."
         probability_display = "{:.1%}".format(probability)
         score_display = None
-        model_name = "CatBoost engineered + Platt calibration"
+        model_name = "CatBoost URL-only + Platt calibration" if model_key == "url_only" else "CatBoost URL + HTML + Platt calibration"
     else:
         score = prediction["decision_score"]
         prediction_label = get_prediction(score, REGISTRY.fallback_threshold)
@@ -350,7 +354,12 @@ async def health():
 
 @app.get("/version")
 async def version():
-    return {"name": "PhishReaper", "version": app.version, "backend": REGISTRY.active_backend, "feature_version": THRESHOLDS["feature_version"]}
+    return {
+        "name": "PhishReaper",
+        "version": app.version,
+        "backend": REGISTRY.active_backend,
+        "feature_version": THRESHOLDS["feature_version"],
+    }
 
 
 @app.post("/scan", response_class=HTMLResponse)

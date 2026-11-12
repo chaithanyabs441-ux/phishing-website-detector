@@ -64,6 +64,12 @@ models/phase4/*
 !models/phase7/
 models/phase7/*
 !models/phase7/catboost_engineered_calibrator.joblib
+!models/phase10/
+models/phase10/*
+!models/phase10/catboost_url_only.joblib
+!models/phase10/catboost_url_only_calibrator.joblib
+!models/phase10/catboost_url_html.joblib
+!models/phase10/catboost_url_html_calibrator.joblib
 !models/url_html_tfidf.joblib
 !models/url_html_linear_svm.joblib
 !models/html_scaler.joblib

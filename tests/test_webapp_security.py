@@ -32,7 +32,7 @@ def test_health_and_json_scan_happy_path():
     assert client.get("/health").json()["status"] == "ok"
     response = client.post("/api/v1/scan", json={"url": "https://example.com"})
     assert response.status_code == 200
-    assert response.json()["prediction"] == "SAFE-LOOKING"
+    assert response.json()["prediction"] == "NO STRONG SIGNAL"
     assert response.json()["calibrated_probability"] == "1.0%"
 
 

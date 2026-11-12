@@ -1,17 +1,37 @@
-version: 1
-selected_model: catboostengineered
-feature_version: url_features_v2+html_features_v2
-calibration_method: platt
-calibrator_artifact: models\phase7\catboost_engineered_calibrator.joblib
+version: 2
+feature_version: url_features_v2 or url_features_v2+html_features_v2; selected by
+  supplied HTML
+source: validation temporal split only; grouped OOF-calibrated scores
+selection_method: lowest probability threshold meeting each validation FPR cap
 assumed_prevalence: 0.05
-thresholds:
-  block: 0.9412894906414405
-  warn: 0.8
-selection_constraints:
-  block_max_fpr: 0.001
-  warn_min_recall: 0.95
-source: user-requested manual adjustment; WARN cutoff raised from the validation-selected value
-manual_override:
-  previous_warn: 0.06817787498329715
-  reason: Raise the WARN cutoff above the current 0.785428 score for w3schools.com/rust.
-  validation_recall_guarantee: no longer applies
+models:
+  url_only:
+    feature_version: url_features_v2
+    calibration_method: isotonic
+    calibrator_artifact: models/phase10/catboost_url_only_calibrator.joblib
+    thresholds:
+      block: 0.9886033519553072
+      warn: 0.3888888888888889
+    selection_constraints:
+      block_max_fpr: 0.001
+      warn_max_fpr: 0.02
+    validation_metrics:
+      block_fpr: 0.0009676393746284956
+      block_recall: 0.3951958922416825
+      warn_fpr: 0.019449551430032762
+      warn_recall: 0.7707673911514384
+  url_html:
+    feature_version: url_features_v2+html_features_v2
+    calibration_method: platt
+    calibrator_artifact: models/phase10/catboost_url_html_calibrator.joblib
+    thresholds:
+      block: 0.9412894906414405
+      warn: 0.5838926009865285
+    selection_constraints:
+      block_max_fpr: 0.001
+      warn_max_fpr: 0.02
+    validation_metrics:
+      block_fpr: 0.0009952862139035955
+      block_recall: 0.5706196806639938
+      warn_fpr: 0.01998866479589721
+      warn_recall: 0.8106843919251601

@@ -36,3 +36,64 @@ def test_serving_platt_transform_matches_phase7_calibration():
     expected = apply_calibrator(REGISTRY.calibrator, raw_probabilities)
     actual = _apply_calibrator(REGISTRY.calibrator, raw_probabilities)
     np.testing.assert_allclose(actual, expected, rtol=0, atol=1e-12)
+
+
+def test_registry_routes_by_html_presence():
+    from webapp.app import REGISTRY
+
+    url_only = REGISTRY.predict("https://example.org/account")
+    url_html = REGISTRY.predict(
+        "https://example.org/account",
+        "<html><body><form><input type='password'></form></body></html>",
+    )
+
+    assert url_only["model_key"] == "url_only"
+    assert url_only["backend"] == "catboost_url_only"
+    assert url_html["model_key"] == "url_html"
+    assert url_html["backend"] == "catboost_url_html"
+    assert 0.0 <= url_only["probability"] <= 1.0
+    assert 0.0 <= url_html["probability"] <= 1.0
+
+
+def test_primary_inference_failure_falls_back_for_one_request_without_url_text():
+    class IntermittentModel:
+        def __init__(self):
+            self.calls = 0
+
+        def predict_proba(self, _features):
+            self.calls += 1
+            if self.calls == 1:
+                raise ValueError("failed for https://private.example/path")
+            return np.array([[0.2, 0.8]])
+
+    class FallbackVectorizer:
+        def transform(self, urls):
+            return urls
+
+    class FallbackModel:
+        def decision_function(self, _features):
+            return np.array([-0.25])
+
+    registry = ModelRegistry.__new__(ModelRegistry)
+    model = IntermittentModel()
+    registry.primary_models = {"url_only": model, "url_html": None}
+    registry.calibrators = {
+        "url_only": {"method": "isotonic", "model": type("Identity", (), {"predict": lambda _self, values: values})()},
+        "url_html": None,
+    }
+    registry.primary_error = None
+    registry.fallback_vectorizer = FallbackVectorizer()
+    registry.fallback_model = FallbackModel()
+    registry.fallback_threshold = 1.5
+    registry._catboost_features = lambda _url, _html, _key: (
+        object(), {"url_length": 10}, None,
+    )
+
+    first = registry.predict("https://private.example/path")
+    second = registry.predict("https://private.example/path")
+
+    assert first["backend"] == "url_tfidf_fallback"
+    assert "https://private.example/path" not in first["fallback_reason"]
+    assert registry.primary_models["url_only"] is model
+    assert second["backend"] == "catboost_url_only"
+    assert model.calls == 2

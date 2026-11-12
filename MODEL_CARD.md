@@ -1,72 +1,68 @@
 # PhishReaper model card
 
-**Version:** serving model and calibration committed at Phase 8, with the Phase 9 serving-calibration parity correction.
+## Model summary
 
-**Model:** CatBoost engineered URL/HTML features (`models/phase4/catboostengineered.joblib`) plus Platt calibration (`models/phase7/catboost_engineered_calibrator.joblib`).
-**Fallback:** URL character TF-IDF + LinearSVC; its decision margin is not a probability.
+PhishReaper is a classical machine-learning phishing URL detector for analyst triage. The serving registry selects one of two calibrated CatBoost models based on whether the request includes HTML. It uses a URL TF-IDF SVM only as a request-scoped fallback when a primary route fails; the SVM margin is uncalibrated. A fallback does not replace or disable the primary model.
 
-## Intended use
+| Route | Inputs | Calibration | Validation AP / ROC-AUC (raw) | Grouped-OOF calibrated AP / ROC-AUC | Artifact |
+|---|---|---|---:|---:|---|
+| URL-only | 24 URL features | Isotonic | 0.923877 / 0.955195 | 0.914668 / 0.946892 | `models/phase10/catboost_url_only.joblib` |
+| URL + HTML | 53 URL and HTML features | Platt | 0.940751 / 0.963142 | 0.938509 / 0.960363 | `models/phase10/catboost_url_html.joblib` |
 
-PhishReaper is a local analyst-triage aid for suspicious URLs. Its signals can help prioritize manual inspection. It is not an autonomous blocklist, a guarantee of safety, or a substitute for incident response. The model was trained and evaluated on a historical PhreshPhish collection; it is not validated for any specific organization, geography, language, or live traffic distribution.
+The matching calibrators are in `models/phase10/`; artifact hashes are recorded in `models/MANIFEST.json`. Empty or absent HTML selects URL-only; supplied nonempty HTML selects URL + HTML. The app parses uploaded HTML locally and does not execute its JavaScript. Page fetching is disabled by default.
 
-The service accepts a URL and optional user-supplied HTML. It does not render JavaScript. A local, short popular-domain list provides context only, and shared-hosting domains without HTML return `NEEDS PAGE CONTENT`.
+## Intended use and limitations
 
-## Data and evaluation design
+Use the output as a triage signal for a submitted URL, not as a determination that a site is safe or malicious. `BLOCK`, `WARN`, and `NO STRONG SIGNAL` are model verdicts and do not establish intent or compromise. Shared-hosting domains and URLs with little distinguishing evidence may require page content or human review. The model does not render pages.
 
-The PhreshPhish snapshot used here contains 498,255 training rows. Temporal training used 397,480 rows collected from 2024-07-02 through 2025-07-09; temporal validation used 100,775 rows from 2025-07-10 through 2025-09-08. Registered-domain GroupKFold was used for tuning/OOF features and grouped calibration. The official test set was evaluated once after finalist pre-registration: 168,060 rows across 95,151 registered domains, with 45.698% phishing prevalence.
+The training data is a historical collection with different prevalence and distribution from live traffic. At 0.05% assumed phishing prevalence, even strong ranking metrics can produce many false alerts. Do not use this system as the sole control for account, payment, or access decisions. The fixed sanity list currently fails its zero-BLOCK gate (1 BLOCK and 2 WARN among 50 URLs); this result is documented and the list was not used for tuning.
 
-The test estimate describes this dataset and collection process. It is not a low-prevalence production estimate. Precision and alert counts below are reweighted from test class-conditional rates to hypothetical prevalence values; they are not new test samples. Confidence intervals use 200 registered-domain bootstrap replicates.
+## Data and method
 
-## Performance
+The Phase 10 serving models used the frozen temporal split: 397,480 training rows and 100,775 validation rows across 46,561 validation registered domains. The full categorical CatBoost feature set (variant A) was retained after the predeclared Phase 10B comparison. Reduced variants B and C were rejected: paired registered-domain bootstrap AP differences versus A were -0.023379 (95% CI [-0.033029, -0.013982]) and -0.035365 (95% CI [-0.049641, -0.024810]). The rule was to choose B or C unless the AP drop exceeded 0.01 beyond the confidence interval; both failed that condition.
 
-At a 0.5 probability threshold on the locked test set:
+Phase 10 calibration and thresholds used grouped out-of-fold calibrated validation predictions only. No official test set was accessed to train or select the Phase 10 models, calibrators, or thresholds. Per-route validation values are recorded in `configs/thresholds.yaml` and `reports/phase_10c_serving_models.md`.
 
-| Metric | Estimate | 95% registered-domain bootstrap CI |
-|---|---:|---:|
-| Average precision | 0.99025 | [0.98783, 0.99271] |
-| ROC-AUC | 0.98892 | [0.98527, 0.99226] |
-| Precision | 0.95454 | [0.95200, 0.95723] |
-| Recall | 0.96094 | [0.95369, 0.96886] |
-| F1 | 0.95773 | [0.95302, 0.96208] |
-| False-positive rate | 0.03852 | [0.03413, 0.04225] |
-| Accuracy | 0.96123 | [0.95688, 0.96606] |
+## Operating thresholds
 
-At the Phase 7 operating thresholds, the validation estimates were:
+BLOCK thresholds target validation FPR at or below 0.1%; WARN thresholds target validation FPR at or below 2%. Values below are grouped-OOF calibrated validation cutoffs, not test-set estimates.
 
-| Verdict | Threshold | Precision | Recall | FPR | Precision at 5% prevalence | Alerts/1,000 at 5% |
-|---|---:|---:|---:|---:|---:|---:|
-| WARN | 0.06818 | 0.5897 | 0.9500 | 0.2598 | 0.1614 | 294.30 |
-| BLOCK | 0.94129 | 0.9956 | 0.5706 | 0.0010 | 0.9679 | 29.48 |
+| Route | BLOCK cutoff | Validation FPR / recall | WARN cutoff | Validation FPR / recall |
+|---|---:|---:|---:|---:|
+| URL-only | 0.98860335 | 0.000968 / 0.395196 | 0.38888889 | 0.019450 / 0.770767 |
+| URL + HTML | 0.94128949 | 0.000995 / 0.570620 | 0.58389260 | 0.019989 / 0.810684 |
 
-The selected Platt calibration was evaluated with grouped OOF probabilities on temporal validation: Brier score 0.05577, log-loss 0.19804, and expected calibration error 0.02004. The final calibrator was refit on all validation scores after method selection. Phase 9 fixed a serving transform mismatch so serving applies the same logit transform used during calibration and evaluation; a regression test now checks parity.
+Threshold provenance in `configs/thresholds.yaml` is `validation temporal split only; grouped OOF-calibrated scores`; there is no manual override.
 
-At the 0.5 test threshold, reweighted estimates are:
+## Previously authorized evaluation (historical model)
 
-| Assumed phishing prevalence | Precision (95% CI) | Alerts per 1,000 (95% CI) |
-|---:|---:|---:|
-| 0.05% | 0.01233 [0.01125, 0.01392] | 38.98 [34.59, 42.70] |
-| 0.5% | 0.11140 [0.10261, 0.12418] | 43.13 [38.77, 46.84] |
-| 1% | 0.20128 [0.18688, 0.22179] | 47.74 [43.39, 51.44] |
-| 5% | 0.56768 [0.54494, 0.59759] | 84.64 [80.38, 88.29] |
-| 45% | 0.95330 [0.94902, 0.95848] | 453.61 [449.17, 458.25] |
+The following results belong to the prior authorized Phase 7 evaluation of the earlier single URL + HTML CatBoost finalist. They are not a fresh test of the Phase 10 package, URL-only model, or both current routes. No new official test evaluation was performed for Phase 10.
 
-The selected BLOCK threshold produced 63,602 true positives, 98 false positives, 91,162 true negatives, and 13,198 false negatives on test. WARN produced 75,800 true positives, 28,373 false positives, 62,887 true negatives, and 1,000 false negatives. The low-prevalence precision estimates make clear that even strong ranking metrics do not imply high precision in a low-base-rate deployment.
+The prior test pass reported AP 0.99025 (95% registered-domain bootstrap CI [0.98783, 0.99271]) and ROC-AUC 0.98892 ([0.98527, 0.99226]). At a 0.5 probability cutoff, precision was 0.95454, recall 0.96094, F1 0.95773, FPR 0.03852, and accuracy 0.96123. At an assumed 0.05% phishing prevalence, the reweighted estimate was 1.23% precision and 38.98 alerts per 1,000.
 
-## Known limitations and failure classes
+The corrected Phase 7 hash-mapped benchmark summary for that same historical model was:
 
-- The validation WARN threshold deliberately targets 95% recall and consequently flags 25.98% of benign validation examples. It is a review signal and may be too noisy for an alert queue.
-- Famous legitimate domains and shared-hosting tenants can have URL/HTML patterns that look suspicious. The Phase 8 bootstrap smoke run exposed an implementation error in calibration; the corrected smoke run still marked some familiar domains BLOCK, so this remains a material model false-positive concern, not a resolved UI issue.
-- URLs alone cannot distinguish a legitimate tenant path from a phishing page on shared hosting. The app requests page content for these hosts when HTML is absent.
-- Dataset shift, unseen TLDs/domains, shorteners, multilingual URLs, obfuscation, and adversarial changes can reduce performance. The local allowlist is small, manually refreshed, and does not change probability.
-- Test prevalence is much higher than many operational settings. Thresholds must not be re-tuned on the test set; any deployment-specific threshold study needs a separate, representative validation set.
-- HTML is optional and supplied by the caller. It may be incomplete or stale. The app does not fetch pages unless an operator explicitly turns on the opt-in fetcher, and it never executes JavaScript.
+| Configured base rate | Files | AP mean (std) | P@R90 mean (std) |
+|---:|---:|---:|---:|
+| 0.05% | 586 | 0.6373 (0.0631) | 0.0603 (0.0716) |
+| 0.1% | 296 | 0.7047 (0.0435) | 0.1023 (0.0870) |
+| 0.5% | 59 | 0.8256 (0.0161) | 0.2694 (0.0910) |
+| 1% | 29 | 0.8618 (0.0107) | 0.4161 (0.0921) |
+| 5% | 5 | 0.9203 (0.0024) | 0.7775 (0.0283) |
 
-## Privacy, ethics, and security
+Phase 10A produced a descriptive seen/unseen slice of those existing Phase 7 test predictions. It read only `sha256` and `url` from official test shards and joined them to the prior predictions. At the prior BLOCK cutoff of 0.941289:
 
-The URL and pasted HTML are security-sensitive. Structured application logs omit both. If `GOOGLE_SAFE_BROWSING_API_KEY` is configured, PhishReaper sends the complete submitted URL—including path and query string—to Google's Safe Browsing API. It sends no pasted HTML. Query strings can contain account identifiers, reset tokens, or other secrets; operators should disable the integration or redact inputs where that is not acceptable, and should review Google's current service terms and retention policies.
+| Test domains | Rows / registered domains | AP | BLOCK recall | BLOCK FPR |
+|---|---:|---:|---:|---:|
+| Seen in training | 63,954 / 15,235 | 0.838875 | 0.702309 | 0.000604 |
+| Unseen in training | 104,106 / 79,848 | 0.994796 | 0.835670 | 0.001960 |
 
-The model can falsely label legitimate sites or miss phishing sites. Do not use a score as evidence of user intent, as a basis for punitive action, or as a sole control for account access. Keep a human review path and provide a way to challenge incorrect classifications. The project is restricted to classical machine learning; no neural network or pretrained embedding was used.
+This is a descriptive analysis of the prior test predictions, not a Phase 10 model evaluation or a basis for model selection. See `reports/test_set_access_log.md`, `reports/phase_10a_domain_overlap_audit.md`, and `reports/phase_7_report.md` for access and methodology.
 
-## Artifacts and reproducibility
+## Privacy and security
 
-`models/MANIFEST.json` stores serving artifact hashes and provenance metadata. `configs/model_config.yaml` and `configs/thresholds.yaml` define model selection, limits, and thresholds. The phase-by-phase experiments, benchmark correction, CI, container, and final model comparison are described in `reports/phase_*.md`, especially `reports/phase_9_report.md`. Training requires the locally downloaded dataset and ignored feature caches; app inference requires the model volume and configuration only.
+Submitted URLs and HTML are processed by the local app and are not written to application logs. If Google Safe Browsing is enabled, the complete submitted URL, including its path and query, is sent to Google's API; submitted HTML is not sent. A Safe Browsing match overrides the model verdict, while no match is not proof of safety. Keep API keys in environment-based secret storage and out of Git. Uploaded HTML is untrusted input; page fetching remains disabled by default and deployments need appropriate egress controls if it is enabled.
+
+## Versioning and reproducibility
+
+Current model, calibrator, feature, and threshold versions are listed in `configs/model_config.yaml`, `configs/thresholds.yaml`, and `models/MANIFEST.json`. Training datasets and generated caches are local and are not included in Git. The detailed Phase 10 reports are in `reports/phase_10b_categorical_ablation.md`, `reports/phase_10c_serving_models.md`, and `reports/phase_10e_sanity_url_gate.md`.

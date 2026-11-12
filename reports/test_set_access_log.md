@@ -39,10 +39,11 @@ Official `test-*.parquet` files are locked except for the finalist evaluations p
 
 ## Access 3 — Phase 10A descriptive train-domain overlap audit
 
-- Status: **AUTHORIZED; PRE-ACCESS RECORD**
+- Status: **COMPLETED; DESCRIPTIVE ONLY**
 - Authorization: user explicitly requested Phase 10A on 2026-11-12, including a descriptive train-domain overlap audit and seen/unseen metrics from the already-recorded predictions.
-- Pre-access record commit: to be recorded after this entry is committed.
-- Planned command: `python -m src.evaluation.domain_overlap_audit`
-- Scope: read only `sha256` and `url` columns from each official `test-*.parquet` shard. Join those fields by SHA-256 to `data/processed/phase7_test_predictions.parquet`; obtain targets and calibrated scores only from this prior authorized prediction artifact, and obtain training domains only from frozen `data/splits/grouped_domain_folds.csv.gz`. Report seen/unseen domain counts, AP, recall at the existing validation-selected BLOCK threshold, and FPR. No test labels will be read from the official shards; no fitting, tuning, threshold changes, benchmark evaluation, or model selection. Results are descriptive and will not change the model or thresholds.
-- Stop condition: do not proceed to any other official-test access or the Phase 10B/10C/10E evaluation steps without a separate authorized pre-access record where required.
+- Pre-access record commit: `2243c29afe23dc05b24aeb3514f927926b0031e6`.
+- Command: `python -m src.evaluation.domain_overlap_audit`
+- Scope executed: read only `sha256` and `url` columns, in batches, from the 21 official `test-*.parquet` shards (168,060 rows). Joined identities by SHA-256 to the existing `data/processed/phase7_test_predictions.parquet`; targets and calibrated scores came only from that prior authorized artifact. Training domains came only from frozen temporal training assignments joined to grouped-domain assignments. No fitting, tuning, threshold changes, benchmark evaluation, or model selection.
+- Result: 63,954 test rows / 15,235 registered domains seen in training; AP 0.838875, recall at the existing validation-selected BLOCK threshold (0.941289490641) 0.702309, FPR 0.000604. 104,106 unseen-domain rows / 79,848 registered domains; AP 0.994796, BLOCK recall 0.835670, FPR 0.001960. Results and method are in `reports/phase_10a_domain_overlap_audit.md`. These figures are descriptive and did not change the model or thresholds.
+- Stop condition: no other official-test access or Phase 10B/10C/10E evaluation was performed. Any further access must have a separate authorized pre-access record where required.
 

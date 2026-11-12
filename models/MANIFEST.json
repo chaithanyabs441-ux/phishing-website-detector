@@ -3,36 +3,21 @@
   "notes": [
     "Hashes are SHA-256 of the exact shipped files.",
     "Artifacts were not retrained during Phase 1.",
-    "combined_url_scaler.joblib is a renamed copy of the scaler fit for the combined URL model; this resolves its previous app path mismatch."
+    "combined_url_scaler.joblib is a renamed copy of the scaler fit for the combined URL model; this resolves its previous app path mismatch.",
+    "Phase 10 URL-only and URL+HTML CatBoost models and grouped-OOF calibrators are registered by SHA-256."
   ],
   "artifacts": [
     {
-      "file": "url_tfidf.joblib",
-      "sha256": "2afe7e295727103b2c6b7b4c2fd7a15136046e3af176a1ac984bae63d37d4e8c",
-      "trained_with": "train_url_baseline.py",
-      "trained_on_split": "train-*.parquet; stratified 80/20 split, random_state=42",
-      "feature_version": "url_string_v1",
-      "scikit_learn_version": "1.3.2"
-    },
-    {
-      "file": "url_linear_svm.joblib",
-      "sha256": "63ffcfafd762dfaa8d7b40ed3453eb604b877ea19e71f637faaaabb2f267b8da",
-      "trained_with": "train_url_baseline.py",
-      "trained_on_split": "train-*.parquet; stratified 80/20 split, random_state=42",
-      "feature_version": "url_string_v1",
-      "scikit_learn_version": "1.3.2"
-    },
-    {
-      "file": "combined_tfidf.joblib",
-      "sha256": "8e11e3c734a3a1faae2d477ef980278575a6a62a3b766cf388b4b79b9c430793",
+      "file": "combined_linear_svm.joblib",
+      "sha256": "5ba0bf0a2116e1acd5781f867c840a21141056e29f711028524c0f23bf4915f9",
       "trained_with": "train_url_combined.py",
       "trained_on_split": "train-*.parquet; stratified 80/20 split, random_state=42",
       "feature_version": "url_string_v1 + url_features_v1",
       "scikit_learn_version": "1.3.2"
     },
     {
-      "file": "combined_linear_svm.joblib",
-      "sha256": "5ba0bf0a2116e1acd5781f867c840a21141056e29f711028524c0f23bf4915f9",
+      "file": "combined_tfidf.joblib",
+      "sha256": "8e11e3c734a3a1faae2d477ef980278575a6a62a3b766cf388b4b79b9c430793",
       "trained_with": "train_url_combined.py",
       "trained_on_split": "train-*.parquet; stratified 80/20 split, random_state=42",
       "feature_version": "url_string_v1 + url_features_v1",
@@ -47,27 +32,11 @@
       "scikit_learn_version": "1.3.2"
     },
     {
-      "file": "url_html_tfidf.joblib",
-      "sha256": "f09fb190673ffe7558a870ee516f463fb17259e13eef56398d2f086968e558de",
+      "file": "html_feature_columns.joblib",
+      "sha256": "636713c6863f92361274ae9ee43e13db7d07db5423443edcb9bc02f68f08d25b",
       "trained_with": "train_url_html2.py",
       "trained_on_split": "train-*.parquet and generated HTML features; stratified split, random_state=42",
-      "feature_version": "url_string_v1 + url_features_v1 + html_features_v1",
-      "scikit_learn_version": "1.3.2"
-    },
-    {
-      "file": "url_html_linear_svm.joblib",
-      "sha256": "7cd07adf29145d18813f66bd32b2696c53a41ce9bf3c7415c42bff0e6c17cd93",
-      "trained_with": "train_url_html2.py",
-      "trained_on_split": "train-*.parquet and generated HTML features; stratified split, random_state=42",
-      "feature_version": "url_string_v1 + url_features_v1 + html_features_v1",
-      "scikit_learn_version": "1.3.2"
-    },
-    {
-      "file": "url_engineered_scaler.joblib",
-      "sha256": "02751abae3eb5e7bc61f4eafd1ef7c845f8ee641c90e995500522655fd621698",
-      "trained_with": "train_url_html2.py",
-      "trained_on_split": "train-*.parquet and generated HTML features; stratified split, random_state=42",
-      "feature_version": "url_features_v1",
+      "feature_version": "html_features_v1",
       "scikit_learn_version": "1.3.2"
     },
     {
@@ -79,12 +48,40 @@
       "scikit_learn_version": "1.3.2"
     },
     {
-      "file": "html_feature_columns.joblib",
-      "sha256": "636713c6863f92361274ae9ee43e13db7d07db5423443edcb9bc02f68f08d25b",
-      "trained_with": "train_url_html2.py",
-      "trained_on_split": "train-*.parquet and generated HTML features; stratified split, random_state=42",
-      "feature_version": "html_features_v1",
-      "scikit_learn_version": "1.3.2"
+      "file": "models/phase10/catboost_url_html.joblib",
+      "sha256": "30fdd7e683502f502fac31128ee9f2f304d8c63d0e4505894b7600f5d7dc8ae6",
+      "trained_with": "src/evaluation/phase10c_train_serving_models.py",
+      "trained_on_split": "frozen temporal train split; early stopping and calibration/threshold selection on temporal validation only",
+      "feature_version": "url_features_v2+html_features_v2",
+      "artifact_role": "catboost_classifier",
+      "framework_version": "1.2.10"
+    },
+    {
+      "file": "models/phase10/catboost_url_html_calibrator.joblib",
+      "sha256": "ade1e2bc099a4bfe3a60e8e3941247a7bdb357be75ca3a2a27ed8670ad2622d2",
+      "trained_with": "src/evaluation/phase10c_train_serving_models.py",
+      "trained_on_split": "frozen temporal train split; early stopping and calibration/threshold selection on temporal validation only",
+      "feature_version": "url_features_v2+html_features_v2",
+      "artifact_role": "grouped_oof_probability_calibrator",
+      "framework_version": "1.3.2"
+    },
+    {
+      "file": "models/phase10/catboost_url_only.joblib",
+      "sha256": "bf6d5f134ceb413e3b0d0a0f4f05d25dea35fd842e5d94a7f39ce0226b9a3c99",
+      "trained_with": "src/evaluation/phase10c_train_serving_models.py",
+      "trained_on_split": "frozen temporal train split; early stopping and calibration/threshold selection on temporal validation only",
+      "feature_version": "url_features_v2",
+      "artifact_role": "catboost_classifier",
+      "framework_version": "1.2.10"
+    },
+    {
+      "file": "models/phase10/catboost_url_only_calibrator.joblib",
+      "sha256": "217147031ee01fd4718e9b615d0e7c84016f65e6fabfaebbdee068c877b32716",
+      "trained_with": "src/evaluation/phase10c_train_serving_models.py",
+      "trained_on_split": "frozen temporal train split; early stopping and calibration/threshold selection on temporal validation only",
+      "feature_version": "url_features_v2",
+      "artifact_role": "grouped_oof_probability_calibrator",
+      "framework_version": "1.3.2"
     },
     {
       "file": "models/phase4/catboostengineered.joblib",
@@ -101,6 +98,46 @@
       "trained_on_split": "grouped out-of-fold temporal validation scores",
       "feature_version": "catboostengineered probability calibration",
       "framework_version": "scikit-learn 1.3.2"
+    },
+    {
+      "file": "url_engineered_scaler.joblib",
+      "sha256": "02751abae3eb5e7bc61f4eafd1ef7c845f8ee641c90e995500522655fd621698",
+      "trained_with": "train_url_html2.py",
+      "trained_on_split": "train-*.parquet and generated HTML features; stratified split, random_state=42",
+      "feature_version": "url_features_v1",
+      "scikit_learn_version": "1.3.2"
+    },
+    {
+      "file": "url_html_linear_svm.joblib",
+      "sha256": "7cd07adf29145d18813f66bd32b2696c53a41ce9bf3c7415c42bff0e6c17cd93",
+      "trained_with": "train_url_html2.py",
+      "trained_on_split": "train-*.parquet and generated HTML features; stratified split, random_state=42",
+      "feature_version": "url_string_v1 + url_features_v1 + html_features_v1",
+      "scikit_learn_version": "1.3.2"
+    },
+    {
+      "file": "url_html_tfidf.joblib",
+      "sha256": "f09fb190673ffe7558a870ee516f463fb17259e13eef56398d2f086968e558de",
+      "trained_with": "train_url_html2.py",
+      "trained_on_split": "train-*.parquet and generated HTML features; stratified split, random_state=42",
+      "feature_version": "url_string_v1 + url_features_v1 + html_features_v1",
+      "scikit_learn_version": "1.3.2"
+    },
+    {
+      "file": "url_linear_svm.joblib",
+      "sha256": "63ffcfafd762dfaa8d7b40ed3453eb604b877ea19e71f637faaaabb2f267b8da",
+      "trained_with": "train_url_baseline.py",
+      "trained_on_split": "train-*.parquet; stratified 80/20 split, random_state=42",
+      "feature_version": "url_string_v1",
+      "scikit_learn_version": "1.3.2"
+    },
+    {
+      "file": "url_tfidf.joblib",
+      "sha256": "2afe7e295727103b2c6b7b4c2fd7a15136046e3af176a1ac984bae63d37d4e8c",
+      "trained_with": "train_url_baseline.py",
+      "trained_on_split": "train-*.parquet; stratified 80/20 split, random_state=42",
+      "feature_version": "url_string_v1",
+      "scikit_learn_version": "1.3.2"
     }
   ]
 }

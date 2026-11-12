@@ -137,6 +137,9 @@ class ModelThresholdTests(unittest.TestCase):
             0.0,
         )
 
+    def test_no_strong_signal_uses_safe_style(self):
+        self.assertEqual(webapp.get_risk_class("NO STRONG SIGNAL"), "safe")
+
     def test_review_template_shows_no_probability_and_threshold(self):
         template = webapp.templates.get_template("index.html")
         response = template.render(

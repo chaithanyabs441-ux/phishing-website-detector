@@ -34,11 +34,13 @@ BLOCK thresholds target validation FPR at or below 0.1%; WARN thresholds target 
 
 Threshold provenance in `configs/thresholds.yaml` is `validation temporal split only; grouped OOF-calibrated scores`; there is no manual override.
 
+At an illustrative 0.05% phishing prevalence, reweighting validation FPR and recall estimates BLOCK precision of 17.0% for URL-only and 22.3% for URL + HTML, with about 1.16 and 1.28 alerts per 1,000 scans. WARN precision is about 1.9% and 2.0%, with about 19.8 and 20.4 alerts per 1,000. These are prevalence-shift estimates, not measured production results; they assume validation class-conditional rates transfer to the deployment.
+
 ## Previously authorized evaluation (historical model)
 
 The following results belong to the prior authorized Phase 7 evaluation of the earlier single URL + HTML CatBoost finalist. They are not a fresh test of the Phase 10 package, URL-only model, or both current routes. No new official test evaluation was performed for Phase 10.
 
-The prior test pass reported AP 0.99025 (95% registered-domain bootstrap CI [0.98783, 0.99271]) and ROC-AUC 0.98892 ([0.98527, 0.99226]). At a 0.5 probability cutoff, precision was 0.95454, recall 0.96094, F1 0.95773, FPR 0.03852, and accuracy 0.96123. At an assumed 0.05% phishing prevalence, the reweighted estimate was 1.23% precision and 38.98 alerts per 1,000.
+The prior test pass reported AP 0.99025 (95% registered-domain bootstrap CI [0.98783, 0.99271]) and ROC-AUC 0.98892 ([0.98527, 0.99226]). At a 0.5 probability cutoff, precision was 0.95454, recall 0.96094, F1 0.95773, FPR 0.03852, and accuracy 0.96123. At an assumed 0.05% phishing prevalence, the reweighted estimate was 1.23% precision and 38.98 alerts per 1,000. This post-hoc 0.05% scenario is distinct from `assumed_prevalence: 0.05` in `configs/thresholds.yaml`, where the value is a fraction and means 5%.
 
 The corrected Phase 7 hash-mapped benchmark summary for that same historical model was:
 

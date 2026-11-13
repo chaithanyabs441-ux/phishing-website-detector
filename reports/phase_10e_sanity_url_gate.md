@@ -11,6 +11,10 @@
 
 The current model fails the requested gate on this fixed list: **1 BLOCK and 2 WARN** across 50 URLs. The WARN cap passes; the BLOCK cap does not. The model, thresholds, and URL list were not adjusted in response to this result.
 
+## Follow-up diagnosis
+
+The BLOCK result is produced by the URL-only route for `dropbox.com`: its displayed calibrated probability is 98.9%, just above the configured 0.98860335 BLOCK cutoff. This is a genuine model false positive on a major legitimate site, not a Safe Browsing match or a threshold parsing error. The fixed list was used only to identify the failing case; it was not used to select a new model or threshold. The result remains a release blocker until addressed with independent training/validation evidence.
+
 ## Verification
 
 - Ruff 0.14.3: all checks passed.

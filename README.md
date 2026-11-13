@@ -87,6 +87,8 @@ The validation cutoffs use grouped-OOF calibrated validation scores. BLOCK is se
 
 The threshold provenance is `validation temporal split only; grouped OOF-calibrated scores`; there is no manual override. Model and threshold methodology, artifacts, and validation metrics are in [reports/phase_10c_serving_models.md](reports/phase_10c_serving_models.md).
 
+At an illustrative 0.05% phishing prevalence, reweighting each route's validation FPR and recall gives estimated precision/alerts per 1,000 scans of 17.0% / 1.16 for URL-only BLOCK, 22.3% / 1.28 for URL+HTML BLOCK, about 1.9% / 19.8 for URL-only WARN, and 2.0% / 20.4 for URL+HTML WARN. These are prevalence-shift estimates, not measured production results; they assume the validation class-conditional rates transfer to the deployment.
+
 The local `configs/top_sites.txt` list is a small bootstrap context list, not a current Tranco snapshot. To refresh it, download a Tranco list manually, review its format, and replace the file with one registered domain per line. The app does not fetch that list. `configs/shared_hosting_domains.txt` contains platforms where URL-only evidence is inconclusive.
 
 HTML fetching is controlled by `serving.enable_html_fetch` and is `false` by default. If enabled, the fetcher applies DNS/IP, scheme, port, redirect, response-size, timeout, and content-type checks. Keep it disabled unless deployment egress controls also address DNS rebinding. Uploaded HTML is parsed locally and JavaScript is never executed. Uploads are limited to 10 MB and parsing is limited to 10 million characters.

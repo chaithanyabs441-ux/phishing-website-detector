@@ -225,7 +225,11 @@ async def _analyze(request, raw_url, html):
         raise HTTPException(status_code=400, detail=str(error))
     html = html or ""
     if len(html) > int(SERVING_CONFIG["max_html_chars"]):
-        raise HTTPException(status_code=413, detail="HTML exceeds the configured 500,000 character limit.")
+        limit = int(SERVING_CONFIG["max_html_chars"])
+        raise HTTPException(
+            status_code=413,
+            detail=f"HTML exceeds the configured {limit:,} character limit.",
+        )
 
     fetch_status = "not_requested"
     if not html.strip() and SERVING_CONFIG.get("enable_html_fetch", False):
@@ -272,7 +276,9 @@ async def _analyze(request, raw_url, html):
             confidence_note = "Shared-hosting domain: URL-only evidence is inconclusive. Add page HTML for structural analysis."
         probability_display = "{:.1%}".format(probability)
         score_display = None
-        model_name = "CatBoost URL-only + Platt calibration" if model_key == "url_only" else "CatBoost URL + HTML + Platt calibration"
+        calibration_name = THRESHOLDS["models"][model_key]["calibration_method"].capitalize()
+        route_name = "URL-only" if model_key == "url_only" else "URL + HTML"
+        model_name = f"CatBoost {route_name} + {calibration_name} calibration"
     else:
         score = prediction["decision_score"]
         prediction_label = get_prediction(score, REGISTRY.fallback_threshold)

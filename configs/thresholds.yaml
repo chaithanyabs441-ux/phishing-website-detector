@@ -3,7 +3,7 @@ feature_version: url_features_v2 or url_features_v2+html_features_v2; selected b
   supplied HTML
 source: validation temporal split only; grouped OOF-calibrated scores
 selection_method: lowest probability threshold meeting each validation FPR cap
-assumed_prevalence: 0.05
+assumed_prevalence: 0.05  # Fraction: 0.05 means 5% (not 0.05%).
 models:
   url_only:
     feature_version: url_features_v2

@@ -47,3 +47,14 @@ Official `test-*.parquet` files are locked except for the finalist evaluations p
 - Result: 63,954 test rows / 15,235 registered domains seen in training; AP 0.838875, recall at the existing validation-selected BLOCK threshold (0.941289490641) 0.702309, FPR 0.000604. 104,106 unseen-domain rows / 79,848 registered domains; AP 0.994796, BLOCK recall 0.835670, FPR 0.001960. Results and method are in `reports/phase_10a_domain_overlap_audit.md`. These figures are descriptive and did not change the model or thresholds.
 - Stop condition: no other official-test access or Phase 10B/10C/10E evaluation was performed. Any further access must have a separate authorized pre-access record where required.
 
+## Access 4 — Phase 10 dual-route final evaluation (pre-access record)
+
+- Status: **AUTHORIZED; NOT STARTED**
+- Authorization: User said “ok do it all” on 2026-11-13 after being told that final evaluation of the Phase 10 serving models requires a separate authorized pass and a new pre-access entry.
+- Pre-access record commit: this entry will be committed before the evaluator command is run.
+- Planned command: `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_phase10_final`
+- Scope: one streaming pass over all official `test-*.parquet` shards, reading only `sha256`, `url`, `label`, and `html`; score the registered `url_only` and `url_html` Phase 10 CatBoost models with their committed calibrators and thresholds. Report AP/ROC-AUC with registered-domain bootstrap intervals, threshold operating metrics, illustrative 0.05% prevalence reweighting, and descriptive seen/unseen domain slices.
+- No fitting, calibrator refitting, threshold changes, list tuning, model selection, or benchmark-hash mapping will occur. Test labels are used only to calculate the preregistered final metrics and slices.
+- Outputs: aggregate-only `experiments/phase10_final_evaluation.json` and `reports/phase_10_final_evaluation.md`; no row-level prediction artifact or URLs will be written.
+- Stop condition: if the single pass fails, record partial access and do not retry/resume without a new user authorization and pre-access entry.
+

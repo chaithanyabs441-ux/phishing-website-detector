@@ -13,13 +13,32 @@ Use the output for analyst triage. `BLOCK`, `WARN`, and `NO STRONG SIGNAL` are m
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
+
+This installs the pinned app and model-inference dependencies. Install optional development and research tools only when needed:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-research.txt -r requirements-data.txt
+```
+
+The research requirements include the runtime dependencies plus PyArrow, LightGBM, XGBoost, and Optuna. Dataset download support is separate. The trained model files are committed under `models/`; do not install the research or dataset packages just to run the app.
 
 Run the app locally:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tasks.ps1 run-app
+```
+
+On macOS or Linux, create the Python 3.9 environment, install the same runtime file, then launch Uvicorn:
+
+```bash
+python3.9 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m uvicorn webapp.app:app --host 127.0.0.1 --port 8000
 ```
 
 Open `http://127.0.0.1:8000`. The HTML form accepts a URL and optional `.html`/`.htm` file up to 10 MB. The JSON endpoint is `POST /api/v1/scan` with `{"url":"https://example.org","html":""}`. `/health` and `/version` return service status and model/feature version.

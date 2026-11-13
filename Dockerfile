@@ -5,8 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
-COPY requirements-app.txt ./requirements-app.txt
-RUN python -m pip install --no-cache-dir -r requirements-app.txt \
+COPY requirements.txt ./requirements.txt
+RUN python -m pip install --no-cache-dir -r requirements.txt \
     && useradd --create-home --uid 10001 appuser
 
 COPY configs ./configs

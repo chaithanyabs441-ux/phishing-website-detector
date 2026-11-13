@@ -1,0 +1,8 @@
+# Additional dependencies for training and offline dataset evaluation.
+# Includes the complete web application/runtime dependencies.
+-r requirements.txt
+
+pyarrow==21.0.0
+lightgbm==4.6.0
+xgboost==2.1.4
+optuna==5.0.0

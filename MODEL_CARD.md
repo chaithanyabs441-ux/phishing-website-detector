@@ -38,7 +38,7 @@ At an illustrative 0.05% phishing prevalence, reweighting validation FPR and rec
 
 ## Previously authorized evaluation (historical model)
 
-The following results belong to the prior authorized Phase 7 evaluation of the earlier single URL + HTML CatBoost finalist. They are not a fresh test of the Phase 10 package, URL-only model, or both current routes. No new official test evaluation was performed for Phase 10.
+The following results belong to the prior authorized Phase 7 evaluation of the earlier single URL + HTML CatBoost finalist. They are not a fresh test of the Phase 10 package, URL-only model, or both current routes. A Phase 10 final-evaluation attempt was interrupted before completion and produced no metrics; see `reports/test_set_access_log.md`.
 
 The prior test pass reported AP 0.99025 (95% registered-domain bootstrap CI [0.98783, 0.99271]) and ROC-AUC 0.98892 ([0.98527, 0.99226]). At a 0.5 probability cutoff, precision was 0.95454, recall 0.96094, F1 0.95773, FPR 0.03852, and accuracy 0.96123. At an assumed 0.05% phishing prevalence, the reweighted estimate was 1.23% precision and 38.98 alerts per 1,000. This post-hoc 0.05% scenario is distinct from `assumed_prevalence: 0.05` in `configs/thresholds.yaml`, where the value is a fraction and means 5%.
 

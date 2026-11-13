@@ -51,7 +51,7 @@ Official `test-*.parquet` files are locked except for the finalist evaluations p
 
 - Status: **AUTHORIZED; NOT STARTED**
 - Authorization: User said “ok do it all” on 2026-11-13 after being told that final evaluation of the Phase 10 serving models requires a separate authorized pass and a new pre-access entry.
-- Pre-access record commit: this entry will be committed before the evaluator command is run.
+- Pre-access record commit: `151e5f5b5eddd2b88c632e59a0717f8b2844c8ee` (`fix: address review findings and preregister phase 10 evaluation`).
 - Planned command: `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_phase10_final`
 - Scope: one streaming pass over all official `test-*.parquet` shards, reading only `sha256`, `url`, `label`, and `html`; score the registered `url_only` and `url_html` Phase 10 CatBoost models with their committed calibrators and thresholds. Report AP/ROC-AUC with registered-domain bootstrap intervals, threshold operating metrics, illustrative 0.05% prevalence reweighting, and descriptive seen/unseen domain slices.
 - No fitting, calibrator refitting, threshold changes, list tuning, model selection, or benchmark-hash mapping will occur. Test labels are used only to calculate the preregistered final metrics and slices.

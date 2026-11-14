@@ -6,23 +6,21 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import yaml
 from joblib import load
-from scipy.special import logit
 
-from src.evaluation.phase4_data import CATEGORICAL_FEATURES, PHASE4_FEATURE_COLUMNS
 from src.features.html_features_v2 import (
-    HTML_FEATURE_COLUMNS_V2,
     MAX_HTML_CHARS,
     _empty_features,
     extract_html_features_v2,
 )
+from src.features.feature_schema import (
+    CATEGORICAL_FEATURES,
+    NUMERIC_HTML_FEATURES as NUMERIC_HTML_COLUMNS,
+    PHASE4_FEATURE_COLUMNS,
+)
 from src.features.url_features import URL_FEATURE_COLUMNS_V2, extract_url_features_v2
-
-
-NUMERIC_HTML_COLUMNS = [
-    column for column in HTML_FEATURE_COLUMNS_V2 if column != "cleaned_text"
-]
+from src.models.calibration import apply_calibrator
+from src.serving.settings import load_yaml
 
 
 def _sha256(path):
@@ -34,26 +32,24 @@ def _sha256(path):
 
 
 def _apply_calibrator(calibrator, raw_probability):
-    values = np.asarray(raw_probability, dtype=np.float64).reshape(-1, 1)
-    estimator = calibrator["model"]
-    method = calibrator["method"]
-    if method == "platt":
-        features = logit(np.clip(values, 1e-8, 1.0 - 1e-8))
-        return estimator.predict_proba(features)[:, 1]
-    if method == "isotonic":
-        return estimator.predict(values.ravel())
-    raise ValueError("Unsupported calibration method in trusted artifact")
+    if calibrator["method"] not in {"platt", "isotonic"}:
+        raise ValueError("Unsupported calibration method in trusted artifact")
+    values = np.asarray(raw_probability, dtype=np.float64).reshape(-1)
+    return apply_calibrator(calibrator, values)
 
 
 class ModelRegistry:
     """Loads one calibrated primary model and a verified URL-SVM fallback."""
 
-    def __init__(self, project_root, config_path=None, thresholds_path=None):
+    def __init__(self, project_root, config_path=None, thresholds_path=None, *,
+                 config=None, threshold_config=None):
         self.root = Path(project_root).resolve()
-        config_path = Path(config_path or self.root / "configs" / "model_config.yaml")
+        config_path = Path(config_path or self.root / "configs" / "serving.yaml")
         thresholds_path = Path(thresholds_path or self.root / "configs" / "thresholds.yaml")
-        self.config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-        self.threshold_config = yaml.safe_load(thresholds_path.read_text(encoding="utf-8"))
+        self.config = config if config is not None else load_yaml(config_path)
+        self.threshold_config = (
+            threshold_config if threshold_config is not None else load_yaml(thresholds_path)
+        )
         manifest_path = self.root / "models" / "MANIFEST.json"
         self.manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         self.entries = {item["file"].replace("\\", "/"): item for item in self.manifest["artifacts"]}

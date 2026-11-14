@@ -8,6 +8,18 @@ venv/
 !/src/data/
 src/data/*
 !/src/data/download_dataset.py
+!/src/data/__init__.py
+!/src/data/phase4_dataset.py
+!/src/data/process_html_dataset.py
+!/src/data/find_html_row_difference.py
+!/src/data/find_missing_html_rows.py
+!/src/data/repair_missing_html_rows.py
+!/src/data/verify_html_dataset.py
+!/src/data/html_feature_cache.py
+!/src/data/audit_missing_html.py
+!/src/data/splits.py
+!/src/data/download_benchmarks.py
+!/src/data/inspect_benchmarks.py
 /data/
 !/data/
 /data/*
@@ -29,6 +41,7 @@ project_structure.txt
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.taste-skill/
 /experiments/
 !/experiments/
 experiments/*
@@ -74,3 +87,11 @@ models/phase10/*
 !models/url_html_linear_svm.joblib
 !models/html_scaler.joblib
 !models/html_feature_columns.joblib
+
+# Canonical filenames introduced by the approved naming migration.
+!/src/data/compare_html_feature_row_counts_v1.py
+!/src/data/find_missing_html_feature_urls_v1.py
+!/src/data/repair_html_feature_rows_v1.py
+!/src/data/build_html_feature_csvs_v1.py
+!/src/data/verify_html_feature_csvs_v1.py
+!/src/data/engineered_feature_dataset.py

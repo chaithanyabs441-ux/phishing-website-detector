@@ -13,15 +13,15 @@ import yaml
 from joblib import dump, load
 from scipy.special import logit
 
-from src.evaluation.evaluate_svm_blocked import _domain_bootstrap, _metric_bundle
-from src.evaluation.phase4_boosting import (
+from src.evaluation.metrics import _domain_bootstrap, _metric_bundle
+from src.training.phase4_boosting import (
     fit_with_early_stopping,
     grouped_tuning_split,
     make_estimator,
     prepare_feature_frames,
 )
-from src.evaluation.phase4_data import PHASE4_FEATURE_COLUMNS, PROJECT_ROOT
-from src.evaluation.phase5_text import (
+from src.data.engineered_feature_dataset import PHASE4_FEATURE_COLUMNS, PROJECT_ROOT
+from src.training.text_models import (
     MODEL_SPECS,
     fit_text_model,
     fit_text_models_shared,
@@ -30,7 +30,7 @@ from src.evaluation.phase5_text import (
 )
 
 
-CONFIG_PATH = PROJECT_ROOT / "configs" / "phase5_text.yaml"
+CONFIG_PATH = PROJECT_ROOT / "configs" / "model_comparison_phase5.yaml"
 PILOT_PATH = PROJECT_ROOT / "experiments" / "phase5_text_pilot.json"
 RESULT_PATH = PROJECT_ROOT / "experiments" / "phase5_text_results.json"
 ARTIFACT_DIR = PROJECT_ROOT / "models" / "phase5"

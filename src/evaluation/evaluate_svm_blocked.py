@@ -13,13 +13,17 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix, hstack
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.evaluation.metrics import (  # noqa: E402
+    PREVALENCES as PREVALENCES,
+    _domain_bootstrap as _domain_bootstrap,
+    _metric_bundle as _metric_bundle,
+)
 from src.features.url_features import URL_FEATURE_COLUMNS_V1, extract_url_features_v1  # noqa: E402
 
 
@@ -29,7 +33,6 @@ HTML_DIR = PROJECT_ROOT / "data" / "processed" / "html_features"
 MODEL_DIR = PROJECT_ROOT / "models"
 OUTPUT_PATH = PROJECT_ROOT / "experiments" / "phase2_svm_baseline.json"
 CONFIG_PATH = PROJECT_ROOT / "configs" / "svm_blocked_baseline.yaml"
-PREVALENCES = (0.0005, 0.005, 0.01, 0.05, 0.45)
 
 
 def _load_data():
@@ -72,60 +75,6 @@ def _load_data():
     if merged["target"].isna().any():
         raise ValueError("Unexpected training label encountered")
     return merged, html_columns
-
-
-def _metric_bundle(y_true, scores, weights=None):
-    y_true = np.asarray(y_true, dtype=np.int8)
-    scores = np.asarray(scores)
-    weights = np.ones(len(y_true), dtype=np.float64) if weights is None else np.asarray(weights)
-    predicted = scores >= 0.0
-    positive = y_true == 1
-    negative = ~positive
-    tp = float(weights[predicted & positive].sum())
-    fp = float(weights[predicted & negative].sum())
-    fn = float(weights[~predicted & positive].sum())
-    tn = float(weights[~predicted & negative].sum())
-    tpr = tp / max(1.0, tp + fn)
-    fpr = fp / max(1.0, fp + tn)
-    precision = tp / max(1.0, tp + fp)
-    recall = tpr
-    f1 = 2 * precision * recall / max(1e-15, precision + recall)
-    total = tp + fp + fn + tn
-    metrics = {
-        "average_precision": float(average_precision_score(y_true, scores, sample_weight=weights)),
-        "roc_auc": float(roc_auc_score(y_true, scores, sample_weight=weights)),
-        "accuracy": (tp + tn) / max(1.0, total),
-        "precision": precision,
-        "recall": recall,
-        "f1": f1,
-        "false_positive_rate": fpr,
-        "true_positive_rate": tpr,
-    }
-    for prevalence in PREVALENCES:
-        alerts = prevalence * tpr + (1.0 - prevalence) * fpr
-        precision_at_prevalence = prevalence * tpr / max(1e-15, alerts)
-        label = f"{prevalence * 100:g}%"
-        metrics[f"precision_at_prevalence_{label}"] = precision_at_prevalence
-        metrics[f"alerts_per_1000_at_prevalence_{label}"] = 1000.0 * alerts
-    return metrics
-
-
-def _domain_bootstrap(y_true, scores, domain_codes, n_domains, replicates, seed):
-    rng = np.random.default_rng(seed)
-    results = []
-    for _ in range(replicates):
-        sampled = rng.integers(0, n_domains, size=n_domains)
-        multiplicity = np.bincount(sampled, minlength=n_domains)
-        weights = multiplicity[domain_codes]
-        if len(np.unique(y_true[weights > 0])) < 2:
-            continue
-        results.append(_metric_bundle(y_true, scores, weights))
-    keys = results[0].keys()
-    return {
-        key: [float(np.quantile([row[key] for row in results], 0.025)),
-              float(np.quantile([row[key] for row in results], 0.975))]
-        for key in keys
-    }, len(results)
 
 
 def run_evaluation(bootstrap_replicates=200, seed=42):

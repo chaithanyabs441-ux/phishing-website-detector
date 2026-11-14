@@ -4,6 +4,12 @@ PhishReaper is a classical machine-learning phishing URL detector. The deployed 
 
 Use the output for analyst triage. `BLOCK`, `WARN`, and `NO STRONG SIGNAL` are model signals, not proof about a site. The test set is an offline evaluation asset and must not be used to tune a deployment.
 
+## Architecture
+
+The web adapter is in `webapp/`; scan orchestration and the artifact registry are in `src/serving/`. Pure feature extraction is in `src/features/`, dataset preparation in `src/data/`, fitting/tuning in `src/training/`, and validation tools in `src/evaluation/`. Official-test evaluators are isolated under `src/evaluation/locked_test/`. Old module commands remain compatibility entry points during the migration.
+
+See [docs/architecture.md](docs/architecture.md) for dependency boundaries and [docs/structural_refactor.md](docs/structural_refactor.md) for the incremental move map and verification record.
+
 ## Requirements and local setup
 
 - Python 3.9 (the committed model artifacts and pins target this version).
@@ -43,17 +49,18 @@ python -m uvicorn webapp.app:app --host 127.0.0.1 --port 8000
 
 Open `http://127.0.0.1:8000`. The HTML form accepts a URL and optional `.html`/`.htm` file up to 10 MB. The JSON endpoint is `POST /api/v1/scan` with `{"url":"https://example.org","html":""}`. `/health` and `/version` return service status and model/feature version.
 
-For tests and lint:
+For the full test suite and lint, install the test environment first:
 
 ```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-test.txt
 .\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\ruff.exe check src webapp tests
+.\.venv\Scripts\ruff.exe check src webapp scripts tests
 ```
 
 Run an offline real-model smoke check (Safe Browsing is mocked and no target pages are fetched):
 
 ```powershell
-.\.venv\Scripts\python.exe -m src.models.serving_smoke
+.\.venv\Scripts\python.exe -m scripts.serving.serving_smoke
 ```
 
 ## Data
@@ -67,7 +74,7 @@ Training, validation, and test parquet files are not included in Git. Install th
 
 This downloads to `data/raw/`. The dataset source is `phreshphish/phreshphish` on Hugging Face. The dataset has 56 training shards (498,255 rows) and 21 official test shards (168,060 rows) in the snapshot evaluated here. Check the source dataset's current license and terms before redistribution or commercial use.
 
-The benchmark hash lists are separate from dataset rows. To fetch them, run `.\.venv\Scripts\python.exe -m src.evaluation.download_benchmarks`; this downloads the benchmark directory only. Benchmark entries are SHA-256 IDs, not URLs, and must be joined on the dataset `sha256` column.
+The benchmark hash lists are separate from dataset rows. To fetch them, run `.\.venv\Scripts\python.exe -m src.data.download_benchmarks`; this downloads the benchmark directory only. Benchmark entries are SHA-256 IDs, not URLs, and must be joined on the dataset `sha256` column.
 
 ## Reproducible pipeline
 
@@ -76,18 +83,18 @@ All feature code is shared from `src/features/`. Configurations are under `confi
 The end-to-end research sequence is:
 
 1. Download the train shards, then build and audit frozen train-only splits:
-   `.\.venv\Scripts\python.exe -m src.evaluation.create_blocked_splits`
+   `.\.venv\Scripts\python.exe -m src.data.splits`
 2. Run the existing SVM baselines on the temporal holdout:
    `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_svm_blocked`
    `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_svm_grouped_cv`
 3. Build the richer training HTML cache (the full recorded run took 2 h 40 m on this machine, so the compute-budget approval rule applies before rerunning it):
-   `.\.venv\Scripts\python.exe -u -m src.evaluation.build_html_features_v2_cache --n-jobs 2 --timeout-seconds 1800 --row-batch-size 500`
+   `.\.venv\Scripts\python.exe -u -m src.data.html_feature_cache --n-jobs 2 --timeout-seconds 1800 --row-batch-size 500`
 4. Tune and compare classical tree models with the committed config:
-   `.\.venv\Scripts\python.exe -m src.evaluation.phase4_boosting --config configs/phase4_gbm.yaml`
+   `.\.venv\Scripts\python.exe -m src.training.phase4_boosting --config configs/phase4_gbm.yaml`
 5. Compare classical text models and hybrids:
-   `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_phase5_text --config configs/phase5_text.yaml`
+   `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_phase5_text --config configs/model_comparison_phase5.yaml`
 6. Generate grouped OOF stack comparisons:
-   `.\.venv\Scripts\python.exe -m src.evaluation.phase6_stacking --config configs/phase6_stacking.yaml`
+   `.\.venv\Scripts\python.exe -m src.training.phase6_stacking --config configs/phase6_stacking.yaml`
 7. Fit calibration and choose thresholds using temporal validation only:
    `.\.venv\Scripts\python.exe -m src.evaluation.evaluate_phase7_calibration --config configs/phase7_calibration.yaml`
 
@@ -95,7 +102,7 @@ The evaluations above need local data and caches. Set seeds and resource limits 
 
 ## Serving configuration
 
-`configs/model_config.yaml` selects the URL-only and URL+HTML model artifacts; `configs/thresholds.yaml` contains separate validation-selected calibrated cutoffs. Empty HTML selects URL-only CatBoost; nonempty supplied HTML selects URL+HTML CatBoost. Both routes have their own grouped-OOF-selected calibrator. `models/MANIFEST.json` records artifact hashes. On startup the loader verifies hashes and project-contained paths before loading. The URL TF-IDF SVM is the fallback for a missing or failing primary route.
+`configs/serving.yaml` selects the URL-only and URL+HTML model artifacts; `configs/thresholds.yaml` contains separate validation-selected calibrated cutoffs. Empty HTML selects URL-only CatBoost; nonempty supplied HTML selects URL+HTML CatBoost. Both routes have their own grouped-OOF-selected calibrator. `models/MANIFEST.json` records artifact hashes. On startup the loader verifies hashes and project-contained paths before loading. The URL TF-IDF SVM is the fallback for a missing or failing primary route.
 
 The validation cutoffs use grouped-OOF calibrated validation scores. BLOCK is set at validation FPR no higher than 0.1%; WARN is set at validation FPR no higher than 2%.
 

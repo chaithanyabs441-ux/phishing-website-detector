@@ -24,9 +24,8 @@ from src.evaluation.evaluate_svm_blocked import (  # noqa: E402
     MODEL_DIR,
     RAW_DIR,
     SPLIT_DIR,
-    _domain_bootstrap,
-    _metric_bundle,
 )
+from src.evaluation.metrics import _domain_bootstrap, _metric_bundle  # noqa: E402
 from src.features.url_features import URL_FEATURE_COLUMNS_V1, extract_url_features_v1  # noqa: E402
 
 

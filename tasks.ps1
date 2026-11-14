@@ -15,11 +15,11 @@ Set-Location -LiteralPath $projectRoot
 
 switch ($Task) {
     'test' {
-        & $python -m unittest discover -s tests -v
+        & $python -m pytest -q
         exit $LASTEXITCODE
     }
     'lint' {
-        & $python -m ruff check src webapp tests
+        & $python -m ruff check src webapp scripts tests
         exit $LASTEXITCODE
     }
     'run-app' {

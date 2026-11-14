@@ -67,4 +67,4 @@ Submitted URLs and HTML are processed by the local app and are not written to ap
 
 ## Versioning and reproducibility
 
-Current model, calibrator, feature, and threshold versions are listed in `configs/model_config.yaml`, `configs/thresholds.yaml`, and `models/MANIFEST.json`. Training datasets and generated caches are local and are not included in Git. The detailed Phase 10 reports are in `reports/phase_10b_categorical_ablation.md`, `reports/phase_10c_serving_models.md`, and `reports/phase_10e_sanity_url_gate.md`.
+Current model, calibrator, feature, and threshold versions are listed in `configs/serving.yaml`, `configs/thresholds.yaml`, and `models/MANIFEST.json`. Training datasets and generated caches are local and are not included in Git. The detailed Phase 10 reports are in `reports/phase_10b_categorical_ablation.md`, `reports/phase_10c_serving_models.md`, and `reports/phase_10e_sanity_url_gate.md`.

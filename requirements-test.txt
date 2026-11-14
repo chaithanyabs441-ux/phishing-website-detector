@@ -1,0 +1,3 @@
+# Dependencies for the full local/CI test suite, including synthetic ML fits.
+-r requirements-research.txt
+-r requirements-dev.txt

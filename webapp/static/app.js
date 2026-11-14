@@ -1,434 +1,144 @@
-// ============================================================
-// PhishReaper WEB APP
-// Frontend interaction
-// ============================================================
+'use strict';
 
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('scan-form');
+  const urlInput = document.getElementById('url');
+  const fileInput = document.getElementById('html_file');
+  const fileLabel = document.getElementById('file-label');
+  const fileSubtitle = document.getElementById('file-subtitle');
+  const fileActions = document.getElementById('selected-file-actions');
+  const fileSize = document.getElementById('file-size');
+  const fileError = document.getElementById('file-error');
+  const urlError = document.getElementById('url-error');
+  const options = document.getElementById('html-options');
+  const zone = document.getElementById('upload-zone');
+  const submitButton = document.getElementById('scan-button');
+  const buttonLabel = submitButton.querySelector('.button-label');
+  const spinner = submitButton.querySelector('.button-spinner');
+  const status = document.getElementById('form-status');
 
-// ============================================================
-// PAGE LOAD
-// ============================================================
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    setupScanner();
-
-    setupHtmlCounter();
-
-    setupUrlInput();
-
-    animateExistingResult();
-
-});
-
-
-// ============================================================
-// SCANNER SETUP
-// ============================================================
-
-function setupScanner() {
-
-    const form = document.querySelector(
-        'form[action="/scan"]'
-    );
-
-    if (!form) {
-        return;
+  const showError = (node, message, input) => {
+    node.textContent = message;
+    node.hidden = !message;
+    input.setAttribute('aria-invalid', message ? 'true' : 'false');
+  };
+  const updateFile = () => {
+    const file = fileInput.files[0];
+    let message = '';
+    if (file && !/\.html?$/i.test(file.name)) message = 'Choose a file ending in .html or .htm.';
+    if (file && file.size > 10000000) message = 'Choose an HTML file smaller than 10 MB.';
+    showError(fileError, message, fileInput);
+    fileLabel.textContent = file ? file.name : 'Choose an HTML file';
+    fileSubtitle.textContent = file ? 'Saved page selected for structural analysis' : 'or drop a saved page here · .html / .htm · up to 10 MB';
+    fileActions.hidden = !file;
+    fileSize.textContent = file ? (file.size >= 1000000 ? (file.size / 1000000).toFixed(2) + ' MB' : Math.max(1, Math.round(file.size / 1000)) + ' KB') : '';
+    if (file) options.open = true;
+    return !message;
+  };
+  fileInput.addEventListener('change', updateFile);
+  document.getElementById('remove-file').addEventListener('click', () => {
+    fileInput.value = '';
+    updateFile();
+    fileInput.focus();
+  });
+  ['dragenter', 'dragover'].forEach(type => zone.addEventListener(type, event => {
+    event.preventDefault();
+    zone.classList.add('is-dragging');
+  }));
+  ['dragleave', 'drop'].forEach(type => zone.addEventListener(type, event => {
+    event.preventDefault();
+    zone.classList.remove('is-dragging');
+  }));
+  zone.addEventListener('drop', event => {
+    if (!event.dataTransfer.files.length) return;
+    if (event.dataTransfer.files.length > 1) {
+      showError(fileError, 'Choose one HTML file for this analysis.', fileInput);
+      return;
     }
+    fileInput.files = event.dataTransfer.files;
+    updateFile();
+  });
 
-    form.addEventListener(
-        "submit",
-        function () {
-
-            const button = form.querySelector(
-                'button[type="submit"]'
-            );
-
-            const urlInput = form.querySelector(
-                'input[name="url"]'
-            );
-
-            if (!urlInput.value.trim()) {
-                return;
-            }
-
-
-            // Prevent double clicking
-            if (form.dataset.scanning === "true") {
-                return;
-            }
-
-            form.dataset.scanning = "true";
-
-
-            // Change button appearance
-            if (button) {
-
-                button.disabled = true;
-
-                button.innerHTML =
-                    `
-                    <span class="scan-spinner"></span>
-                    ANALYZING...
-                    `;
-
-            }
-
-
-            // Show scan status
-            showScanStatus();
-
-        }
-    );
-
-}
-
-
-// ============================================================
-// SCAN STATUS
-// ============================================================
-
-function showScanStatus() {
-
-    // Don't create it twice
-    if (
-        document.querySelector(
-            ".scan-status"
-        )
-    ) {
-        return;
+  form.noValidate = true;
+  form.addEventListener('submit', event => {
+    const url = urlInput.value.trim();
+    showError(urlError, url ? '' : 'Enter the website URL you want to check.', urlInput);
+    const validFile = updateFile();
+    if (!url || !validFile || form.getAttribute('aria-busy') === 'true') {
+      event.preventDefault();
+      if (!url) urlInput.focus();
+      else if (!validFile) { options.open = true; fileInput.focus(); }
+      return;
     }
+    form.setAttribute('aria-busy', 'true');
+    submitButton.disabled = true;
+    buttonLabel.textContent = 'Analyzing URL';
+    spinner.hidden = false;
+    status.textContent = fileInput.files.length ? 'Analyzing URL + HTML…' : 'Analyzing URL…';
+  });
+  window.addEventListener('pageshow', () => {
+    form.removeAttribute('aria-busy');
+    submitButton.disabled = false;
+    buttonLabel.textContent = 'Analyze URL';
+    spinner.hidden = true;
+    status.textContent = 'Ready when you are.';
+  });
 
+  const engine = document.getElementById('engine-state');
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  fetch('/health', { signal: controller.signal, credentials: 'same-origin' })
+    .then(response => { if (!response.ok) throw new Error('Engine unavailable'); return response.json(); })
+    .then(data => {
+      engine.dataset.state = data.status === 'ok' ? 'ready' : 'error';
+      document.getElementById('engine-label').textContent = data.status === 'ok' ? 'Engine ready' : 'Engine unavailable';
+    })
+    .catch(() => { engine.dataset.state = 'error'; document.getElementById('engine-label').textContent = 'Engine unavailable'; })
+    .finally(() => clearTimeout(timeout));
 
-    const scanner = document.querySelector(
-        ".scanner-card"
-    );
-
-    if (!scanner) {
-        return;
+  const copy = document.getElementById('copy-url');
+  if (copy) copy.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(document.querySelector('.scanned-url').textContent.trim());
+      copy.textContent = 'URL copied';
+      setTimeout(() => { copy.textContent = 'Copy URL'; }, 1800);
+    } catch {
+      copy.textContent = 'Select URL to copy';
     }
-
-
-    const status = document.createElement(
-        "div"
-    );
-
-    status.className = "scan-status";
-
-    status.innerHTML =
-        `
-        <div class="terminal-line">
-            <span class="terminal-symbol">></span>
-            Initializing feature extraction...
-        </div>
-
-        <div class="terminal-line">
-            <span class="terminal-symbol">></span>
-            Running phishing classifier...
-        </div>
-
-        <div class="terminal-line">
-            <span class="terminal-symbol">></span>
-            Generating evidence...
-        </div>
-        `;
-
-
-    scanner.appendChild(status);
-
-}
-
-
-// ============================================================
-// HTML CHARACTER COUNTER
-// ============================================================
-
-function setupHtmlCounter() {
-
-    const textarea = document.querySelector(
-        'textarea[name="html"]'
-    );
-
-    if (!textarea) {
-        return;
-    }
-
-
-    const counter = document.createElement(
-        "div"
-    );
-
-    counter.className = "html-counter";
-
-    counter.textContent = "0 characters";
-
-    textarea.parentNode.appendChild(
-        counter
-    );
-
-
-    textarea.addEventListener(
-        "input",
-        function () {
-
-            const length =
-                textarea.value.length;
-
-
-            counter.textContent =
-                formatNumber(length) +
-                " characters";
-
-
-            if (length > 0) {
-
-                counter.classList.add(
-                    "active"
-                );
-
-            } else {
-
-                counter.classList.remove(
-                    "active"
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-// ============================================================
-// URL INPUT
-// ============================================================
-
-function setupUrlInput() {
-
-    const input = document.querySelector(
-        'input[name="url"]'
-    );
-
-    if (!input) {
-        return;
-    }
-
-
-    input.addEventListener(
-        "input",
-        function () {
-
-            const value =
-                input.value.trim();
-
-
-            if (
-                value.length > 0
-            ) {
-
-                input.classList.add(
-                    "has-value"
-                );
-
-            } else {
-
-                input.classList.remove(
-                    "has-value"
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-// ============================================================
-// RESULT ANIMATION
-// ============================================================
-
-function animateExistingResult() {
-
-    const result =
-        document.querySelector(
-            ".result-section"
-        );
-
-    if (!result) {
-        return;
-    }
-
-
-    result.classList.add(
-        "result-enter"
-    );
-
-
-    // Animate evidence cards
-    const cards =
-        document.querySelectorAll(
-            ".evidence-card"
-        );
-
-
-    cards.forEach(
-        function (card, index) {
-
-            card.style.animationDelay =
-                (index * 80) + "ms";
-
-            card.classList.add(
-                "evidence-enter"
-            );
-
-        }
-    );
-
-
-    // Animate feature cards
-    const features =
-        document.querySelectorAll(
-            ".feature-card"
-        );
-
-
-    features.forEach(
-        function (card, index) {
-
-            card.style.animationDelay =
-                (index * 60) + "ms";
-
-            card.classList.add(
-                "feature-enter"
-            );
-
-        }
-    );
-
-
-}
-
-
-// ============================================================
-// NUMBER FORMATTER
-// ============================================================
-
-function formatNumber(number) {
-
-    return number.toLocaleString(
-        "en-US"
-    );
-
-}
-
-
-// ============================================================
-// COPY URL
-// ============================================================
-
-function addCopyButton() {
-
-    const scannedUrl =
-        document.querySelector(
-            ".scanned-url"
-        );
-
-    if (!scannedUrl) {
-        return;
-    }
-
-
-    const url =
-        scannedUrl.textContent.trim();
-
-
-    if (!url) {
-        return;
-    }
-
-
-    const button =
-        document.createElement(
-            "button"
-        );
-
-
-    button.className =
-        "copy-url-button";
-
-    button.textContent =
-        "COPY";
-
-
-    button.addEventListener(
-        "click",
-        async function () {
-
-            try {
-
-                await navigator.clipboard.writeText(
-                    url
-                );
-
-                button.textContent =
-                    "COPIED";
-
-                setTimeout(
-                    function () {
-
-                        button.textContent =
-                            "COPY";
-
-                    },
-                    1500
-                );
-
-            } catch (error) {
-
-                console.log(
-                    "Could not copy URL."
-                );
-
-            }
-
-        }
-    );
-
-
-    scannedUrl.parentNode.appendChild(
-        button
-    );
-
-}
-
-
-// ============================================================
-// INITIALIZE COPY BUTTON
-// ============================================================
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        addCopyButton();
-
-    }
-);
-
-
-// ============================================================
-// START WITH AN EMPTY URL BOX
-// (also after Back / reload, when the browser restores old values)
-// ============================================================
-
-window.addEventListener("pageshow", function () {
-
-    const input = document.querySelector('input[name="url"]');
-
-    if (input) {
-        input.value = "";
-        input.classList.remove("has-value");
-    }
-
+  });
+  const download = document.getElementById('download-report');
+  if (download) download.addEventListener('click', () => {
+    const result = JSON.parse(document.getElementById('scan-data').textContent);
+    const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = 'phishreaper-report.json';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  });
+  document.querySelectorAll('a[href="#url"]').forEach(link => link.addEventListener('click', () => {
+    urlInput.focus();
+    urlInput.select();
+  }));
+  const mobileNav = document.getElementById('mobile-nav');
+  const mobileToggle = mobileNav.querySelector('summary');
+  mobileNav.addEventListener('toggle', () => {
+    mobileToggle.setAttribute('aria-expanded', String(mobileNav.open));
+    mobileToggle.setAttribute('aria-label', mobileNav.open ? 'Close navigation' : 'Open navigation');
+  });
+  mobileNav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => { mobileNav.open = false; }));
+  mobileNav.addEventListener('focusout', event => {
+    if (mobileNav.open && !mobileNav.contains(event.relatedTarget)) mobileNav.open = false;
+  });
+  mobileNav.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { mobileNav.open = false; mobileToggle.focus(); }
+  });
+  const results = document.getElementById('results');
+  if (results) {
+    results.focus({ preventScroll: true });
+    results.scrollIntoView({ behavior: 'auto', block: 'start' });
+  }
 });

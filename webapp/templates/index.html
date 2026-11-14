@@ -1,245 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
+{% macro arrow() -%}<svg class="m-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>{%- endmacro %}
+<!doctype html>
+<html lang="en" data-type="software" data-radius="sharp" data-buttons="tonal" data-motion data-ground="sand">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PhishReaper - Explainable phishing website detection">
-    <meta name="theme-color" content="#FFD400">
-    <title>PhishReaper — Phishing Intelligence</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="page-type" content="software"><meta name="site-kind" content="software">
+<meta name="description" content="Analyze a website URL with PhishReaper. Add saved page HTML for structural evidence and review the model's phishing signal.">
+<meta name="theme-color" content="#18191b">
+<meta property="og:title" content="PhishReaper — Phishing analysis for analysts"><meta property="og:description" content="URL analysis, optional page HTML, and the evidence behind each model signal."><meta property="og:type" content="website"><meta property="og:image" content="/static/share.jpg"><meta name="twitter:card" content="summary_large_image">
+<title>PhishReaper — Phishing analysis for analysts</title>
+<link rel="icon" type="image/png" href="{{ static_url('logo.png') }}">
+<!-- A canonical URL can be set when the application has a public domain. -->
+<link rel="stylesheet" href="{{ static_url('fonts/fonts.css') }}">
+<link rel="stylesheet" href="{{ static_url('taste/system.css') }}"><link rel="stylesheet" href="{{ static_url('taste/ui/cards.css') }}"><link rel="stylesheet" href="{{ static_url('taste/motion/motion.css') }}"><link rel="stylesheet" href="{{ static_url('taste/backgrounds/backgrounds.css') }}"><link rel="stylesheet" href="{{ static_url('taste/layout/layout.css') }}"><link rel="stylesheet" href="{{ static_url('style.css') }}">
+<script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700)</script>
 </head>
 <body>
-
-<div class="background-grid"></div>
-
-<header class="topbar">
-    <div class="brand">
-        <div class="brand-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M5 21L16 6"/>
-                <path d="M16 6C12 3 7 4 4 8c4-2 8-1 12 1"/>
-                <circle cx="17" cy="16" r="2.2" fill="currentColor" stroke="none"/>
-            </svg>
-        </div>
-        <div>
-            <div class="brand-name">PHISH<span>REAPER</span></div>
-            <div class="brand-subtitle">Explainable phishing intelligence</div>
-        </div>
-    </div>
-    <div class="status"><span class="status-dot"></span>Engine online</div>
-</header>
-
-<main class="container">
-
-    <section class="hero">
-        <div class="hero-tag">ML-powered web security</div>
-        <h1>
-            Is this website
-            <span>trying to fool you?</span>
-        </h1>
-        <p>
-            Paste a link. A machine-learning model checks it and shows its work,
-            so you can see exactly what looks off.
-        </p>
-    </section>
-
-    <section class="scanner-card">
-        <form action="/scan" method="post" enctype="multipart/form-data">
-
-            <label for="url">Website URL</label>
-            <div class="url-input">
-                <span class="input-icon">⌁</span>
-                <input
-                    id="url"
-                    type="text"
-                    name="url"
-                    placeholder="https://example.com/login"
-                    autocomplete="off"
-                    maxlength="4096"
-                    required
-                >
-                <button type="submit">Scan it</button>
-            </div>
-
-            <div class="html-section">
-                <div class="html-heading">
-                    <div>
-                        <strong>Deep HTML analysis</strong>
-                        <small>optional</small>
-                    </div>
-                    <span>URL + HTML</span>
-                </div>
-                <input
-                    id="html_file"
-                    type="file"
-                    accept=".html,.htm,text/html,application/xhtml+xml"
-                    name="html_file"
-                    aria-describedby="html-file-hint"
-                >
-                <p class="hint" id="html-file-hint">
-                    Choose an .html or .htm file (up to 10 MB) for structural analysis. Server-side fetching is disabled by default.
-                </p>
-                <!-- Legacy form field retained for clients that still submit pasted HTML. -->
-                <textarea id="html" name="html" hidden></textarea>
-            </div>
-
-            <p class="privacy-note">
-                When configured, Google Safe Browsing receives the scanned URL
-                for a threat check. Otherwise, the app uses its local models only.
-            </p>
-        </form>
-    </section>
-
-    {% if result and result.error %}
-    <div class="error-box">
-        <strong>Scan error</strong>
-        <div>{{ result.error }}</div>
-    </div>
-    {% endif %}
-
-    {% if result and result.prediction %}
-    <section class="result-section">
-
-        <div class="result-header">
-            <div class="result-information">
-                <div class="result-label">Analysis complete</div>
-                <h2>{{ result.prediction }}</h2>
-            </div>
-
-            <div class="risk-ring {{ result.risk_class }}">
-                <div class="risk-number">{{ result.risk_level }}</div>
-                <div class="risk-label">Model signal</div>
-            </div>
-        </div>
-
-        <div class="model-line">
-            <span>Model</span>
-            {{ result.model_name }}
-            <span class="model-score">
-                {% if result.calibrated_probability %}calibrated phishing probability: {{ result.calibrated_probability }}{% else %}SVM fallback active; no calibrated probability available{% endif %}
-            </span>
-        </div>
-        {% if result.confidence_note %}
-        <p class="confidence-note">{{ result.confidence_note }}</p>
-        {% endif %}
-        <div class="reputation-status {{ result.reputation_status }}">
-            <strong>Threat intelligence</strong>
-            <span>{{ result.reputation_message }}</span>
-        </div>
-
-        <div class="url-row">
-            <span class="url-row-label">Scanned URL</span>
-            <div class="scanned-url">{{ result.url }}</div>
-        </div>
-
-        <h2 class="section-title">Why was this flagged?</h2>
-        <div class="evidence-grid">
-            {% for item in result.evidence %}
-            <div class="evidence-card {{ item.severity }}">
-                <div class="evidence-top">
-                    <span class="evidence-icon">
-                        {% if item.severity == "high" %}!{% elif item.severity == "medium" %}/{% else %}+{% endif %}
-                    </span>
-                    <span class="severity">{{ item.severity }}</span>
-                </div>
-                <h3>{{ item.title }}</h3>
-                <p>{{ item.description }}</p>
-            </div>
-            {% endfor %}
-        </div>
-
-        <h2 class="section-title">Phishing DNA</h2>
-        <div class="feature-grid">
-            {% for name, value in result.feature_summary.items() %}
-            <div class="feature-card">
-                <div class="feature-value">{{ value }}</div>
-                <div class="feature-name">{{ name }}</div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <h2 class="section-title">Detection signal</h2>
-        <div class="signal-panel {{ result.risk_class }}">
-            <div class="signal-icon">
-                {% if result.prediction in ["BLOCK", "PHISHING"] %}!{% elif result.risk_level in ["WARN", "REVIEW", "NEEDS PAGE CONTENT"] %}/{% else %}✓{% endif %}
-            </div>
-            <div class="signal-content">
-                {% if result.prediction in ["BLOCK", "PHISHING"] %}
-                <h3>Suspicious pattern detected</h3>
-                <p>
-                    The trained classifier produced a positive phishing decision for
-                    this website. The evidence above shows the observable URL and page
-                    characteristics extracted during analysis.
-                </p>
-                {% elif result.risk_level in ["WARN", "REVIEW", "NEEDS PAGE CONTENT"] %}
-                <h3>Borderline signal — review recommended</h3>
-                <p>
-                    The model signal is inconclusive. This is not proof that the
-                    website is safe or malicious.
-                </p>
-                {% else %}
-                <h3>No high-confidence phishing decision</h3>
-                <p>
-                    No strong phishing signal was found. This does not guarantee that the page is safe.
-                </p>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="disclaimer">
-            <strong>Model output</strong>
-            <span>
-                This result is produced by a machine-learning model and should be
-                treated as a security signal, not absolute proof.
-            </span>
-        </div>
-    </section>
-    {% endif %}
-
-    {% if not result or not result.prediction %}
-    <section class="how-section">
-        <h2 class="section-title">How PhishReaper works</h2>
-        <div class="pipeline">
-            <div class="pipeline-card">
-                <span class="pipeline-number">01</span>
-                <span class="pipeline-icon">URL</span>
-                <h3>URL analysis</h3>
-                <p>Extracts URL structure, suspicious keywords, domains and other measurable characteristics.</p>
-            </div>
-            <div class="pipeline-arrow">→</div>
-            <div class="pipeline-card">
-                <span class="pipeline-number">02</span>
-                <span class="pipeline-icon">ML</span>
-                <h3>ML detection</h3>
-                <p>A trained machine-learning classifier analyzes the extracted signals.</p>
-            </div>
-            <div class="pipeline-arrow">→</div>
-            <div class="pipeline-card">
-                <span class="pipeline-number">03</span>
-                <span class="pipeline-icon">DNA</span>
-                <h3>Evidence</h3>
-                <p>Observable characteristics are converted into an interpretable phishing profile.</p>
-            </div>
-            <div class="pipeline-arrow">→</div>
-            <div class="pipeline-card">
-                <span class="pipeline-number">04</span>
-                <span class="pipeline-icon">!</span>
-                <h3>Risk signal</h3>
-                <p>The final result combines the model decision with the extracted evidence.</p>
-            </div>
-        </div>
-    </section>
-    {% endif %}
-
-    <footer>
-        <span>PhishReaper</span>
-        <span>Explainable by design. A security signal, not a guarantee.</span>
-    </footer>
+<!-- Software; graphite-safety-orange (existing orange mark); Host Grotesk / JetBrains Mono; centred hero; nav-centre; tonal controls; silk-folds still; counter-rolls on method; compact application footer. -->
+<header class="nav nav--centre"><div class="wrap nav-inner">
+<a class="skip-link" href="#top">Skip to content</a>
+<span aria-hidden="true"></span>
+<nav class="nav-links" aria-label="Main navigation"><a href="#scanner">Scanner</a><a href="#method">Method</a><a href="#privacy">Privacy</a></nav>
+<span class="engine-state" id="engine-state" role="status"><span class="state-dot"></span><span id="engine-label">Local analysis</span></span>
+<details class="mobile-menu" id="mobile-nav"><summary class="btn btn--secondary mobile-menu-toggle" aria-label="Open navigation" aria-expanded="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary><nav class="mobile-menu-panel" aria-label="Mobile navigation"><a href="#scanner">Scanner</a><a href="#method">Method</a><a href="#privacy">Privacy</a></nav></details>
+</div></header>
+<main id="top">
+<section class="hero hero--centred" id="scanner" data-enter aria-labelledby="hero-h"><div class="wrap"><div class="hero-text">
+<div class="hero__c"><img class="brand-banner" src="{{ static_url('brand-banner.png') }}" alt="PhishReaper" width="2172" height="724" fetchpriority="high" decoding="async"><p class="eyebrow">2 analysis modes &middot; URL and saved HTML</p><h1 id="hero-h">Phishing checks for analysts.</h1><p class="hero__lead">Inspect a URL and optional saved HTML, then review the model estimate alongside the extracted page characteristics.</p></div>
+<div class="hero__window frame" data-fx="silk-folds" data-fx-seed="14" data-fx-params='{"tone":2,"folds":0.45,"sheen":0.35,"speed":0}' data-enter-media>
+<div class="app-frame scanner-window">
+<div class="app-toolbar"><span class="app-title"><svg class="mini-mark" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 18 18 6M7 6h11v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Website analysis</span><span class="mono toolbar-note">2 analysis modes</span></div>
+<div class="scanner-workspace">
+<aside class="scanner-rail" aria-label="Analysis workflow"><span class="rail-heading">Analysis workspace</span><ol><li class="is-current"><span class="step-marker">01</span><span>Website URL<small>Start with a link</small></span></li><li><span class="step-marker">02</span><span>Page HTML<small>Add more context</small></span></li><li><span class="step-marker">03</span><span>Model evidence<small>Review the signal</small></span></li></ol></aside>
+<form id="scan-form" action="/scan" method="post" enctype="multipart/form-data" class="scan-form" aria-describedby="scan-privacy">
+<div class="field-heading"><label for="url">Website URL</label><span class="mono field-meta">HTTP / HTTPS</span></div>
+<div class="url-entry"><span class="url-glyph" aria-hidden="true">↗</span><input id="url" type="text" name="url" inputmode="url" placeholder="https://example.org" value="{{ result.url if result and result.url else '' }}" autocomplete="url" spellcheck="false" autocapitalize="off" maxlength="4096" aria-describedby="url-error" required><button type="submit" class="btn btn--primary" id="scan-button"><span class="button-label">Analyze URL</span>{{ arrow() }}<span class="button-spinner" hidden aria-hidden="true"></span></button></div>
+<p class="field__error" id="url-error" role="alert" hidden></p>
+<details class="html-options" id="html-options"><summary><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 8 4 12l4 4m8-8 4 4-4 4m-3-11-2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Add page HTML<span class="optional-label">Optional</span></span><span class="details-plus" aria-hidden="true">+</span></summary>
+<div class="upload-content"><label class="upload-zone" id="upload-zone" for="html_file"><input id="html_file" class="file-input" type="file" accept=".html,.htm,text/html,application/xhtml+xml" name="html_file" aria-describedby="html-file-hint file-error"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span><strong id="file-label">Choose an HTML file</strong><small id="file-subtitle">or drop a saved page here · .html / .htm · up to 10 MB</small></span><span class="upload-arrow" aria-hidden="true">↗</span></label><div class="selected-file-actions" id="selected-file-actions" hidden><span class="file-size mono" id="file-size"></span><button class="text-button" type="button" id="remove-file">Remove file</button></div><p class="field__error" id="file-error" role="alert" hidden></p><p class="upload-hint" id="html-file-hint">Save a page with Ctrl+S, then upload its HTML file. Supporting folders aren’t needed.</p></div></details>
+<!-- Legacy form field retained for clients that still submit pasted HTML. -->
+<textarea id="html" name="html" hidden></textarea>
+<div class="form-bottom"><p id="scan-privacy">HTML is parsed on the server. <a class="link" href="#privacy">Data handling</a></p><p class="form__status" role="status" id="form-status">Ready when you are.</p></div>
+{% if result and result.error %}<div class="error-box" role="alert"><strong>Scan error</strong><p>{{ result.error }}</p></div>{% endif %}
+</form></div></div></div>
+</div></div></section>
+{% if result and result.prediction %}
+<section class="section result-section" id="results" aria-labelledby="result-h" tabindex="-1"><div class="wrap">
+<div class="section-head result-heading"><div><p class="eyebrow">Analysis complete</p><h2 id="result-h">Your analysis report</h2></div><div class="report-actions"><button type="button" class="btn btn--secondary" id="download-report">Download report {{ arrow() }}</button><a class="link" href="#url">Check another URL</a></div></div>
+<div class="app-frame result-window">
+<div class="verdict-row {{ result.risk_class }}"><div><span class="verdict-label"><span class="verdict-dot"></span>Model signal</span><h3>{{ result.prediction }}</h3></div><div class="score-block">{% if result.calibrated_probability %}<span class="score-number">{{ result.calibrated_probability }}</span><span>calibrated phishing probability</span>{% else %}<span class="score-fallback">SVM fallback</span><span>no calibrated probability available</span>{% endif %}</div></div>
+<div class="report-url"><div><span class="meta-label">Scanned URL</span><p class="scanned-url">{{ result.url }}</p></div><button type="button" class="btn btn--secondary copy-url-button" id="copy-url">Copy URL</button></div>
+<div class="report-model"><span>{{ result.model_name }}</span>{% if result.confidence_note %}<p>{{ result.confidence_note }}</p>{% endif %}</div>
+<div class="report-body"><div class="evidence-column"><h3 class="panel-title">Observed signals <span class="mono">{{ result.evidence|length }}</span></h3><div class="evidence-list">{% for item in result.evidence %}<article class="evidence-card {{ item.severity }}"><span class="evidence-indicator" aria-hidden="true"></span><div><div class="evidence-heading"><h4>{{ item.title }}</h4><span class="severity">{{ item.severity }}</span></div><p>{{ item.description }}</p></div></article>{% endfor %}</div></div><aside class="feature-column"><h3 class="panel-title">Extracted features</h3><dl class="feature-list">{% for name, value in result.feature_summary.items() %}<div><dt>{{ name }}</dt><dd>{{ value }}</dd></div>{% endfor %}</dl><div class="reputation-status {{ result.reputation_status }}"><span class="meta-label">Threat intelligence</span><p>{{ result.reputation_message }}</p></div></aside></div>
+<div class="signal-panel {{ result.risk_class }}"><span class="signal-icon" aria-hidden="true">{% if result.prediction in ['BLOCK','PHISHING'] %}!{% elif result.risk_level in ['WARN','REVIEW','NEEDS PAGE CONTENT'] %}?{% else %}↗{% endif %}</span><div>{% if result.prediction in ['BLOCK','PHISHING'] %}<h3>Suspicious pattern detected</h3><p>Review the extracted evidence before opening the page or entering sensitive information.</p>{% elif result.risk_level in ['WARN','REVIEW','NEEDS PAGE CONTENT'] %}<h3>Borderline signal — review recommended</h3><p>The signal is inconclusive. Page HTML and human review can provide more context.</p>{% else %}<h3>No strong phishing signal</h3><p>This result does not guarantee that the page is safe.</p>{% endif %}</div></div>
+<p class="report-disclaimer">Model output is a security signal, not proof that a website is safe or malicious.</p>
+</div></div><script type="application/json" id="scan-data">{{ result|tojson }}</script></section>
+{% endif %}
+<section class="section ground-inverse method-section" id="method" aria-labelledby="method-h" style="--h:1"><div class="wrap">
+<div class="section-head"><h2 id="method-h">URL and HTML signals.</h2><p class="method-lead">A URL is the starting point. Saved page HTML adds forms, links, and page structure to the analysis.</p></div>
+<div class="method-grid" data-moment="counter-rolls"><article class="method-item"><div class="method-number"><span class="t-stat">24</span><span>URL features</span></div><h3>Read URL structure</h3><p>Domain details, path patterns, encoding, and account-related terms provide the first set of signals.</p><div class="url-anatomy" aria-label="URL structure: protocol, domain, path"><span>https://</span><strong>example.org</strong><span>/account</span></div></article><article class="method-item"><div class="method-number"><span class="t-stat">53</span><span>URL + HTML features</span></div><h3>Inspect page HTML</h3><p>Forms, password fields, external destinations, and redirects add context. Uploaded scripts are never executed.</p><div class="html-anatomy" aria-label="HTML structure inspected as text"><span>&lt;form <em>action</em>=<b>"…"</b>&gt;</span><span>&nbsp;&nbsp;&lt;input <em>type</em>=<b>"password"</b>&gt;</span><span>&lt;/form&gt;</span></div></article></div>
+<div class="method-note"><a class="btn btn--secondary" href="#url">Analyze URL {{ arrow() }}</a></div>
+</div></section>
 </main>
-
-<script src="/static/app.js"></script>
+<footer class="closing app-footer" id="privacy"><div class="wrap"><div class="privacy-row"><h2>Data handling</h2><p>Uploaded HTML is parsed on the app server. When configured, Google Safe Browsing receives the complete submitted URL for a threat check.</p></div><div class="footer-bottom"><a class="brand" href="/"><img src="{{ static_url('logo.png') }}" alt="" width="36" height="36"><span>PhishReaper.</span></a><span>Analyst triage · Classical machine learning</span><a class="link" href="#scanner">Return to scanner</a></div></div></footer>
+<script src="{{ static_url('taste/system.js') }}" type="module"></script><script src="{{ static_url('taste/motion/motion.js') }}" type="module"></script><script src="{{ static_url('taste/layout/layout.js') }}" type="module"></script><script src="{{ static_url('hero_background.js') }}" type="module"></script><script src="{{ static_url('taste/moments/moments.js') }}" type="module"></script><script src="{{ static_url('app.js') }}" defer></script>
 </body>
 </html>

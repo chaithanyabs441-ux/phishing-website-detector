@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from src.serving.model_registry import ModelRegistry, _apply_calibrator
-from src.evaluation.phase7_calibration import apply_calibrator
+from src.evaluation.calibration_validation import apply_calibrator
 
 
 def test_registry_checks_manifest_hash_before_loading(tmp_path):

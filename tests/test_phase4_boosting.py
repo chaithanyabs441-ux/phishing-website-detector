@@ -10,7 +10,7 @@ from src.evaluation.phase4_boosting import (
     make_estimator,
     prepare_feature_frames,
 )
-from src.evaluation.phase4_data import CATEGORICAL_FEATURES, PHASE4_FEATURE_COLUMNS
+from src.data.engineered_feature_dataset import CATEGORICAL_FEATURES, PHASE4_FEATURE_COLUMNS
 
 
 def test_grouped_tuning_split_is_deterministic_bounded_and_domain_disjoint():
